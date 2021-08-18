@@ -1,0 +1,9 @@
+<Configuration status="info">
+
+    <Loggers>
+        <!-- Root Logger -->
+        <Root level="off">
+        </Root>
+    </Loggers>
+
+</Configuration>

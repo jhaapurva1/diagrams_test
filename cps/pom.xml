@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.meesho</groupId>
+        <artifactId>campaign-performance-service</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+
+    <groupId>com.meesho</groupId>
+    <artifactId>cps</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>cps</name>
+    <description>Campaign Performance Service</description>
+    <properties>
+        <java.version>1.8</java.version>
+        <avro.version>1.8.2</avro.version>
+        <confluent.version>5.3.2</confluent.version>
+        <swagger>2.9.2</swagger>
+    </properties>
+
+    <repositories>
+        <repository>
+            <id>redshift</id>
+            <url>http://redshift-maven-repository.s3-website-us-east-1.amazonaws.com/release</url>
+        </repository>
+        <repository>
+            <id>confluent</id>
+            <url>http://packages.confluent.io/maven/</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+
+        <!-- Mysql -->
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!--  Redshift -->
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-redshift</artifactId>
+            <version>1.11.558</version>
+        </dependency>
+        <dependency>
+            <groupId>com.amazon.redshift</groupId>
+            <artifactId>redshift-jdbc42-no-awssdk</artifactId>
+            <version>1.2.10.1009</version>
+        </dependency>
+
+        <!-- Spring JPA -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <!-- Redis -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- Log4j2 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-log4j2</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-log4j-appender</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+            </exclusions>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.lmax</groupId>
+            <artifactId>disruptor</artifactId>
+            <version>3.3.6</version>
+        </dependency>
+
+        <!-- Apache http client -->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.2</version>
+        </dependency>
+
+        <!-- Ads Common Lib-->
+        <dependency>
+            <groupId>com.meesho</groupId>
+            <artifactId>ads-common-lib</artifactId>
+            <version>0.0.13-SNAPSHOT</version>
+        </dependency>
+
+        <!-- Kafka -->
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/io.confluent/kafka-avro-serializer -->
+        <dependency>
+            <groupId>io.confluent</groupId>
+            <artifactId>kafka-avro-serializer</artifactId>
+            <version>${confluent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.avro</groupId>
+            <artifactId>avro</artifactId>
+            <version>${avro.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.avro</groupId>
+            <artifactId>avro-maven-plugin</artifactId>
+            <version>${avro.version}</version>
+        </dependency>
+
+        <!-- Swagger -->
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger2</artifactId>
+            <version>${swagger}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger-ui</artifactId>
+            <version>${swagger}</version>
+        </dependency>
+
+        <!-- CPS Client-->
+        <dependency>
+            <groupId>com.meesho</groupId>
+            <artifactId>cps-client</artifactId>
+            <version>0.0.3-SNAPSHOT</version>
+        </dependency>
+
+        <!-- Ad Client-->
+        <dependency>
+            <groupId>com.meesho</groupId>
+            <artifactId>ad-client</artifactId>
+            <version>2.0.4-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-cache</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
