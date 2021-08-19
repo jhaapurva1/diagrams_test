@@ -9,7 +9,10 @@ import com.meesho.cps.data.entity.mysql.projection.CampaignOverallPerformanceVie
 import com.meesho.cps.data.entity.mysql.projection.SupplierOverallPerformanceView;
 import com.meesho.cps.utils.CalculationUtils;
 import com.meesho.cpsclient.request.CreateCampaignPerformanceRequest;
-import com.meesho.cpsclient.response.*;
+import com.meesho.cpsclient.response.BudgetUtilisedResponse;
+import com.meesho.cpsclient.response.CampaignCatalogPerformanceResponse;
+import com.meesho.cpsclient.response.CampaignPerformanceResponse;
+import com.meesho.cpsclient.response.SupplierPerformanceResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -36,22 +39,20 @@ public class CampaignPerformanceTransformer {
 
     public SupplierPerformanceResponse getSupplierPerformanceResponse(SupplierOverallPerformanceView view) {
         return SupplierPerformanceResponse.builder()
-                .performanceDetails(PerformanceDetails.builder()
-                        .budgetUtilised(view.getTotalBudgetUtilized())
-                        .revenue(view.getTotalRevenue())
-                        .totalClicks(view.getTotalClicks())
-                        .totalViews(view.getTotalViews())
-                        .orderCount(view.getTotalOrders())
-                        .conversionRate(CalculationUtils.getConversionRate(view.getTotalOrders(),view.getTotalClicks()))
-                        .roi(CalculationUtils.getRoi(view.getTotalRevenue(), view.getTotalBudgetUtilized()))
-                        .build()
-                ).build();
+                .budgetUtilised(view.getTotalBudgetUtilized())
+                .revenue(view.getTotalRevenue())
+                .totalClicks(view.getTotalClicks())
+                .totalViews(view.getTotalViews())
+                .orderCount(view.getTotalOrders())
+                .conversionRate(CalculationUtils.getConversionRate(view.getTotalOrders(),view.getTotalClicks()))
+                .roi(CalculationUtils.getRoi(view.getTotalRevenue(), view.getTotalBudgetUtilized()))
+                .build();
     }
 
     public CampaignPerformanceResponse getCampaignPerformanceResponse(List<CampaignOverallPerformanceView> views) {
-        List<com.meesho.cpsclient.response.PerformanceDetails> performanceDetailsList = new ArrayList<>();
+        List<CampaignPerformanceResponse.CampaignDetails> performanceDetailsList = new ArrayList<>();
         for (CampaignOverallPerformanceView view : views) {
-            performanceDetailsList.add(com.meesho.cpsclient.response.PerformanceDetails.builder()
+            performanceDetailsList.add(CampaignPerformanceResponse.CampaignDetails.builder()
                     .campaignId(view.getCampaignId())
                     .budgetUtilised(view.getTotalBudgetUtilized())
                     .revenue(view.getTotalRevenue())
@@ -68,9 +69,9 @@ public class CampaignPerformanceTransformer {
 
     public CampaignCatalogPerformanceResponse getCampaignCatalogPerformanceResponse(
             List<CampaignPerformance> campaignPerformanceList) {
-        List<com.meesho.cpsclient.response.PerformanceDetails> performanceDetailsList = new ArrayList<>();
+        List<CampaignCatalogPerformanceResponse.CatalogDetails> performanceDetailsList = new ArrayList<>();
         for (CampaignPerformance campaignPerformance : campaignPerformanceList) {
-            performanceDetailsList.add(com.meesho.cpsclient.response.PerformanceDetails.builder()
+            performanceDetailsList.add(CampaignCatalogPerformanceResponse.CatalogDetails.builder()
                     .catalogId(campaignPerformance.getCatalogId())
                     .campaignId(campaignPerformance.getCampaignId())
                     .budgetUtilised(campaignPerformance.getBudgetUtilised())
@@ -85,7 +86,7 @@ public class CampaignPerformanceTransformer {
                     .build());
             log.info("performance details: {}", performanceDetailsList);
         }
-        return com.meesho.cpsclient.response.CampaignCatalogPerformanceResponse.builder().catalogs(performanceDetailsList).build();
+        return CampaignCatalogPerformanceResponse.builder().catalogs(performanceDetailsList).build();
     }
 
     public BudgetUtilisedResponse getBudgetUtilisedResponse(List<CampaignMetrics> campaignMetrics,
