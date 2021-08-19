@@ -4,6 +4,7 @@ import com.meesho.cps.data.entity.mysql.CampaignPerformance;
 import com.meesho.cps.data.entity.mysql.projection.CampaignOverallPerformanceView;
 import com.meesho.cps.data.entity.mysql.projection.SupplierOverallPerformanceView;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -20,6 +21,8 @@ import java.util.Optional;
 public interface CampaignPerformanceRepository extends CrudRepository<CampaignPerformance, Long> {
 
     List<CampaignPerformance> findAllByCampaignIdIn(List<Long> campaignIds);
+
+    List<CampaignPerformance> findAll(Pageable pageable);
 
     List<CampaignPerformance> findByCampaignId(Long campaignId);
 

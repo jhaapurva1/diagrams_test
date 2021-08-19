@@ -16,6 +16,7 @@ public class Constants {
 
         public static final String HEALTH_CHECK_ENDPOINT = "/health";
         public static final String MANUAL_SCHEDULER_START = "/api/v1/scheduler/start";
+        public static final String MIGRATE_CAMPAIGN_PERFORMANCE = "/api/v1/migrate-campaign-performance";
 
         // performance metrics apis
         public static final String SUPPLIER_PERFORMANCE = "/supplier/performance";

@@ -7,6 +7,7 @@ import com.meesho.cps.data.entity.mysql.projection.SupplierOverallPerformanceVie
 import com.meesho.cps.db.mysql.repository.CampaignPerformanceRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -49,6 +50,10 @@ public class CampaignPerformanceDao {
 
     public List<CampaignPerformance> findAllByCatalogIdsAndCampaignId(List<Long> catalogIds, Long campaignId) {
         return campaignPerformanceRepository.findAllByCatalogIdInAndCampaignId(catalogIds, campaignId);
+    }
+
+    public List<CampaignPerformance> getAllCampaigns(Pageable pageable) {
+        return campaignPerformanceRepository.findAll(pageable);
     }
 
 }
