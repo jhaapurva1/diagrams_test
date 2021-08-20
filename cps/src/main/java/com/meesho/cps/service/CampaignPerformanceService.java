@@ -46,16 +46,6 @@ public class CampaignPerformanceService {
     @Autowired
     private CampaignPerformanceTransformer campaignPerformanceTransformer;
 
-    public CreateCampaignPerformanceResponse createCampaignPerformance(CreateCampaignPerformanceRequest request)
-            throws Exception {
-        CampaignPerformance campaignPerformance = campaignPerformanceTransformer.getEntityFromRequest(request);
-        CampaignPerformance savedEntity = campaignPerformanceDao.save(campaignPerformance);
-
-        campaignCatalogMetricsRepository.put(
-                campaignPerformanceTransformer.getCampaignCatalogMetricsFromRequest(request));
-
-        return CreateCampaignPerformanceResponse.builder().created(true).id(savedEntity.getId()).build();
-    }
 
     public SupplierPerformanceResponse getSupplierPerformanceMetrics(SupplierPerformanceRequest request)
             throws Exception {

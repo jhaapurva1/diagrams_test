@@ -22,6 +22,7 @@ import com.meesho.cps.factory.AdBillFactory;
 import com.meesho.cps.helper.CampaignPerformanceHelper;
 import com.meesho.cps.service.external.AdService;
 import com.meesho.cps.service.external.PrismService;
+import com.meesho.cps.transformer.CampaignPerformanceTransformer;
 import com.meesho.cps.transformer.PrismEventTransformer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -113,12 +114,9 @@ public class CatalogInteractionEventService {
 
         CampaignCatalogMetrics campaignCatalogMetrics = campaignCatalogMetricsRepository.get(campaignId, catalogId);
         if (Objects.isNull(campaignCatalogMetrics)) {
-            log.error("Unexpected state. No CampaignCatalogMetrics found campaignId {}, catalogId {}", campaignId,
-                    catalogId);
-            adInteractionPrismEvent.setStatus(AdInteractionStatus.INVALID);
-            adInteractionPrismEvent.setReason(AdInteractionInvalidReason.CAMPAIGN_INACTIVE);
-            publishPrismEvent(adInteractionPrismEvent);
-            return;
+            log.info("Creating campaignCatalogMetrics for campaignId {}, catalogId {}",campaignId, catalogId);
+            campaignCatalogMetricsRepository.put(
+                    CampaignPerformanceTransformer.getCampaignCatalogMetricsFromRequest(campaignId, catalogId));
         }
 
         String origin = adInteractionEvent.getProperties().getOrigin();

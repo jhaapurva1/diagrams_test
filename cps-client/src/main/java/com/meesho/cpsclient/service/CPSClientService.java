@@ -22,7 +22,7 @@ public class CPSClientService extends BaseHTTPHandler {
     private static final String GET_CAMPAIGN_PERFORMANCE = "/api/v1/campaign/performance";
     private static final String GET_CAMPAIGN_CATALOG_PERFORMANCE = "/api/v1/campaign-catalog/performance";
     private static final String GET_BUDGET_UTILISED = "/api/v1/campaign/budget-utilised";
-    private static final String CREATE_CAMPAIGN_PERFORMANCE = "/api/v1/campaign-performance/create";
+
     private final ServiceRestConfig serviceRestConfig;
     private final RestTemplate restTemplate;
 
@@ -68,17 +68,6 @@ public class CPSClientService extends BaseHTTPHandler {
                 serviceRestConfig.getURL(GET_BUDGET_UTILISED),
                 new HttpEntity<>(budgetUtilisedRequest.getRequest(), getHeaders(budgetUtilisedRequest)),
                 BudgetUtilisedResponse.class);
-        return ServiceResponse.ofSuccess(response);
-    }
-
-    public ServiceResponse<CreateCampaignPerformanceResponse> createCampaignPerformance(
-            ServiceRequest<CreateCampaignPerformanceRequest> createCampaignPerformanceRequest) {
-        CreateCampaignPerformanceResponse response = restTemplate.postForObject(
-                serviceRestConfig.getURL(CREATE_CAMPAIGN_PERFORMANCE),
-                new HttpEntity<>(
-                        createCampaignPerformanceRequest.getRequest(),
-                        getHeaders(createCampaignPerformanceRequest)),
-                CreateCampaignPerformanceResponse.class);
         return ServiceResponse.ofSuccess(response);
     }
 
