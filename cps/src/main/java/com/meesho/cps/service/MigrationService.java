@@ -61,6 +61,7 @@ public class MigrationService {
             }
             offset += campaignPerformanceList.size();
             page++;
+            log.info("processed page {}", page);
         }
         return offset;
     }
