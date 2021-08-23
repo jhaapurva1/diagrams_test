@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="info">
+
+    <Properties>
+        <Property name="LOG_PATTERN">
+            ${env:APPLICATION_NAME} ${hostName} %d{dd-MM-yyyy HH:mm:ss.SSS} [%t] %-5level %logger{36}:%M - %X{guid} country:%X{MEESHO-ISO-COUNTRY-CODE} %msg%n
+        </Property>
+    </Properties>
+
+
+    <Appenders>
+        <Console name="ConsoleAppender" target="SYSTEM_OUT" follow="true">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+        </Console>
+
+
+        <Kafka name="Kafka" topic="Application-logs" syncSend="false">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Property name="bootstrap.servers">${env:GRAYLOG_KAFKA_BROKERS}</Property>
+            <Property name="max.block.ms">0</Property>
+            <Property name="batch.size">16384</Property>
+            <Property name="linger.ms">100</Property>
+        </Kafka>
+
+    </Appenders>
+
+
+    <Loggers>
+
+        <Root level="info">
+            <AppenderRef ref="ConsoleAppender"/>
+            <AppenderRef ref="Kafka"/>
+        </Root>
+        <Logger name="org.apache.kafka" level="INFO"/>
+    </Loggers>
+</Configuration>
