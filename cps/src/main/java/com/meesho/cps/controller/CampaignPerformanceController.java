@@ -25,15 +25,6 @@ public class CampaignPerformanceController {
     @Autowired
     private CampaignPerformanceService performanceService;
 
-    @ApiOperation(value = Constants.API.CREATE_CAMPAIGN_PERFORMANCE, notes = "API to create campaign performance",
-            consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    @RequestMapping(path = Constants.API.CREATE_CAMPAIGN_PERFORMANCE, method = RequestMethod.POST, consumes =
-            MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public CreateCampaignPerformanceResponse createCampaignPerformance(
-            @Valid @RequestBody CreateCampaignPerformanceRequest createCampaignPerformanceRequest) throws Exception {
-        return performanceService.createCampaignPerformance(createCampaignPerformanceRequest);
-    }
-
     @ApiOperation(value = Constants.API.SUPPLIER_PERFORMANCE, notes = "API to get overall campaign performance " +
             "metrics for a supplier", consumes = MediaType.APPLICATION_JSON_VALUE, produces =
             MediaType.APPLICATION_JSON_VALUE)

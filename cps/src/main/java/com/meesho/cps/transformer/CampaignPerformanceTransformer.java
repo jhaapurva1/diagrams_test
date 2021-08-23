@@ -109,10 +109,10 @@ public class CampaignPerformanceTransformer {
         return BudgetUtilisedResponse.builder().budgetUtilisedDetails(budgetUtilisedDetails).build();
     }
 
-    public CampaignCatalogMetrics getCampaignCatalogMetricsFromRequest(CreateCampaignPerformanceRequest request) {
+    public static CampaignCatalogMetrics getCampaignCatalogMetricsFromRequest(Long campaignId, Long catalogId) {
         return CampaignCatalogMetrics.builder()
-                .campaignId(request.getCampaignId())
-                .catalogId(request.getCatalogId())
+                .campaignId(campaignId)
+                .catalogId(catalogId)
                 .viewCount(0L)
                 .weightedClickCount(BigDecimal.ZERO)
                 .weightedSharesCount(BigDecimal.ZERO)
