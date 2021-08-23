@@ -13,8 +13,8 @@ import java.util.stream.Collectors;
 @Getter
 public enum CampaignType {
 
-    TOTAL_BUDGET("total_budget"),
-    DAILY_BUDGET("daily_budget");
+    TOTAL_BUDGET("TOTAL_BUDGET"),
+    DAILY_BUDGET("DAILY_BUDGET");
 
     String value;
 

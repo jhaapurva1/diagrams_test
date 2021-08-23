@@ -11,6 +11,7 @@ import com.meesho.cps.db.hbase.repository.CampaignCatalogMetricsRepository;
 import com.meesho.cps.db.hbase.repository.CampaignDatewiseMetricsRepository;
 import com.meesho.cps.db.hbase.repository.CampaignMetricsRepository;
 import com.meesho.cps.db.mysql.dao.CampaignPerformanceDao;
+import com.meesho.cps.helper.CampaignPerformanceHelper;
 import com.meesho.cps.transformer.CampaignPerformanceTransformer;
 import com.meesho.cpsclient.request.*;
 import com.meesho.cpsclient.response.*;
@@ -18,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +47,9 @@ public class CampaignPerformanceService {
 
     @Autowired
     private CampaignPerformanceTransformer campaignPerformanceTransformer;
+
+    @Autowired
+    private CampaignPerformanceHelper campaignPerformanceHelper;
 
 
     public SupplierPerformanceResponse getSupplierPerformanceMetrics(SupplierPerformanceRequest request)
@@ -90,9 +95,11 @@ public class CampaignPerformanceService {
                         .map(BudgetUtilisedRequest.CampaignData::getCampaignId)
                         .collect(Collectors.toList());
 
+        LocalDate dailyBudgetTrackingDate = campaignPerformanceHelper.getLocalDateForDailyCampaignFromLocalDateTime(DateTimeUtils.getCurrentLocalDateTimeInIST());
+
         List<CampaignDatewiseMetrics> campaignDatewiseMetrics =
                 campaignDatewiseMetricsRepository.getAll(dailyBudgetCampaignIds,
-                        DateTimeUtils.getCurrentLocalDateTimeInIST().toLocalDate());
+                        dailyBudgetTrackingDate);
         List<CampaignMetrics> campaignMetrics = campaignMetricsRepository.getAll(totalBudgetCampaignIds);
 
         return campaignPerformanceTransformer.getBudgetUtilisedResponse(campaignMetrics, campaignDatewiseMetrics);
