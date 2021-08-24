@@ -10,6 +10,8 @@ import com.meesho.baseclient.pojos.ServiceRequest;
 import com.meesho.baseclient.pojos.ServiceResponse;
 import com.meesho.cps.config.external.AdServiceClientConfig;
 import com.meesho.cps.constants.BeanNames;
+import com.meesho.instrumentation.annotation.DigestLogger;
+import com.meesho.instrumentation.enums.MetricType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -30,6 +32,7 @@ import java.util.Objects;
  */
 @Service
 @Slf4j
+@DigestLogger(metricType = MetricType.METHOD, tagSet = "AdService")
 public class AdService {
 
     @Autowired
