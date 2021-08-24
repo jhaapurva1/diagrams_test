@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author shubham.aggarwal
@@ -114,6 +115,20 @@ public class CampaignPerformanceTransformer {
                 .campaignId(campaignId)
                 .catalogId(catalogId)
                 .viewCount(0L)
+                .weightedClickCount(BigDecimal.ZERO)
+                .weightedSharesCount(BigDecimal.ZERO)
+                .weightedWishlistCount(BigDecimal.ZERO)
+                .budgetUtilised(BigDecimal.ZERO)
+                .originWiseClickCount(new HashMap<>())
+                .country(Utils.getCountry())
+                .build();
+    }
+
+    public static CampaignCatalogMetrics getCampaignCatalogMetricsFromExistingEntity(Long campaignId, Long catalogId,
+                                                                              CampaignCatalogMetrics existingEntity) {
+        return CampaignCatalogMetrics.builder()
+                .campaignId(campaignId)
+                .catalogId(catalogId)
                 .weightedClickCount(BigDecimal.ZERO)
                 .weightedSharesCount(BigDecimal.ZERO)
                 .weightedWishlistCount(BigDecimal.ZERO)

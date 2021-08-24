@@ -122,6 +122,13 @@ public class CatalogInteractionEventService {
             log.info("new entity {}", campaignCatalogMetrics);
         }
 
+        //hotfix
+        if (Objects.isNull(campaignCatalogMetrics.getCampaignId()) || Objects.isNull(campaignCatalogMetrics.getCatalogId())) {
+            campaignCatalogMetrics = CampaignPerformanceTransformer.getCampaignCatalogMetricsFromExistingEntity(
+                    campaignId, catalogId, campaignCatalogMetrics
+            );
+        }
+
         String origin = adInteractionEvent.getProperties().getOrigin();
         String screen = adInteractionEvent.getProperties().getScreen();
         RealEstateMetadata realEstateMetadata = realEstateMetadataCacheDao.get(origin, Utils.getCountry());
