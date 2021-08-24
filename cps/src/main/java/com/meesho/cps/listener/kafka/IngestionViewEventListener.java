@@ -46,7 +46,7 @@ public class IngestionViewEventListener {
             ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG + "=" +
                     ConsumerConstants.IngestionViewEventsConsumer.MAX_POLL_INTERVAL_MS,
             ConsumerConfig.MAX_POLL_RECORDS_CONFIG + "=" + ConsumerConstants.IngestionViewEventsConsumer.BATCH_SIZE})
-    @DigestLogger(metricType = MetricType.METHOD, tagSet = "IngestionViewEventListener")
+    @DigestLogger(metricType = MetricType.METHOD, tagSet = "consumer=IngestionViewEventListener")
     public void listen(ConsumerRecord<String, GenericRecord> consumerRecord) {
         try {
             MDC.put(Constants.GUID, UUID.randomUUID().toString());

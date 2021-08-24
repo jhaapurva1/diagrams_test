@@ -41,7 +41,7 @@ public class CampaignCatalogUpdateEventListener extends BaseKafkaListener<Campai
             ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG + "=" +
                     ConsumerConstants.CampaignUpdateConsumer.MAX_POLL_INTERVAL_MS,
             ConsumerConfig.MAX_POLL_RECORDS_CONFIG + "=" + ConsumerConstants.CampaignUpdateConsumer.BATCH_SIZE})
-    @DigestLogger(metricType = MetricType.METHOD, tagSet = "CampaignCatalogUpdateEventListener")
+    @DigestLogger(metricType = MetricType.METHOD, tagSet = "consumer=CampaignCatalogUpdateEventListener")
     @Override
     public void listen(ConsumerRecord<String, String> consumerRecord) {
         super.listen(consumerRecord);

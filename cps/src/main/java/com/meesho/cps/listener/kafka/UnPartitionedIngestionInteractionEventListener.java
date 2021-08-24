@@ -46,7 +46,7 @@ public class UnPartitionedIngestionInteractionEventListener {
                     ConsumerConstants.IngestionInteractionEventsConsumer.MAX_POLL_INTERVAL_MS,
             ConsumerConfig.MAX_POLL_RECORDS_CONFIG + "=" +
                     ConsumerConstants.IngestionInteractionEventsConsumer.BATCH_SIZE})
-    @DigestLogger(metricType = MetricType.METHOD, tagSet = "IngestionInteractionEventListener")
+    @DigestLogger(metricType = MetricType.METHOD, tagSet = "consumer=IngestionInteractionEventListener")
     public void listen(ConsumerRecord<String, GenericRecord> consumerRecord) {
         try {
             MDC.put(Constants.GUID, UUID.randomUUID().toString());

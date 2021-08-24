@@ -32,7 +32,7 @@ import java.util.Objects;
  */
 @Service
 @Slf4j
-@DigestLogger(metricType = MetricType.METHOD, tagSet = "AdService")
+@DigestLogger(metricType = MetricType.HTTP, tagSet = "external_service=AdService")
 public class AdService {
 
     @Autowired

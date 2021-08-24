@@ -41,7 +41,7 @@ public class AdInteractionEventListener extends BaseKafkaListener<AdInteractionE
             ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG + "=" +
                     ConsumerConstants.InteractionEventsConsumer.MAX_POLL_INTERVAL_MS,
             ConsumerConfig.MAX_POLL_RECORDS_CONFIG + "=" + ConsumerConstants.InteractionEventsConsumer.BATCH_SIZE})
-    @DigestLogger(metricType = MetricType.METHOD, tagSet = "AdInteractionEventListener")
+    @DigestLogger(metricType = MetricType.METHOD, tagSet = "consumer=AdInteractionEventListener")
     public void listen(ConsumerRecord<String, String> consumerRecord) {
         super.listen(consumerRecord);
     }

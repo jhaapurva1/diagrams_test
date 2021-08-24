@@ -43,7 +43,7 @@ public class DelayedRetryListener {
                     ConsumerConfig.MAX_POLL_RECORDS_CONFIG + "=" + ConsumerConstants.DelayedRetryConsumer.BATCH_SIZE
             }
     )
-    @DigestLogger(metricType = MetricType.METHOD, tagSet = "DelayedRetryListener")
+    @DigestLogger(metricType = MetricType.METHOD, tagSet = "consumer=DelayedRetryListener")
     public void listen(ConsumerRecord<String, String> consumerRecord) {
         try {
             MDC.clear();

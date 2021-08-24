@@ -26,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Service
 @Slf4j
-@DigestLogger(metricType = MetricType.METHOD, tagSet = "PrismService")
+@DigestLogger(metricType = MetricType.METHOD, tagSet = "external_service=PrismService")
 public class PrismService {
 
     @Autowired
