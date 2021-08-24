@@ -55,6 +55,10 @@ public class CampaignPerformanceHelper {
         List<CampaignCatalogMetrics> campaignCatalogMetricsList =
                 campaignCatalogMetricsRepository.getAll(campaignCatalogIds);
 
+        campaignCatalogMetricsList = campaignCatalogMetricsList.stream()
+                .filter(x -> Objects.nonNull(x.getCampaignId()) && Objects.nonNull(x.getCatalogId()))
+                .collect(Collectors.toList());
+
         Map<Pair<Long, Long>, CampaignCatalogMetrics> catalogMetricsMap = campaignCatalogMetricsList.stream()
                 .collect(Collectors.toMap(ccm -> Pair.of(ccm.getCampaignId(), ccm.getCatalogId()),
                         Function.identity()));
