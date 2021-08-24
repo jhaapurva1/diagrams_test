@@ -115,8 +115,9 @@ public class CatalogInteractionEventService {
         CampaignCatalogMetrics campaignCatalogMetrics = campaignCatalogMetricsRepository.get(campaignId, catalogId);
         if (Objects.isNull(campaignCatalogMetrics)) {
             log.info("Creating campaignCatalogMetrics for campaignId {}, catalogId {}",campaignId, catalogId);
-            campaignCatalogMetricsRepository.put(
-                    CampaignPerformanceTransformer.getCampaignCatalogMetricsFromRequest(campaignId, catalogId));
+            campaignCatalogMetrics =
+                    CampaignPerformanceTransformer.getCampaignCatalogMetricsFromRequest(campaignId, catalogId);
+            campaignCatalogMetricsRepository.put(campaignCatalogMetrics);
         }
 
         String origin = adInteractionEvent.getProperties().getOrigin();
