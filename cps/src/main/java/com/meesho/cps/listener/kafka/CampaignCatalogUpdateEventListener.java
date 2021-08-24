@@ -48,6 +48,7 @@ public class CampaignCatalogUpdateEventListener extends BaseKafkaListener<Campai
     }
 
     @Override
+    @DigestLogger(metricType = MetricType.METHOD, tagSet = "consumer=CampaignCatalogUpdateEventListener")
     public void consume(CampaignCatalogUpdateEvent campaignCatalogUpdateEvent) {
         try {
             for (CampaignCatalogUpdateEvent.CatalogData catalogData : campaignCatalogUpdateEvent.getCatalogs()) {

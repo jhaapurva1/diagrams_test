@@ -47,6 +47,7 @@ public class AdInteractionEventListener extends BaseKafkaListener<AdInteractionE
     }
 
     @Override
+    @DigestLogger(metricType = MetricType.METHOD, tagSet = "consumer=AdInteractionEventListener")
     public void consume(AdInteractionEvent adInteractionEvent) throws DataValidationException {
         if (!ValidationHelper.isValidAdInteractionEvent(adInteractionEvent)) {
             log.error("Invalid event {}", adInteractionEvent);

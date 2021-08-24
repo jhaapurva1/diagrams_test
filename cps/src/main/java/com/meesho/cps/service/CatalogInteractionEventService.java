@@ -24,6 +24,8 @@ import com.meesho.cps.service.external.AdService;
 import com.meesho.cps.service.external.PrismService;
 import com.meesho.cps.transformer.CampaignPerformanceTransformer;
 import com.meesho.cps.transformer.PrismEventTransformer;
+import com.meesho.instrumentation.annotation.DigestLogger;
+import com.meesho.instrumentation.enums.MetricType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -79,7 +81,7 @@ public class CatalogInteractionEventService {
     @Autowired
     private AdService adService;
 
-    @Transactional
+    @DigestLogger(metricType = MetricType.METHOD, tagSet = "class=CatalogInteractionEventService")
     public void handle(AdInteractionEvent adInteractionEvent) {
         Long interactionTime = adInteractionEvent.getEventTimestamp();
         String userId = adInteractionEvent.getUserId();

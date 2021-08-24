@@ -5,6 +5,8 @@ import com.meesho.cps.data.entity.kafka.AdViewEvent;
 import com.meesho.cps.db.hbase.repository.CampaignCatalogMetricsRepository;
 import com.meesho.cps.service.external.AdService;
 
+import com.meesho.instrumentation.annotation.DigestLogger;
+import com.meesho.instrumentation.enums.MetricType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +29,7 @@ public class CatalogViewEventService {
     @Autowired
     private AdService adService;
 
-    @Transactional
+    @DigestLogger(metricType = MetricType.METHOD, tagSet = "class=CatalogViewEventService")
     public void handle(AdViewEvent adViewEvent) {
         Long catalogId = adViewEvent.getProperties().getId();
         CampaignCatalogMetadataResponse.CatalogMetadata response = adService.getCampaignMetadataFromCache(catalogId);
