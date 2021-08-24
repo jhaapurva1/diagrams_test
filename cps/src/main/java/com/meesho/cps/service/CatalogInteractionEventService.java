@@ -209,6 +209,7 @@ public class CatalogInteractionEventService {
 
     public void modifyInteractionCounts(CampaignCatalogMetrics campaignCatalogMetrics, BigDecimal clickMultiplier,
                                         String eventName) {
+        log.info("campaignCatalogMetrics {}, clickMultiplier {}, eventName {}" , campaignCatalogMetrics, clickMultiplier, eventName);
         // CAUTION: Please do not change the order of cases here since action is the combination of multiple cases
         switch (eventName) {
             case ConsumerConstants.IngestionInteractionEvents.ANONYMOUS_AD_SHARED_TOPIC:
