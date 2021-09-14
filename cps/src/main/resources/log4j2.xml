@@ -1,36 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="info">
-
     <Properties>
         <Property name="LOG_PATTERN">
-            ${env:APPLICATION_NAME} ${hostName} %d{dd-MM-yyyy HH:mm:ss.SSS} [%t] %-5level %logger{36}:%M - %X{guid} country:%X{MEESHO-ISO-COUNTRY-CODE} %msg%n
+            ${env:APPLICATION_NAME} ${hostName} %d{dd-MM-yyyy HH:mm:ss.SSS} [%t] %-5level %logger{36}:%M - %X{guid} country:%X{country_code} %msg%n
         </Property>
     </Properties>
 
-
     <Appenders>
-        <Console name="ConsoleAppender" target="SYSTEM_OUT" follow="true">
+        <Console name="CONSOLE" target="SYSTEM_OUT">
             <PatternLayout pattern="${LOG_PATTERN}"/>
         </Console>
 
-
-        <Kafka name="Kafka" topic="Application-logs" syncSend="false">
-            <PatternLayout pattern="${LOG_PATTERN}"/>
-            <Property name="bootstrap.servers">${env:GRAYLOG_KAFKA_BROKERS}</Property>
-            <Property name="max.block.ms">0</Property>
-            <Property name="batch.size">16384</Property>
-            <Property name="linger.ms">100</Property>
-        </Kafka>
-
+        <ScriptAppenderSelector name="GraylogOrNull">
+            <Script language="groovy"><![CDATA[
+                if (System.getenv("GRAYLOG_APPENDER_ENABLED").equalsIgnoreCase('true')) {
+                    return "Graylog"
+                } else {
+                    return "Null"
+                }
+            ]]></Script>
+            <AppenderSet>
+                <Kafka name="Graylog" topic="Application-logs" syncSend="false">
+                    <PatternLayout pattern="${LOG_PATTERN}"/>
+                    <Property name="bootstrap.servers">${env:GRAYLOG_KAFKA_BROKERS}</Property>
+                    <Property name="max.block.ms">0</Property>
+                    <Property name="batch.size">16384</Property>
+                    <Property name="linger.ms">100</Property>
+                    <Property name="retries">2</Property>
+                </Kafka>
+                <Null name="Null"/>
+            </AppenderSet>
+        </ScriptAppenderSelector>
     </Appenders>
 
-
     <Loggers>
-
-        <Root level="info">
-            <AppenderRef ref="ConsoleAppender"/>
-            <AppenderRef ref="Kafka"/>
+        <Root level="${env:LOG_LEVEL:-INFO}" additivity="false">
+            <AppenderRef ref="CONSOLE"/>
+            <AppenderRef ref="GraylogOrNull"/>
         </Root>
-        <Logger name="org.apache.kafka" level="INFO"/>
     </Loggers>
 </Configuration>
