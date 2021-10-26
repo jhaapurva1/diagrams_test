@@ -11,6 +11,7 @@ import com.meesho.cps.service.CatalogViewEventService;
 import com.meesho.cps.service.KafkaService;
 import com.meesho.instrumentation.annotation.DigestLogger;
 import com.meesho.instrumentation.enums.MetricType;
+import com.meesho.instrumentation.metric.statsd.StatsdMetricManager;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -21,6 +22,8 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
+
+import static com.meesho.cps.constants.TelegrafConstants.*;
 
 /**
  * @author shubham.aggarwal
@@ -36,6 +39,8 @@ public class IngestionViewEventListener {
     private ObjectMapper objectMapper;
     @Autowired
     private KafkaService kafkaService;
+    @Autowired
+    private StatsdMetricManager statsdMetricManager;
 
     @KafkaListener(id = ConsumerConstants.IngestionViewEventsConsumer.ID, containerFactory =
             ConsumerConstants.IngestionServiceKafka.CONTAINER_FACTORY, topics = {
@@ -60,6 +65,8 @@ public class IngestionViewEventListener {
 
             if (!ValidationHelper.isValidAdViewEvent(adViewEvent)) {
                 log.error("Invalid event {}", adViewEvent);
+                statsdMetricManager.incrementCounter(VIEW_EVENT_KEY, String.format(VIEW_EVENT_TAGS, NAN, NAN, INVALID,
+                        NAN));
                 throw new DataValidationException("Invalid event");
             }
             log.info("Processing view event for catalogId {} userId {} appVersionCode {}",

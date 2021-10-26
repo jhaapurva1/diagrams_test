@@ -5,12 +5,12 @@
     <parent>
         <groupId>com.meesho</groupId>
         <artifactId>campaign-performance-service</artifactId>
-        <version>0.0.3-SNAPSHOT</version>
+        <version>0.0.4-RELEASE</version>
     </parent>
 
     <groupId>com.meesho</groupId>
     <artifactId>cps</artifactId>
-    <version>0.0.3-SNAPSHOT</version>
+    <version>0.0.4-RELEASE</version>
     <name>cps</name>
     <description>Campaign Performance Service</description>
     <properties>
@@ -113,7 +113,7 @@
         <dependency>
             <groupId>com.meesho</groupId>
             <artifactId>ads-common-lib</artifactId>
-            <version>0.0.13-SNAPSHOT</version>
+            <version>0.0.15-RELEASE</version>
         </dependency>
 
         <!-- Kafka -->
