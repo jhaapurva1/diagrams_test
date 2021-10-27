@@ -1,5 +1,6 @@
 package com.meesho.cps.listener.kafka;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.meesho.ads.lib.constants.Constants;
 import com.meesho.ads.lib.exception.DataValidationException;
@@ -19,8 +20,12 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import static com.meesho.cps.constants.TelegrafConstants.*;
@@ -52,34 +57,51 @@ public class IngestionViewEventListener {
                     ConsumerConstants.IngestionViewEventsConsumer.MAX_POLL_INTERVAL_MS,
             ConsumerConfig.MAX_POLL_RECORDS_CONFIG + "=" + ConsumerConstants.IngestionViewEventsConsumer.BATCH_SIZE})
     @DigestLogger(metricType = MetricType.METHOD, tagSet = "consumer=IngestionViewEventListener")
-    public void listen(ConsumerRecord<String, GenericRecord> consumerRecord) {
-        try {
-            MDC.put(Constants.GUID, UUID.randomUUID().toString());
-            String countryCode = "IN";
-            MDC.put(Constants.COUNTRY_CODE, Country.getValueDefaultCountryFromEnv(countryCode).getCountryCode());
+    public void listen(@Payload List<ConsumerRecord<String, GenericRecord>> consumerRecords) {
+
+        List<AdViewEvent> adViewEvents = new ArrayList<>();
+        MDC.put(Constants.GUID, UUID.randomUUID().toString());
+        String countryCode = "IN";
+        MDC.put(Constants.COUNTRY_CODE, Country.getValueDefaultCountryFromEnv(countryCode).getCountryCode());
+
+        for (ConsumerRecord<String, GenericRecord> consumerRecord : consumerRecords) {
 
             String value = consumerRecord.value().toString();
             log.info("Ingestion view event received : {}", value);
 
-            AdViewEvent adViewEvent = objectMapper.readValue(value, AdViewEvent.class);
+            AdViewEvent adViewEvent = null;
+            try {
+                adViewEvent = objectMapper.readValue(value, AdViewEvent.class);
+            } catch (JsonProcessingException e) {
+                log.error("JsonProcessingException event : {}", value,e);
+            }
 
-            if (!ValidationHelper.isValidAdViewEvent(adViewEvent)) {
+            if (Objects.isNull(adViewEvent) || !ValidationHelper.isValidAdViewEvent(adViewEvent)) {
                 log.error("Invalid event {}", adViewEvent);
                 statsdMetricManager.incrementCounter(VIEW_EVENT_KEY, String.format(VIEW_EVENT_TAGS, NAN, NAN, INVALID,
                         NAN));
-                throw new DataValidationException("Invalid event");
+                kafkaService.sendMessage(com.meesho.cps.constants.Constants.INGESTION_VIEW_EVENTS_DEAD_QUEUE_TOPIC,
+                        consumerRecord.key(), consumerRecord.value().toString());
+                continue;
             }
-            log.info("Processing view event for catalogId {} userId {} appVersionCode {}",
-                    adViewEvent.getProperties().getId(), adViewEvent.getUserId(),
-                    adViewEvent.getProperties().getAppVersionCode());
-            catalogViewEventService.handle(adViewEvent);
-        } catch (Exception e) {
-            log.error("Exception while processing ingestion view event {}", consumerRecord, e);
-            kafkaService.sendMessage(com.meesho.cps.constants.Constants.INGESTION_VIEW_EVENTS_DEAD_QUEUE_TOPIC,
-                    consumerRecord.key(), consumerRecord.value().toString());
-        } finally {
-            MDC.clear();
+
+            adViewEvents.add(adViewEvent);
         }
+
+        try {
+            catalogViewEventService.handle(adViewEvents);
+        } catch (Exception e) {
+            log.error("Exception while processing ingestion view events {}", adViewEvents, e);
+            for (AdViewEvent adViewEvent : adViewEvents) {
+                kafkaService.sendMessage(
+                        com.meesho.cps.constants.Constants.INGESTION_VIEW_EVENTS_DEAD_QUEUE_TOPIC,
+                        String.valueOf(adViewEvent.getProperties().getId()),
+                        objectMapper.convertValue(adViewEvent, String.class)
+                );
+            }
+        }
+
+        MDC.clear();
     }
 
 }

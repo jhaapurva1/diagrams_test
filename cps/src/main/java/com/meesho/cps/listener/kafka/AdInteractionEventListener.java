@@ -63,7 +63,13 @@ public class AdInteractionEventListener extends BaseKafkaListener<AdInteractionE
         log.info("Processing interaction event for userId {}, catalogId {}, " + "appVersionCode : {}",
                 adInteractionEvent.getUserId(), adInteractionEvent.getProperties().getId(),
                 adInteractionEvent.getProperties().getAppVersionCode());
-        catalogInteractionEventService.handle(adInteractionEvent);
+        try {
+            catalogInteractionEventService.handle(adInteractionEvent);
+        } catch (Exception e){
+            log.error("Exception in handling interaction event",e);
+            throw new RuntimeException(e.getMessage());
+        }
+
     }
 
     @Override
