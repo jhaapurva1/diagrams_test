@@ -71,6 +71,12 @@ public class ApplicationProperties {
     @Value("${user_catalog_interaction_ttl_seconds}")
     private Integer userCatalogInteractionTTLSeconds;
 
+    @Value("${increment_view_hbase_batch_size}")
+    private Integer incrementViewHbaseBatchSize;
+
+    @Value("${ad_service_fetch_ccm_batch_size}")
+    private Integer adServiceFetchCCMBatchSize;
+
     @PostConstruct
     public void init() {
         SchedulerProperty.SchedulerPropertyBuilder schedulerPropertyBuilder = SchedulerProperty.builder();

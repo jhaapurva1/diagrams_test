@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.meesho.ad.client.response.CampaignCatalogMetadataResponse;
 import com.meesho.ad.client.response.CampaignDetails;
+import com.meesho.ads.lib.helper.TelegrafMetricsHelper;
 import com.meesho.ads.lib.utils.DateTimeUtils;
 import com.meesho.ads.lib.utils.Utils;
 import com.meesho.cps.config.ApplicationProperties;
@@ -18,6 +19,7 @@ import com.meesho.cps.db.hbase.repository.CampaignDatewiseMetricsRepository;
 import com.meesho.cps.db.hbase.repository.CampaignMetricsRepository;
 import com.meesho.cps.db.redis.dao.RealEstateMetadataCacheDao;
 import com.meesho.cps.db.redis.dao.UserCatalogInteractionCacheDao;
+import com.meesho.cps.exception.ExternalRequestFailedException;
 import com.meesho.cps.factory.AdBillFactory;
 import com.meesho.cps.helper.CampaignPerformanceHelper;
 import com.meesho.cps.service.external.AdService;
@@ -29,13 +31,14 @@ import com.meesho.instrumentation.enums.MetricType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
+
+import static com.meesho.cps.constants.TelegrafConstants.*;
 
 /**
  * @author shubham.aggarwal
@@ -81,8 +84,11 @@ public class CatalogInteractionEventService {
     @Autowired
     private AdService adService;
 
+    @Autowired
+    private TelegrafMetricsHelper telegrafMetricsHelper;
+
     @DigestLogger(metricType = MetricType.METHOD, tagSet = "class=CatalogInteractionEventService")
-    public void handle(AdInteractionEvent adInteractionEvent) {
+    public void handle(AdInteractionEvent adInteractionEvent) throws ExternalRequestFailedException {
         Long interactionTime = adInteractionEvent.getEventTimestamp();
         String userId = adInteractionEvent.getUserId();
         Long catalogId = adInteractionEvent.getProperties().getId();
@@ -99,6 +105,9 @@ public class CatalogInteractionEventService {
             adInteractionPrismEvent.setStatus(AdInteractionStatus.INVALID);
             adInteractionPrismEvent.setReason(AdInteractionInvalidReason.CAMPAIGN_INACTIVE);
             publishPrismEvent(adInteractionPrismEvent);
+            telegrafMetricsHelper.increment(INTERACTION_EVENT_KEY, INTERACTION_EVENT_TAGS,
+                    adInteractionEvent.getEventName(), adInteractionEvent.getProperties().getScreen(),
+                    AdInteractionStatus.INVALID.name(), AdInteractionInvalidReason.CAMPAIGN_INACTIVE.name());
             return;
         }
 
@@ -152,6 +161,9 @@ public class CatalogInteractionEventService {
             adInteractionPrismEvent.setStatus(AdInteractionStatus.INVALID);
             adInteractionPrismEvent.setReason(AdInteractionInvalidReason.NON_BILLABLE_INTERACTION);
             publishPrismEvent(adInteractionPrismEvent);
+            telegrafMetricsHelper.increment(INTERACTION_EVENT_KEY, INTERACTION_EVENT_TAGS,
+                    adInteractionEvent.getEventName(), adInteractionEvent.getProperties().getScreen(),
+                    AdInteractionStatus.INVALID.name(), AdInteractionInvalidReason.NON_BILLABLE_INTERACTION.name());
             return;
         }
 
@@ -164,6 +176,9 @@ public class CatalogInteractionEventService {
                 adInteractionPrismEvent.setStatus(AdInteractionStatus.INVALID);
                 adInteractionPrismEvent.setReason(AdInteractionInvalidReason.DUPLICATE);
                 publishPrismEvent(adInteractionPrismEvent);
+                telegrafMetricsHelper.increment(INTERACTION_EVENT_KEY, INTERACTION_EVENT_TAGS,
+                        adInteractionEvent.getEventName(), adInteractionEvent.getProperties().getScreen(),
+                        AdInteractionStatus.INVALID.name(), AdInteractionInvalidReason.DUPLICATE.name());
                 return;
             }
             userCatalogInteractionCacheDao.set(userId, catalogId, origin, screen, interactionTime);
@@ -199,7 +214,13 @@ public class CatalogInteractionEventService {
         }
         adInteractionPrismEvent.setStatus(AdInteractionStatus.VALID);
         publishPrismEvent(adInteractionPrismEvent);
-
+        telegrafMetricsHelper.increment(INTERACTION_EVENT_KEY, INTERACTION_EVENT_TAGS,
+                adInteractionEvent.getEventName(), adInteractionEvent.getProperties().getScreen(),
+                AdInteractionStatus.VALID.name(), NAN);
+        int cpcNormalised = cpc.multiply(BigDecimal.valueOf(100)).multiply(realEstateMetadata.getClickMultiplier())
+                .intValue();
+        telegrafMetricsHelper.increment(INTERACTION_EVENT_CPC_KEY, cpcNormalised, INTERACTION_EVENT_CPC_TAGS,
+                adInteractionEvent.getEventName(), adInteractionEvent.getProperties().getScreen());
     }
 
     private void publishPrismEvent(AdInteractionPrismEvent adInteractionPrismEvent) {

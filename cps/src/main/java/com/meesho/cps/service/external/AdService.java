@@ -1,5 +1,6 @@
 package com.meesho.cps.service.external;
 
+import com.google.common.collect.Lists;
 import com.meesho.ad.client.request.CampaignCatalogMetadataRequest;
 import com.meesho.ad.client.request.CampaignMetadataRequest;
 import com.meesho.ad.client.response.CampaignCatalogMetadataResponse;
@@ -8,23 +9,27 @@ import com.meesho.ad.client.response.CampaignMetadataResponse;
 import com.meesho.ad.client.service.AdsCatalogService;
 import com.meesho.baseclient.pojos.ServiceRequest;
 import com.meesho.baseclient.pojos.ServiceResponse;
+import com.meesho.cps.config.ApplicationProperties;
 import com.meesho.cps.config.external.AdServiceClientConfig;
 import com.meesho.cps.constants.BeanNames;
+import com.meesho.cps.exception.ExternalRequestFailedException;
 import com.meesho.instrumentation.annotation.DigestLogger;
 import com.meesho.instrumentation.enums.MetricType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.cache.annotation.Cacheable;
+import com.github.benmanes.caffeine.cache.Cache;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.PostConstruct;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author shubham.aggarwal
@@ -35,33 +40,68 @@ import java.util.Objects;
 @DigestLogger(metricType = MetricType.HTTP, tagSet = "external_service=AdService")
 public class AdService {
 
-    @Autowired
-    @Qualifier(BeanNames.RestClients.AD_SERVICE)
-    private RestTemplate restTemplate;
-
-    @Autowired
-    private AdServiceClientConfig adServiceClientConfig;
-
     private AdsCatalogService adsCatalogService;
+    private ApplicationProperties applicationProperties;
+    private final Cache<Long, CampaignCatalogMetadataResponse.CatalogMetadata> adServiceCampaignCatalogCache;
 
-    @PostConstruct
-    public void init() {
-        adsCatalogService = new AdsCatalogService(adServiceClientConfig.getRestConfig(), restTemplate);
+    @Autowired
+    public AdService(
+            AdServiceClientConfig adServiceClientConfig,
+            ApplicationProperties applicationProperties,
+            @Qualifier(BeanNames.RestClients.AD_SERVICE) RestTemplate restTemplate,
+            @Qualifier("adServiceCampaignCatalogCache") Cache<Long, CampaignCatalogMetadataResponse.CatalogMetadata> adServiceCampaignCatalogCache) {
+        this.adServiceCampaignCatalogCache = adServiceCampaignCatalogCache;
+        this.applicationProperties = applicationProperties;
+        this.adsCatalogService = new AdsCatalogService(adServiceClientConfig.getRestConfig(), restTemplate);
     }
 
-    @Cacheable(value = "campaignMetadata", cacheManager = "adServiceGetCampaignCatalogMetadataCacheManager",
-            unless = "#result == null ")
-    public CampaignCatalogMetadataResponse.CatalogMetadata getCampaignMetadataFromCache(Long catalogId) {
-        List<CampaignCatalogMetadataResponse.CatalogMetadata> catalogMetadataList =
-                getCampaignCatalogMetadata(Arrays.asList(catalogId));
-        if (CollectionUtils.isEmpty(catalogMetadataList)) {
-            return null;
-        } else {
-            return catalogMetadataList.get(0);
+    private void putAllCampaignCatalogMetadata(
+            Map<Long, CampaignCatalogMetadataResponse.CatalogMetadata> campaignCatalogMetadataMap) {
+        adServiceCampaignCatalogCache.putAll(campaignCatalogMetadataMap);
+    }
+
+    private Map<Long, CampaignCatalogMetadataResponse.CatalogMetadata> getAllCampaignCatalogMetadata(List<Long> catalogIds) {
+        return adServiceCampaignCatalogCache.getAllPresent(catalogIds);
+    }
+
+    /**
+     * Gets CampaignCatalogMetadata from Local cache
+     *
+     * @param catalogIds List
+     * @return
+     * @throws ExternalRequestFailedException
+     */
+    public List<CampaignCatalogMetadataResponse.CatalogMetadata> getCampaignMetadataFromCache(List<Long> catalogIds) throws ExternalRequestFailedException {
+
+        Map<Long, CampaignCatalogMetadataResponse.CatalogMetadata> localCampaignCatalogs = getAllCampaignCatalogMetadata(catalogIds);
+        List<CampaignCatalogMetadataResponse.CatalogMetadata> allCatalogCampaignCatalogMetadata = new ArrayList<>(localCampaignCatalogs.values());
+
+        List<Long> missedCatalogIds = catalogIds.stream()
+                .filter(x -> !localCampaignCatalogs.containsKey(x))
+                .collect(Collectors.toList());
+
+        List<List<Long>> partitionedCatalogIds = Lists.partition(missedCatalogIds, applicationProperties.getAdServiceFetchCCMBatchSize());
+
+        for (List<Long> toProcessCatIds : partitionedCatalogIds) {
+            List<CampaignCatalogMetadataResponse.CatalogMetadata> missedCampaignCatalogs = getCampaignCatalogMetadata(toProcessCatIds);
+            Map<Long, CampaignCatalogMetadataResponse.CatalogMetadata> missedCampaignCatalogMap = missedCampaignCatalogs.stream()
+                    .collect(Collectors.toMap(CampaignCatalogMetadataResponse.CatalogMetadata::getCatalogId, Function.identity()));
+            putAllCampaignCatalogMetadata(missedCampaignCatalogMap);
+            log.info("Set missed catalogIds in local cache {}", toProcessCatIds);
+            allCatalogCampaignCatalogMetadata.addAll(missedCampaignCatalogs);
         }
+
+        return allCatalogCampaignCatalogMetadata;
     }
 
-    public List<CampaignCatalogMetadataResponse.CatalogMetadata> getCampaignCatalogMetadata(List<Long> catalogIds) {
+    /**
+     * Gets CampaignCatalogMetadata from Ad Service
+     *
+     * @param catalogIds List
+     * @return
+     * @throws ExternalRequestFailedException
+     */
+    public List<CampaignCatalogMetadataResponse.CatalogMetadata> getCampaignCatalogMetadata(List<Long> catalogIds) throws ExternalRequestFailedException {
         log.info("getCampaignCatalogMetadata request, catalogIds {}", catalogIds);
         CampaignCatalogMetadataRequest request =
                 CampaignCatalogMetadataRequest.builder().catalogIds(catalogIds).build();
@@ -73,19 +113,19 @@ public class AdService {
             response = adsCatalogService.fetchCampaignCatalogMetadata(serviceRequest);
         } catch (Exception e) {
             log.error("fetch campaignCatalogMetadata call failed", e);
-            return null;
+            throw new ExternalRequestFailedException(e.getMessage());
         }
 
         if (HttpStatus.OK.value() != response.getHttpStatus()) {
-            log.error("getCampaignCatalogMetadata call failed with error {}, message {}", response.getHttpStatus(),
-                    response.getMessage());
-            return null;
+            log.error("getCampaignCatalogMetadata call failed with error {}," +
+                    " message {}", response.getHttpStatus(), response.getMessage());
+            throw new ExternalRequestFailedException("non 2xx response");
         }
 
         if (Objects.isNull(response.getResponse()) ||
                 CollectionUtils.isEmpty(response.getResponse().getCampaignDetailsList())) {
             log.error("getCampaignCatalogMetadata invalid response, response {}", response.getResponse());
-            return null;
+            throw new ExternalRequestFailedException("empty response");
         }
 
         return response.getResponse().getCampaignDetailsList();

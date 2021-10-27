@@ -2,14 +2,16 @@ package com.meesho.cps.listener.kafka;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.meesho.ads.lib.exception.DataValidationException;
+import com.meesho.ads.lib.helper.TelegrafMetricsHelper;
 import com.meesho.ads.lib.listener.kafka.BaseKafkaListener;
+import com.meesho.cps.constants.AdInteractionStatus;
 import com.meesho.cps.constants.ConsumerConstants;
 import com.meesho.cps.data.entity.kafka.AdInteractionEvent;
 import com.meesho.cps.helper.ValidationHelper;
 import com.meesho.cps.service.CatalogInteractionEventService;
 import com.meesho.instrumentation.annotation.DigestLogger;
 import com.meesho.instrumentation.enums.MetricType;
-
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +19,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
-import lombok.extern.slf4j.Slf4j;
+import static com.meesho.cps.constants.TelegrafConstants.*;
 
 /**
  * @author shubham.aggarwal
@@ -29,6 +31,9 @@ public class AdInteractionEventListener extends BaseKafkaListener<AdInteractionE
 
     @Autowired
     private KafkaTemplate<String, String> kafkaTemplate;
+
+    @Autowired
+    private TelegrafMetricsHelper telegrafMetricsHelper;
 
     @Autowired
     private CatalogInteractionEventService catalogInteractionEventService;
@@ -51,12 +56,20 @@ public class AdInteractionEventListener extends BaseKafkaListener<AdInteractionE
     public void consume(AdInteractionEvent adInteractionEvent) throws DataValidationException {
         if (!ValidationHelper.isValidAdInteractionEvent(adInteractionEvent)) {
             log.error("Invalid event {}", adInteractionEvent);
+            telegrafMetricsHelper.increment(INTERACTION_EVENT_KEY, INTERACTION_EVENT_TAGS, NAN,
+                    AdInteractionStatus.INVALID.name(), NAN);
             throw new DataValidationException("Invalid event");
         }
         log.info("Processing interaction event for userId {}, catalogId {}, " + "appVersionCode : {}",
                 adInteractionEvent.getUserId(), adInteractionEvent.getProperties().getId(),
                 adInteractionEvent.getProperties().getAppVersionCode());
-        catalogInteractionEventService.handle(adInteractionEvent);
+        try {
+            catalogInteractionEventService.handle(adInteractionEvent);
+        } catch (Exception e){
+            log.error("Exception in handling interaction event",e);
+            throw new RuntimeException(e.getMessage());
+        }
+
     }
 
     @Override
