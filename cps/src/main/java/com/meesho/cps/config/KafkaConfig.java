@@ -57,7 +57,7 @@ public class KafkaConfig {
         ConcurrentKafkaListenerContainerFactory<String, String> concurrentKafkaListenerContainerFactory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         concurrentKafkaListenerContainerFactory.setConsumerFactory(ingestionKafkaConsumerFactory());
-        concurrentKafkaListenerContainerFactory.setBatchListener(false);
+        concurrentKafkaListenerContainerFactory.setBatchListener(true);
         concurrentKafkaListenerContainerFactory.getContainerProperties().setAckMode(ContainerProperties.AckMode.BATCH);
 
         log.info("ingestion kafka consumer created with configs {}",
