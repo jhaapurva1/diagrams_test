@@ -19,6 +19,7 @@ import com.meesho.cps.db.hbase.repository.CampaignDatewiseMetricsRepository;
 import com.meesho.cps.db.hbase.repository.CampaignMetricsRepository;
 import com.meesho.cps.db.redis.dao.RealEstateMetadataCacheDao;
 import com.meesho.cps.db.redis.dao.UserCatalogInteractionCacheDao;
+import com.meesho.cps.exception.ExternalRequestFailedException;
 import com.meesho.cps.factory.AdBillFactory;
 import com.meesho.cps.helper.CampaignPerformanceHelper;
 import com.meesho.cps.service.external.AdService;
@@ -87,7 +88,7 @@ public class CatalogInteractionEventService {
     private TelegrafMetricsHelper telegrafMetricsHelper;
 
     @DigestLogger(metricType = MetricType.METHOD, tagSet = "class=CatalogInteractionEventService")
-    public void handle(AdInteractionEvent adInteractionEvent) {
+    public void handle(AdInteractionEvent adInteractionEvent) throws ExternalRequestFailedException {
         Long interactionTime = adInteractionEvent.getEventTimestamp();
         String userId = adInteractionEvent.getUserId();
         Long catalogId = adInteractionEvent.getProperties().getId();

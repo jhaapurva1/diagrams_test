@@ -5,12 +5,9 @@ import com.meesho.ads.lib.utils.HbaseUtils;
 import com.meesho.cps.constants.DBConstants;
 import com.meesho.cps.data.entity.hbase.CampaignCatalogMetrics;
 
+import com.meesho.cps.data.internal.CampaignCatalogViewCount;
 import org.apache.hadoop.hbase.TableName;
-import org.apache.hadoop.hbase.client.Connection;
-import org.apache.hadoop.hbase.client.Get;
-import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.client.Table;
+import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
@@ -151,6 +148,28 @@ public class CampaignCatalogMetricsRepository {
                     COLUMN_FAMILY, COLUMN_VIEW_COUNT, 1l);
         } catch (IOException e) {
             log.error("Error in incrementing view count for campaignId {} and catalog {}", campaignId, catalogId, e);
+            throw new HbaseException(e.getMessage());
+        }
+    }
+
+    public void bulkIncrementViewCount(List<CampaignCatalogViewCount> campaignCatalogViewCountList) {
+
+        final List<Increment> increments = campaignCatalogViewCountList.stream()
+                .map(campaignCatalogViewCount -> {
+                    Increment increment = new Increment(Bytes.toBytes(CampaignCatalogMetrics.generateRowKey(
+                            campaignCatalogViewCount.getCampaignId(), campaignCatalogViewCount.getCatalogId())));
+                    increment.addColumn(COLUMN_FAMILY, COLUMN_VIEW_COUNT,
+                            Long.valueOf(campaignCatalogViewCount.getCount()));
+                    return increment;
+                }).collect(Collectors.toList());
+
+        try (Table table = getTable()) {
+            Object[] results = new Object[increments.size()];
+            table.batch(increments, results);
+            log.debug("bulkIncrementViewCount results {}", results);
+        } catch (InterruptedException | IOException e) {
+            log.error("Error in incrementing view count for " +
+                    "campaignCatalogViewCountList {}", campaignCatalogViewCountList, e);
             throw new HbaseException(e.getMessage());
         }
     }

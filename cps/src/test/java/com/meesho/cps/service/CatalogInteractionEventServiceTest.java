@@ -10,6 +10,7 @@ import com.meesho.cps.data.entity.mysql.RealEstateMetadata;
 import com.meesho.cps.db.hbase.repository.CampaignCatalogMetricsRepository;
 import com.meesho.cps.db.redis.dao.RealEstateMetadataCacheDao;
 import com.meesho.cps.db.redis.dao.UserCatalogInteractionCacheDao;
+import com.meesho.cps.exception.ExternalRequestFailedException;
 import com.meesho.cps.factory.AdBillFactory;
 import com.meesho.cps.service.external.AdService;
 import com.meesho.cps.service.external.PrismService;
@@ -197,7 +198,7 @@ public class CatalogInteractionEventServiceTest {
     }
 
     @Test
-    public void testForBillVersionOne() {
+    public void testForBillVersionOne() throws ExternalRequestFailedException {
         Mockito.doNothing().when(prismService).publishEvent(any(), any());
         Mockito.doReturn(getSampleCatalogMetadataList()).when(adService).getCampaignCatalogMetadata(any());
         Mockito.doReturn(clickBillHandler).when(adBillFactory).getBillHandlerForBillVersion(1);
@@ -209,7 +210,7 @@ public class CatalogInteractionEventServiceTest {
     }
 
     @Test
-    public void testForBillVersionOneStopCampaign() {
+    public void testForBillVersionOneStopCampaign() throws ExternalRequestFailedException {
         Mockito.doNothing().when(prismService).publishEvent(any(), any());
         Mockito.doReturn(getSampleCatalogMetadataList()).when(adService).getCampaignCatalogMetadata(any());
         CampaignCatalogMetrics campaignCatalogMetrics = getSampleCampaignCatalogMetrics();
@@ -223,7 +224,7 @@ public class CatalogInteractionEventServiceTest {
     }
 
     @Test
-    public void testForBillVersionSharesForClick() {
+    public void testForBillVersionSharesForClick() throws ExternalRequestFailedException {
         Mockito.doNothing().when(prismService).publishEvent(any(), any());
         Mockito.doReturn(getSampleCatalogMetadataListBillVersion2()).when(adService).getCampaignCatalogMetadata(any());
         Mockito.doReturn(4 * 86400).when(applicationProperties).getUserCatalogInteractionWindowInSeconds();
@@ -243,7 +244,7 @@ public class CatalogInteractionEventServiceTest {
     }
 
     @Test
-    public void testForBillVersionSharesForClickNotUpdatingRedis() {
+    public void testForBillVersionSharesForClickNotUpdatingRedis() throws ExternalRequestFailedException {
         Mockito.doNothing().when(prismService).publishEvent(any(), any());
         Mockito.doReturn(getSampleCatalogMetadataListBillVersion2()).when(adService).getCampaignCatalogMetadata(any());
         Mockito.doReturn(interactionBillHandler).when(adBillFactory).getBillHandlerForBillVersion(2);
@@ -257,7 +258,7 @@ public class CatalogInteractionEventServiceTest {
     }
 
     @Test
-    public void testForBillVersionSharesForShares() {
+    public void testForBillVersionSharesForShares() throws ExternalRequestFailedException {
         Mockito.doNothing().when(prismService).publishEvent(any(), any());
         Mockito.doReturn(getSampleCatalogMetadataListBillVersion2()).when(adService).getCampaignCatalogMetadata(any());
         Mockito.doReturn(interactionBillHandler).when(adBillFactory).getBillHandlerForBillVersion(2);
@@ -272,7 +273,7 @@ public class CatalogInteractionEventServiceTest {
     }
 
     @Test
-    public void testForBillVersionSharesForClickStopCampaign() {
+    public void testForBillVersionSharesForClickStopCampaign() throws ExternalRequestFailedException {
         Mockito.doNothing().when(prismService).publishEvent(any(), any());
         Mockito.doReturn(getSampleCatalogMetadataListBillVersion2()).when(adService).getCampaignCatalogMetadata(any());
         CampaignCatalogMetrics campaignCatalogMetrics = getSampleCampaignCatalogMetricsForBillShares();
@@ -292,7 +293,7 @@ public class CatalogInteractionEventServiceTest {
     }
 
     @Test
-    public void testForBillVersionSharesForSharesStopCampaign() {
+    public void testForBillVersionSharesForSharesStopCampaign() throws ExternalRequestFailedException {
         Mockito.doNothing().when(prismService).publishEvent(any(), any());
         Mockito.doReturn(getSampleCatalogMetadataListBillVersion2()).when(adService).getCampaignCatalogMetadata(any());
         Mockito.doReturn(4 * 86400).when(applicationProperties).getUserCatalogInteractionWindowInSeconds();
@@ -312,7 +313,7 @@ public class CatalogInteractionEventServiceTest {
     }
 
     @Test
-    public void testForBillVersionSharesForWishlistStopCampaign() {
+    public void testForBillVersionSharesForWishlistStopCampaign() throws ExternalRequestFailedException {
         Mockito.doNothing().when(prismService).publishEvent(any(), any());
         Mockito.doReturn(getSampleCatalogMetadataListBillVersion2()).when(adService).getCampaignCatalogMetadata(any());
         Mockito.doReturn(4 * 86400).when(applicationProperties).getUserCatalogInteractionWindowInSeconds();
