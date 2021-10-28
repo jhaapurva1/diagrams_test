@@ -16,6 +16,8 @@ import lombok.NoArgsConstructor;
 @Data
 @Builder
 @JsonIgnoreProperties(ignoreUnknown = true)
+@NoArgsConstructor
+@AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class AdViewEvent {
 
