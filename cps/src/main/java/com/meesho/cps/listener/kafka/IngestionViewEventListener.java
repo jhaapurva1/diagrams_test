@@ -93,11 +93,16 @@ public class IngestionViewEventListener {
         } catch (Exception e) {
             log.error("Exception while processing ingestion view events {}", adViewEvents, e);
             for (AdViewEvent adViewEvent : adViewEvents) {
-                kafkaService.sendMessage(
-                        com.meesho.cps.constants.Constants.INGESTION_VIEW_EVENTS_DEAD_QUEUE_TOPIC,
-                        String.valueOf(adViewEvent.getProperties().getId()),
-                        objectMapper.convertValue(adViewEvent, String.class)
-                );
+                try {
+                    kafkaService.sendMessage(
+                            com.meesho.cps.constants.Constants.INGESTION_VIEW_EVENTS_DEAD_QUEUE_TOPIC,
+                            String.valueOf(adViewEvent.getProperties().getId()),
+                            objectMapper.writeValueAsString(adViewEvent)
+                    );
+                } catch (JsonProcessingException e1) {
+                    // TODO silent failure needs to be handled
+                    log.error("Failed to push to dead queue event {}", adViewEvent);
+                }
             }
         }
 
