@@ -48,7 +48,7 @@ public class IngestionViewEventListener {
     private StatsdMetricManager statsdMetricManager;
 
     @KafkaListener(id = ConsumerConstants.IngestionViewEventsConsumer.ID, containerFactory =
-            ConsumerConstants.IngestionServiceKafka.CONTAINER_FACTORY, topics = {
+            ConsumerConstants.IngestionServiceKafka.BATCH_CONTAINER_FACTORY, topics = {
             "#{'${ingestion.view.event.consumer.topics}'.split(',')}",
             ConsumerConstants.IngestionViewEventsConsumer.ANONYMOUS_USER_TOPIC}, autoStartup =
             ConsumerConstants.IngestionViewEventsConsumer.AUTO_START, concurrency =
