@@ -26,6 +26,7 @@ public class ConsumerConstants {
     public static class IngestionServiceKafka {
         public static final String BOOTSTRAP_SERVERS = "${ingestion.bootstrap.servers}";
         public static final String CONTAINER_FACTORY = "ingestionKafkaListenerContainerFactory";
+        public static final String BATCH_CONTAINER_FACTORY = "ingestionBatchKafkaListenerContainerFactory";
     }
 
     public static class IngestionInteractionEvents {
