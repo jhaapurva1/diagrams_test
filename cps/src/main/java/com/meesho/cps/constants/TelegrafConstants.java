@@ -13,9 +13,9 @@ public class TelegrafConstants {
     public static final String INTERACTION_EVENT_CPC_KEY = SERVICE_NAME + "InteractionEventCPC";
 
     // tags placeholder
-    public static final String INTERACTION_EVENT_TAGS = "eventName=%s,screen=%s,status=%s,reason=%s";
-    public static final String VIEW_EVENT_TAGS = "eventName=%s,screen=%s,status=%s,reason=%s";
-    public static final String INTERACTION_EVENT_CPC_TAGS = "eventName=%s,screen=%s";
+    public static final String INTERACTION_EVENT_TAGS = "eventName=%s,screen=%s,origin=%s,status=%s,reason=%s";
+    public static final String VIEW_EVENT_TAGS = "eventName=%s,screen=%s,origin=%s,status=%s,reason=%s";
+    public static final String INTERACTION_EVENT_CPC_TAGS = "eventName=%s,screen=%s,origin=%s";
 
     // tag values
     public static final String NAN = "NAN";

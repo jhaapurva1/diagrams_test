@@ -53,6 +53,9 @@ public class AdViewEvent {
         @JsonProperty("type")
         private String type;
 
+        @JsonProperty("screen")
+        private String screen;
+
         @JsonProperty("origin")
         private String origin;
 

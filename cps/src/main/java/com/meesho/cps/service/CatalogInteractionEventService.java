@@ -106,7 +106,7 @@ public class CatalogInteractionEventService {
             adInteractionPrismEvent.setReason(AdInteractionInvalidReason.CAMPAIGN_INACTIVE);
             publishPrismEvent(adInteractionPrismEvent);
             telegrafMetricsHelper.increment(INTERACTION_EVENT_KEY, INTERACTION_EVENT_TAGS,
-                    adInteractionEvent.getEventName(), adInteractionEvent.getProperties().getScreen(),
+                    adInteractionEvent.getEventName(), adInteractionEvent.getProperties().getScreen(), adInteractionEvent.getProperties().getOrigin(),
                     AdInteractionStatus.INVALID.name(), AdInteractionInvalidReason.CAMPAIGN_INACTIVE.name());
             return;
         }
@@ -162,7 +162,7 @@ public class CatalogInteractionEventService {
             adInteractionPrismEvent.setReason(AdInteractionInvalidReason.NON_BILLABLE_INTERACTION);
             publishPrismEvent(adInteractionPrismEvent);
             telegrafMetricsHelper.increment(INTERACTION_EVENT_KEY, INTERACTION_EVENT_TAGS,
-                    adInteractionEvent.getEventName(), adInteractionEvent.getProperties().getScreen(),
+                    adInteractionEvent.getEventName(), adInteractionEvent.getProperties().getScreen(), adInteractionEvent.getProperties().getOrigin(),
                     AdInteractionStatus.INVALID.name(), AdInteractionInvalidReason.NON_BILLABLE_INTERACTION.name());
             return;
         }
@@ -177,7 +177,7 @@ public class CatalogInteractionEventService {
                 adInteractionPrismEvent.setReason(AdInteractionInvalidReason.DUPLICATE);
                 publishPrismEvent(adInteractionPrismEvent);
                 telegrafMetricsHelper.increment(INTERACTION_EVENT_KEY, INTERACTION_EVENT_TAGS,
-                        adInteractionEvent.getEventName(), adInteractionEvent.getProperties().getScreen(),
+                        adInteractionEvent.getEventName(), adInteractionEvent.getProperties().getScreen(), adInteractionEvent.getProperties().getOrigin(),
                         AdInteractionStatus.INVALID.name(), AdInteractionInvalidReason.DUPLICATE.name());
                 return;
             }
@@ -215,12 +215,12 @@ public class CatalogInteractionEventService {
         adInteractionPrismEvent.setStatus(AdInteractionStatus.VALID);
         publishPrismEvent(adInteractionPrismEvent);
         telegrafMetricsHelper.increment(INTERACTION_EVENT_KEY, INTERACTION_EVENT_TAGS,
-                adInteractionEvent.getEventName(), adInteractionEvent.getProperties().getScreen(),
+                adInteractionEvent.getEventName(), adInteractionEvent.getProperties().getScreen(), adInteractionEvent.getProperties().getOrigin(),
                 AdInteractionStatus.VALID.name(), NAN);
         int cpcNormalised = cpc.multiply(BigDecimal.valueOf(100)).multiply(realEstateMetadata.getClickMultiplier())
                 .intValue();
         telegrafMetricsHelper.increment(INTERACTION_EVENT_CPC_KEY, cpcNormalised, INTERACTION_EVENT_CPC_TAGS,
-                adInteractionEvent.getEventName(), adInteractionEvent.getProperties().getScreen());
+                adInteractionEvent.getEventName(), adInteractionEvent.getProperties().getScreen(), adInteractionEvent.getProperties().getOrigin());
     }
 
     private void publishPrismEvent(AdInteractionPrismEvent adInteractionPrismEvent) {
