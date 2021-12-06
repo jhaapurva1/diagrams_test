@@ -60,7 +60,7 @@ public class CatalogViewEventService {
             if(Objects.isNull(catalogMetadata) || !catalogMetadata.getCampaignActive()){
                 log.error("No active ad on catalogId {} userId {} eventId {}",adViewEvent.getProperties().getId(),adViewEvent.getUserId(),adViewEvent.getEventId());
                 statsdMetricManager.incrementCounter(VIEW_EVENT_KEY, String.format(VIEW_EVENT_TAGS,
-                        adViewEvent.getEventName(), adViewEvent.getProperties().getOrigin(), INVALID,
+                        adViewEvent.getEventName(), adViewEvent.getProperties().getScreen(), adViewEvent.getProperties().getOrigin(), INVALID,
                         AdInteractionInvalidReason.CAMPAIGN_INACTIVE));
                 continue;
             }
@@ -70,7 +70,7 @@ public class CatalogViewEventService {
                     adViewEvent.getEventId(), adViewEvent.getProperties().getId(), campaignId, adViewEvent.getUserId(),
                     adViewEvent.getProperties().getAppVersionCode());
             statsdMetricManager.incrementCounter(VIEW_EVENT_KEY, String.format(VIEW_EVENT_TAGS,
-                    adViewEvent.getEventName(), adViewEvent.getProperties().getOrigin(), VALID, NAN));
+                    adViewEvent.getEventName(), adViewEvent.getProperties().getScreen(), adViewEvent.getProperties().getOrigin(), VALID, NAN));
 
 
             String campaignCatalogViewCountKey = getCampaignCatalogKey(campaignId, catalogId);

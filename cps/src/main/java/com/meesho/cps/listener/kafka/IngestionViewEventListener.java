@@ -78,7 +78,7 @@ public class IngestionViewEventListener {
 
             if (Objects.isNull(adViewEvent) || !ValidationHelper.isValidAdViewEvent(adViewEvent)) {
                 log.error("Invalid event {}", adViewEvent);
-                statsdMetricManager.incrementCounter(VIEW_EVENT_KEY, String.format(VIEW_EVENT_TAGS, NAN, NAN, INVALID,
+                statsdMetricManager.incrementCounter(VIEW_EVENT_KEY, String.format(VIEW_EVENT_TAGS, NAN, NAN, NAN, INVALID,
                         NAN));
                 kafkaService.sendMessage(com.meesho.cps.constants.Constants.INGESTION_VIEW_EVENTS_DEAD_QUEUE_TOPIC,
                         consumerRecord.key(), consumerRecord.value().toString());
