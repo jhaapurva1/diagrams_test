@@ -2,25 +2,36 @@ package com.meesho.cps.service;
 
 import com.meesho.ads.lib.utils.DateTimeUtils;
 import com.meesho.cps.constants.CampaignType;
+import com.meesho.cps.constants.Constants;
+import com.meesho.cps.constants.DBConstants;
+import com.meesho.cps.data.entity.elasticsearch.EsCampaignCatalogAggregateResponse;
 import com.meesho.cps.data.entity.hbase.CampaignDatewiseMetrics;
 import com.meesho.cps.data.entity.hbase.CampaignMetrics;
-import com.meesho.cps.data.entity.mysql.CampaignPerformance;
-import com.meesho.cps.data.entity.mysql.projection.CampaignOverallPerformanceView;
-import com.meesho.cps.data.entity.mysql.projection.SupplierOverallPerformanceView;
-import com.meesho.cps.db.hbase.repository.CampaignCatalogMetricsRepository;
+import com.meesho.cps.data.internal.ElasticFiltersRequest;
+import com.meesho.cps.db.elasticsearch.ElasticSearchRepository;
+import com.meesho.cps.db.hbase.repository.CampaignCatalogDateMetricsRepository;
 import com.meesho.cps.db.hbase.repository.CampaignDatewiseMetricsRepository;
 import com.meesho.cps.db.hbase.repository.CampaignMetricsRepository;
 import com.meesho.cps.db.mysql.dao.CampaignPerformanceDao;
 import com.meesho.cps.helper.CampaignPerformanceHelper;
 import com.meesho.cps.transformer.CampaignPerformanceTransformer;
-import com.meesho.cpsclient.request.*;
-import com.meesho.cpsclient.response.*;
+import com.meesho.cps.utils.CommonUtils;
+import com.meesho.cpsclient.request.BudgetUtilisedRequest;
+import com.meesho.cpsclient.request.CampaignCatalogPerformanceRequest;
+import com.meesho.cpsclient.request.CampaignPerformanceRequest;
+import com.meesho.cpsclient.request.SupplierPerformanceRequest;
+import com.meesho.cpsclient.response.BudgetUtilisedResponse;
+import com.meesho.cpsclient.response.CampaignCatalogPerformanceResponse;
+import com.meesho.cpsclient.response.CampaignPerformanceResponse;
+import com.meesho.cpsclient.response.SupplierPerformanceResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -40,7 +51,10 @@ public class CampaignPerformanceService {
     private CampaignMetricsRepository campaignMetricsRepository;
 
     @Autowired
-    private CampaignCatalogMetricsRepository campaignCatalogMetricsRepository;
+    private CampaignCatalogDateMetricsRepository campaignCatalogMetricsRepository;
+
+    @Autowired
+    private ElasticSearchRepository elasticSearchRepository;
 
     @Autowired
     private CampaignDatewiseMetricsRepository campaignDatewiseMetricsRepository;
@@ -51,33 +65,79 @@ public class CampaignPerformanceService {
     @Autowired
     private CampaignPerformanceHelper campaignPerformanceHelper;
 
+    public SupplierPerformanceResponse getSupplierPerformanceMetrics(SupplierPerformanceRequest request) throws IOException {
+        ElasticFiltersRequest elasticFiltersRequestMonthWise = ElasticFiltersRequest.builder()
+                .supplierIds(Collections.singletonList(request.getSupplierId()))
+                .aggregationBuilders(campaignPerformanceHelper.createAggregations())
+                .build();
 
-    public SupplierPerformanceResponse getSupplierPerformanceMetrics(SupplierPerformanceRequest request)
-            throws Exception {
-        SupplierOverallPerformanceView supplierOverallPerformanceView =
-                campaignPerformanceDao.getOverallPerformanceForSupplier(request.getSupplierId());
+        EsCampaignCatalogAggregateResponse monthWiseResponse = new EsCampaignCatalogAggregateResponse();
+        EsCampaignCatalogAggregateResponse dateWiseResponse = new EsCampaignCatalogAggregateResponse();
 
-        return campaignPerformanceTransformer.getSupplierPerformanceResponse(supplierOverallPerformanceView);
+        if (!request.isDateRangePresent()) {
+            elasticFiltersRequestMonthWise.setRangeFilters(campaignPerformanceHelper.addTillDateRangeFilter());
+            monthWiseResponse = elasticSearchRepository.fetchEsCampaignCatalogsMonthWise(elasticFiltersRequestMonthWise);
+        } else {
+            if(CommonUtils.shouldQueryMonthWiseIndex(request.getStartDate(), request.getEndDate())) {
+                elasticFiltersRequestMonthWise.setRangeFilters(campaignPerformanceHelper.addMonthWiseRangeFilter(request.getStartDate(), request.getEndDate()));
+                monthWiseResponse = elasticSearchRepository.fetchEsCampaignCatalogsMonthWise(elasticFiltersRequestMonthWise);
+            }
+            elasticFiltersRequestMonthWise.setRangeFilters(campaignPerformanceHelper.addDateWiseRangeFilters(request.getStartDate(), request.getEndDate()));
+            dateWiseResponse = elasticSearchRepository.fetchEsCampaignCatalogsDateWise(elasticFiltersRequestMonthWise);
+        }
+
+        return campaignPerformanceTransformer.getSupplierPerformanceResponse(monthWiseResponse, dateWiseResponse);
     }
 
-    public CampaignPerformanceResponse getCampaignPerformanceMetrics(CampaignPerformanceRequest request)
-            throws Exception {
-        List<CampaignOverallPerformanceView> campaignOverallPerformanceViewList =
-                campaignPerformanceDao.getOverallPerformanceForCampaigns(request.getCampaignIds());
-        return campaignPerformanceTransformer.getCampaignPerformanceResponse(campaignOverallPerformanceViewList);
+    public CampaignPerformanceResponse getCampaignPerformanceMetrics(CampaignPerformanceRequest request) throws IOException {
+        ElasticFiltersRequest elasticFiltersRequestMonthWise = ElasticFiltersRequest.builder()
+                .campaignIds(request.getCampaignIds())
+                .aggregationBuilders(campaignPerformanceHelper.createBucketAggregations(Constants.ESConstants.BY_CAMPAIGN, DBConstants.ElasticSearch.CAMPAIGN_ID))
+                .build();
+
+        EsCampaignCatalogAggregateResponse monthWiseResponse = new EsCampaignCatalogAggregateResponse();
+        EsCampaignCatalogAggregateResponse dateWiseResponse = new EsCampaignCatalogAggregateResponse();
+
+        if (!request.isDateRangePresent()) {
+            elasticFiltersRequestMonthWise.setRangeFilters(campaignPerformanceHelper.addTillDateRangeFilter());
+            monthWiseResponse = elasticSearchRepository.fetchEsCampaignCatalogsMonthWise(elasticFiltersRequestMonthWise);
+        } else {
+            if(CommonUtils.shouldQueryMonthWiseIndex(request.getStartDate(), request.getEndDate())) {
+                elasticFiltersRequestMonthWise.setRangeFilters(campaignPerformanceHelper.addMonthWiseRangeFilter(request.getStartDate(), request.getEndDate()));
+                monthWiseResponse = elasticSearchRepository.fetchEsCampaignCatalogsMonthWise(elasticFiltersRequestMonthWise);
+            }
+            elasticFiltersRequestMonthWise.setRangeFilters(campaignPerformanceHelper.addDateWiseRangeFilters(request.getStartDate(), request.getEndDate()));
+            dateWiseResponse = elasticSearchRepository.fetchEsCampaignCatalogsDateWise(elasticFiltersRequestMonthWise);
+        }
+        return campaignPerformanceTransformer.getCampaignPerformanceResponse(monthWiseResponse, dateWiseResponse, request.getCampaignIds());
     }
 
-    public CampaignCatalogPerformanceResponse getCampaignCatalogPerformanceMetrics(
-            CampaignCatalogPerformanceRequest request) throws Exception {
-        log.info("request : {}", request);
-        List<CampaignPerformance> campaignPerformanceList =
-                campaignPerformanceDao.findAllByCatalogIdsAndCampaignId(request.getCatalogIds(),
-                        request.getCampaignId());
-        log.info("campaignPerformanceList: {}", campaignPerformanceList);
-        return campaignPerformanceTransformer.getCampaignCatalogPerformanceResponse(campaignPerformanceList);
+    public CampaignCatalogPerformanceResponse getCampaignCatalogPerformanceMetrics(CampaignCatalogPerformanceRequest request) throws IOException {
+        ElasticFiltersRequest elasticFiltersRequestMonthWise = ElasticFiltersRequest.builder()
+                .campaignIds(Collections.singletonList(request.getCampaignId()))
+                .catalogIds(request.getCatalogIds())
+                .aggregationBuilders(campaignPerformanceHelper.createBucketAggregations(Constants.ESConstants.BY_CATALOG, DBConstants.ElasticSearch.CATALOG_ID))
+                .build();
+
+        EsCampaignCatalogAggregateResponse monthWiseResponse = new EsCampaignCatalogAggregateResponse();
+        EsCampaignCatalogAggregateResponse dateWiseResponse = new EsCampaignCatalogAggregateResponse();
+
+        if (!request.isDateRangePresent()) {
+            elasticFiltersRequestMonthWise.setRangeFilters(campaignPerformanceHelper.addTillDateRangeFilter());
+            monthWiseResponse = elasticSearchRepository.fetchEsCampaignCatalogsMonthWise(elasticFiltersRequestMonthWise);
+        } else {
+            if(CommonUtils.shouldQueryMonthWiseIndex(request.getStartDate(), request.getEndDate())) {
+                elasticFiltersRequestMonthWise.setRangeFilters(campaignPerformanceHelper.addMonthWiseRangeFilter(request.getStartDate(), request.getEndDate()));
+                monthWiseResponse = elasticSearchRepository.fetchEsCampaignCatalogsMonthWise(elasticFiltersRequestMonthWise);
+            }
+            elasticFiltersRequestMonthWise.setRangeFilters(campaignPerformanceHelper.addDateWiseRangeFilters(request.getStartDate(), request.getEndDate()));
+            dateWiseResponse = elasticSearchRepository.fetchEsCampaignCatalogsDateWise(elasticFiltersRequestMonthWise);
+        }
+        return campaignPerformanceTransformer.getCampaignCatalogPerformanceResponse(monthWiseResponse, dateWiseResponse,
+                request.getCampaignId(), request.getCatalogIds());
     }
 
-    public BudgetUtilisedResponse getBudgetUtilised(BudgetUtilisedRequest request) throws Exception {
+    public BudgetUtilisedResponse getBudgetUtilised(BudgetUtilisedRequest request) {
         Map<String, List<BudgetUtilisedRequest.CampaignData>> campaignTypeAndCampaignIdsMap =
                 request.getCampaignDataList()
                         .stream()

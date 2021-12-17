@@ -1,0 +1,112 @@
+{
+  "cc_daily": {
+    "settings": {
+      "index": {
+        "number_of_shards": 1,
+        "number_of_replicas": 0
+      },
+      "analysis": {
+        "analyzer": {
+          "analyzer-name": {
+            "type": "custom",
+            "tokenizer": "keyword",
+            "filter": "lowercase"
+          }
+        }
+      }
+    },
+    "mappings": {
+      "properties": {
+        "campaign_id": {
+          "type": "long"
+        },
+        "catalog_id": {
+          "type": "long"
+        },
+        "supplier_id": {
+          "type": "long"
+        },
+        "clicks": {
+          "type": "long"
+        },
+        "views": {
+          "type": "long"
+        },
+        "shares": {
+          "type": "long"
+        },
+        "wishlist": {
+          "type": "long"
+        },
+        "budget_utilised": {
+          "type": "double"
+        },
+        "orders": {
+          "type": "integer"
+        },
+        "revenue": {
+          "type": "double"
+        },
+        "date": {
+          "type": "date",
+          "format": "yyyy-MM-dd"
+        }
+      }
+    }
+  },
+  "cc_monthly": {
+    "settings": {
+      "index": {
+        "number_of_shards": 1,
+        "number_of_replicas": 0
+      },
+      "analysis": {
+        "analyzer": {
+          "analyzer-name": {
+            "type": "custom",
+            "tokenizer": "keyword",
+            "filter": "lowercase"
+          }
+        }
+      }
+    },
+    "mappings": {
+      "properties": {
+        "campaign_id": {
+          "type": "long"
+        },
+        "catalog_id": {
+          "type": "long"
+        },
+        "supplier_id": {
+          "type": "long"
+        },
+        "clicks": {
+          "type": "long"
+        },
+        "views": {
+          "type": "long"
+        },
+        "shares": {
+          "type": "long"
+        },
+        "wishlist": {
+          "type": "long"
+        },
+        "budget_utilised": {
+          "type": "double"
+        },
+        "orders": {
+          "type": "integer"
+        },
+        "revenue": {
+          "type": "double"
+        },
+        "month": {
+          "type":   "date",
+          "format": "yyyy-MM"
+        }
+      }
+    }
+  }
+}

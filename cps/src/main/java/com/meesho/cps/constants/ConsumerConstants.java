@@ -58,6 +58,17 @@ public class ConsumerConstants {
         public static final String BATCH_SIZE = "${interaction.event.consumer.batch.size}";
     }
 
+    public static class DayWisePerformanceEventsConsumer {
+        public static final String TOPIC = "cps.dayWisePerf";
+        public static final String DEAD_QUEUE_TOPIC = "cps.dayWisePerf.dead.queue";
+        public static final String RETRY_TOPIC = "cps.dayWisePerf.retry";
+        public static final String ID = "dayWisePerformanceEventsProcessor";
+        public static final String AUTO_START = "${dayWisePerf.event.consumer.start}";
+        public static final String CONCURRENCY = "${dayWisePerf.event.consumer.concurrency}";
+        public static final String MAX_POLL_INTERVAL_MS = "${dayWisePerf.event.consumer.max.poll.interval.ms}";
+        public static final String BATCH_SIZE = "${dayWisePerf.event.consumer.batch.size}";
+    }
+
     public static class IngestionViewEventsConsumer {
         public static final String TOPICS = "${ingestion.view.event.consumer.topics}";
         public static final String ANONYMOUS_USER_TOPIC = "anonymous_ad_view";

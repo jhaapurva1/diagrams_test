@@ -18,10 +18,10 @@ public class DBConstants {
         public static final String PASSWORD = "#{${redshift.password}}";
 
         public static final String DELIMITER = "_";
-        public static final String CAMPAIGN_CATALOG_KEY = "%s" + DELIMITER + "%s";
+        public static final String CAMPAIGN_CATALOG_DATE_KEY = "%s" + DELIMITER + "%s" + DELIMITER + "%s";
 
         public static class Tables {
-            public static final String CAMPAIGN_PERFORMANCE_METRICS = "advertisement_campaign_performance";
+            public static final String CAMPAIGN_PERFORMANCE_METRICS = "campaign_performance_ads_dod";
         }
 
     }
@@ -51,6 +51,24 @@ public class DBConstants {
         public static final String USER_CATALOG_INTERACTIONS_PREFIX =
                 NAMESPACE + REDIS_KEY_DELIMITER + "ucin" + REDIS_KEY_DELIMITER + "%s" + REDIS_KEY_DELIMITER + "%s" +
                         REDIS_KEY_DELIMITER + "%s" + REDIS_KEY_DELIMITER + "%s";
+
+        public static final String UPDATED_CAMPAIGN_CATALOGS = "ucc" + "_{%s}";
+    }
+
+    public static class ElasticSearch {
+        public static final String ID = "id";
+        public static final String CAMPAIGN_ID = "campaign_id";
+        public static final String CATALOG_ID = "catalog_id";
+        public static final String SUPPLIER_ID = "supplier_id";
+        public static final String DATE = "date";
+        public static final String MONTH = "month";
+        public static final String CLICKS = "clicks";
+        public static final String VIEWS = "views";
+        public static final String SHARES = "shares";
+        public static final String WISHLIST = "wishlist";
+        public static final String ORDERS = "orders";
+        public static final String REVENUE = "revenue";
+        public static final String BUDGET_UTILISED = "budget_utilised";
     }
 
 }

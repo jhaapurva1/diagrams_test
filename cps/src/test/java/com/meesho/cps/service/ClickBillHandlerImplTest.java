@@ -1,12 +1,10 @@
 package com.meesho.cps.service;
 
-import com.meesho.cps.data.entity.hbase.CampaignCatalogMetrics;
+import com.meesho.cps.data.entity.hbase.CampaignCatalogDateMetrics;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import java.math.BigDecimal;
 
 /**
  * @author shubham.aggarwal
@@ -17,17 +15,17 @@ public class ClickBillHandlerImplTest {
 
     @Test
     public void getTotalImpressions() {
-        CampaignCatalogMetrics ccm1 = new CampaignCatalogMetrics();
-        CampaignCatalogMetrics ccm2 = new CampaignCatalogMetrics();
+        CampaignCatalogDateMetrics ccm1 = new CampaignCatalogDateMetrics();
+        CampaignCatalogDateMetrics ccm2 = new CampaignCatalogDateMetrics();
 
-        ccm1.setWeightedClickCount(new BigDecimal(2));
-        ccm1.setWeightedWishlistCount(new BigDecimal(3));
-        ccm1.setWeightedSharesCount(new BigDecimal(4));
+        ccm1.setClickCount(2L);
+        ccm1.setWishlistCount(3L);
+        ccm1.setSharesCount(4L);
 
         ClickBillHandlerImpl clickBillHandler = new ClickBillHandlerImpl();
-        BigDecimal value = clickBillHandler.getTotalInteractions(ccm1);
+        Long value = clickBillHandler.getTotalInteractions(ccm1);
 
-        Assert.assertEquals(new BigDecimal(2).stripTrailingZeros(), value.stripTrailingZeros());
+        Assert.assertEquals(Long.valueOf(2), value);
 
     }
 

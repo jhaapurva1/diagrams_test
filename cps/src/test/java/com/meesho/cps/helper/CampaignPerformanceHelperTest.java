@@ -3,12 +3,10 @@ package com.meesho.cps.helper;
 import com.meesho.ad.client.response.CampaignDetails;
 import com.meesho.ads.lib.utils.DateTimeUtils;
 import com.meesho.cps.config.ApplicationProperties;
-import com.meesho.cps.data.entity.hbase.CampaignCatalogMetrics;
+import com.meesho.cps.data.entity.hbase.CampaignCatalogDateMetrics;
 import com.meesho.cps.data.entity.mysql.CampaignPerformance;
-import com.meesho.cps.db.hbase.repository.CampaignCatalogMetricsRepository;
+import com.meesho.cps.db.hbase.repository.CampaignCatalogDateMetricsRepository;
 import com.meesho.cps.factory.AdBillFactory;
-import com.meesho.cps.service.ClickBillHandlerImpl;
-import com.meesho.cps.service.InteractionBillHandlerImpl;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,8 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.mockito.ArgumentMatchers.any;
-
 /**
  * @author shubham.aggarwal
  * 18/08/21
@@ -40,7 +36,7 @@ public class CampaignPerformanceHelperTest {
     private ApplicationProperties applicationProperties;
 
     @Mock
-    private CampaignCatalogMetricsRepository campaignCatalogMetricsRepository;
+    private CampaignCatalogDateMetricsRepository campaignCatalogMetricsRepository;
 
     @InjectMocks
     CampaignPerformanceHelper campaignPerformanceHelper;
@@ -56,19 +52,18 @@ public class CampaignPerformanceHelperTest {
         return entitiesToBeUpdated;
     }
 
-    public List<CampaignCatalogMetrics> getCampaignCatalogMetricsList() {
-        List<CampaignCatalogMetrics> campaignCatalogMetricsList = new ArrayList<>();
-        CampaignCatalogMetrics campaignCatalogMetrics = new CampaignCatalogMetrics();
-        campaignCatalogMetrics.setWeightedWishlistCount(new BigDecimal(2));
-        campaignCatalogMetrics.setWeightedSharesCount(new BigDecimal(3));
-        campaignCatalogMetrics.setWeightedClickCount(new BigDecimal(20));
-        campaignCatalogMetrics.setOriginWiseClickCount(new HashMap<>());
-        campaignCatalogMetrics.setCampaignId(2L);
-        campaignCatalogMetrics.setCatalogId(3L);
-        campaignCatalogMetrics.setViewCount(10L);
-        campaignCatalogMetrics.setBudgetUtilised(new BigDecimal(50));
-        campaignCatalogMetricsList.add(campaignCatalogMetrics);
-        return campaignCatalogMetricsList;
+    public List<CampaignCatalogDateMetrics> getCampaignCatalogMetricsList() {
+        List<CampaignCatalogDateMetrics> campaignCatalogDateMetricsList = new ArrayList<>();
+        CampaignCatalogDateMetrics campaignCatalogDateMetrics = new CampaignCatalogDateMetrics();
+        campaignCatalogDateMetrics.setWishlistCount(2L);
+        campaignCatalogDateMetrics.setSharesCount(3L);
+        campaignCatalogDateMetrics.setClickCount(20L);
+        campaignCatalogDateMetrics.setCampaignId(2L);
+        campaignCatalogDateMetrics.setCatalogId(3L);
+        campaignCatalogDateMetrics.setViewCount(10L);
+        campaignCatalogDateMetrics.setBudgetUtilised(new BigDecimal(50));
+        campaignCatalogDateMetricsList.add(campaignCatalogDateMetrics);
+        return campaignCatalogDateMetricsList;
     }
 
     public Map<Long, CampaignDetails> getSampleCampaignIdAndCatalogDetailsMap() {
@@ -80,43 +75,6 @@ public class CampaignPerformanceHelperTest {
                 .build();
         map.put(2L, campaignDetails);
         return map;
-    }
-
-
-    @Test
-    public void updateCampaignPerformanceFromHbaseForBillVersionOne() {
-        List<CampaignPerformance> campaignPerformances = getSampleCampaignPerformanceDataList();
-        Mockito.doReturn(getCampaignCatalogMetricsList())
-                .when(campaignCatalogMetricsRepository)
-                .getAll(Mockito.anyList());
-        Mockito.doReturn(new ClickBillHandlerImpl())
-                .when(adBillFactory)
-                .getBillHandlerForBillVersion(any());
-        campaignPerformanceHelper.updateCampaignPerformanceFromHbase(
-                campaignPerformances, getSampleCampaignIdAndCatalogDetailsMap());
-        for(CampaignPerformance campaignPerformance : campaignPerformances) {
-            if (campaignPerformance.getCampaignId() == 2L) {
-                Assert.assertEquals(new Long(20), campaignPerformance.getTotalClicks());
-            }
-        }
-    }
-
-    @Test
-    public void updateCampaignPerformanceFromHbaseForBillVersionTwo() {
-        List<CampaignPerformance> campaignPerformances = getSampleCampaignPerformanceDataList();
-        Mockito.doReturn(getCampaignCatalogMetricsList())
-                .when(campaignCatalogMetricsRepository)
-                .getAll(Mockito.anyList());
-        Mockito.doReturn(new InteractionBillHandlerImpl())
-                .when(adBillFactory)
-                .getBillHandlerForBillVersion(any());
-        campaignPerformanceHelper.updateCampaignPerformanceFromHbase(
-                campaignPerformances, getSampleCampaignIdAndCatalogDetailsMap());
-        for(CampaignPerformance campaignPerformance : campaignPerformances) {
-            if (campaignPerformance.getCampaignId() == 2L) {
-                Assert.assertEquals(new Long(25), campaignPerformance.getTotalClicks());
-            }
-        }
     }
 
     @Test

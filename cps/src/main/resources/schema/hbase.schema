@@ -1,5 +1,5 @@
 create_namespace 'adserver'
 
-create 'adserver:campaign_catalog_metrics' , { NAME => 'cf' } , { NUMREGIONS => 3, SPLITALGO => 'HexStringSplit' }
+create 'adserver:campaign_catalog_date_metrics' , { NAME => 'cf' } , { NUMREGIONS => 3, SPLITALGO => 'HexStringSplit' }
 create 'adserver:campaign_datewise_metrics' , { NAME => 'cf' } , { NUMREGIONS => 3, SPLITALGO => 'HexStringSplit' }
 create 'adserver:campaign_metrics' , { NAME => 'cf' } , { NUMREGIONS => 3, SPLITALGO => 'HexStringSplit' }

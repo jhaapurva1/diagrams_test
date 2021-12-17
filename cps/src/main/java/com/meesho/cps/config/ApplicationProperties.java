@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +52,18 @@ public class ApplicationProperties {
     @Value(Constants.Cron.REAL_ESTATE_METADATA_CACHE_SYNC.BATCH_SIZE)
     private Map<String, Integer> realEstateMetadataCacheSyncCountryAndCronBatchSizeMap;
 
+    @Value(Constants.Cron.CAMPAIGN_PERFORMANCE_ES_INDEXING.MONITOR_CODE)
+    private Map<String, String> campaignPerformanceHbaseESCountryAndCronitorCodeMap;
+
+    @Value(Constants.Cron.CAMPAIGN_PERFORMANCE_ES_INDEXING.ENABLE_SCHEDULER)
+    private Map<String, Boolean> campaignPerformanceHbaseESCountryAndCronEnableMap;
+
+    @Value(Constants.Cron.CAMPAIGN_PERFORMANCE_ES_INDEXING.CRON_EXPRESSION)
+    private Map<String, String> campaignPerformanceHbaseESCountryAndCronExpMap;
+
+    @Value(Constants.Cron.CAMPAIGN_PERFORMANCE_ES_INDEXING.BATCH_SIZE)
+    private Map<String, Integer> campaignPerformanceHbaseESCountryAndCronBatchSizeMap;
+
     private Map<String, Map<String, SchedulerProperty>> schedulerTypeCountryAndPropertyMap = new HashMap<>();
 
     @Value("#{'${log_disabled_paths}'.split(',')}")
@@ -76,6 +89,24 @@ public class ApplicationProperties {
 
     @Value("${ad_service_fetch_ccm_batch_size}")
     private Integer adServiceFetchCCMBatchSize;
+
+    @Value("${es.campaign.catalog.date-wise.indices}")
+    private String esCampaignCatalogDateWiseIndices;
+
+    @Value("${es.campaign.catalog.month-wise.indices}")
+    private String esCampaignCatalogMonthWiseIndices;
+
+    @Value("${redis.updated_campaign_catalogs_set.partition_count}")
+    private Integer redisUpdatedCampaignCatalogsSetPartitionCount;
+
+    @Value("${redis.updated_campaign_catalogs_set.batch_size}")
+    private Integer redisUpdatedCampaignCatalogSetBatchSize;
+
+    @Value("${campaign.date-wise.metrics.batch-size}")
+    private Integer campaignDatewiseMetricsBatchSize;
+
+    @Value("#{T(java.time.LocalDate).parse('${campaign.date-wise.metrics.reference-date}')}")
+    private LocalDate campaignDatewiseMetricsReferenceDate;
 
     @PostConstruct
     public void init() {
@@ -105,6 +136,13 @@ public class ApplicationProperties {
                         batchSize = realEstateMetadataCacheSyncCountryAndCronBatchSizeMap.get(country.getCountryCode());
                         processBatchSize = 0; // setting to 0 as this config is not used
                         break;
+                    case CAMPAIGN_PERFORMANCE_ES_INDEXING:
+                        enableCron = campaignPerformanceHbaseESCountryAndCronEnableMap.get(country.getCountryCode());
+                        cronitorCode = campaignPerformanceHbaseESCountryAndCronitorCodeMap.get(country.getCountryCode());
+                        cronExpression = campaignPerformanceHbaseESCountryAndCronExpMap.get(country.getCountryCode());
+                        batchSize = campaignPerformanceHbaseESCountryAndCronBatchSizeMap.get(country.getCountryCode());
+                        processBatchSize = 0; // setting to 0 as this config is not used
+                        break;
                 }
                 Map<String, SchedulerProperty> countryAndSchedulerPropertyMap =
                         schedulerTypeCountryAndPropertyMap.getOrDefault(schedulerType.name(), new HashMap<>());
@@ -123,5 +161,4 @@ public class ApplicationProperties {
             }
         }
     }
-
 }

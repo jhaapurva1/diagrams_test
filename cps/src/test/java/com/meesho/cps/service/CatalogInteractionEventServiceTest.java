@@ -2,16 +2,18 @@ package com.meesho.cps.service;
 
 import com.meesho.ad.client.response.CampaignCatalogMetadataResponse;
 import com.meesho.ad.client.response.CampaignDetails;
+import com.meesho.ads.lib.helper.TelegrafMetricsHelper;
+import com.meesho.ads.lib.utils.DateTimeUtils;
 import com.meesho.cps.config.ApplicationProperties;
 import com.meesho.cps.constants.CampaignType;
-import com.meesho.cps.data.entity.hbase.CampaignCatalogMetrics;
+import com.meesho.cps.data.entity.hbase.CampaignCatalogDateMetrics;
 import com.meesho.cps.data.entity.kafka.AdInteractionEvent;
 import com.meesho.cps.data.entity.mysql.RealEstateMetadata;
-import com.meesho.cps.db.hbase.repository.CampaignCatalogMetricsRepository;
+import com.meesho.cps.db.hbase.repository.CampaignCatalogDateMetricsRepository;
 import com.meesho.cps.db.redis.dao.RealEstateMetadataCacheDao;
-import com.meesho.cps.db.redis.dao.UserCatalogInteractionCacheDao;
 import com.meesho.cps.exception.ExternalRequestFailedException;
 import com.meesho.cps.factory.AdBillFactory;
+import com.meesho.cps.helper.CampaignPerformanceHelper;
 import com.meesho.cps.service.external.AdService;
 import com.meesho.cps.service.external.PrismService;
 import org.junit.Assert;
@@ -23,8 +25,8 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -40,13 +42,10 @@ public class CatalogInteractionEventServiceTest {
     private ApplicationProperties applicationProperties;
 
     @Mock
-    private CampaignCatalogMetricsRepository campaignCatalogMetricsRepository;
+    private CampaignCatalogDateMetricsRepository campaignCatalogMetricsRepository;
 
     @Mock
     private RealEstateMetadataCacheDao realEstateMetadataCacheDao;
-
-    @Mock
-    private UserCatalogInteractionCacheDao userCatalogInteractionCacheDao;
 
     @Mock
     private AdBillFactory adBillFactory;
@@ -62,6 +61,12 @@ public class CatalogInteractionEventServiceTest {
 
     @Mock
     private InteractionBillHandlerImpl interactionBillHandler;
+
+    @Mock
+    private TelegrafMetricsHelper telegrafMetricsHelper;
+
+    @Mock
+    private CampaignPerformanceHelper campaignPerformanceHelper;
 
     @InjectMocks
     private CatalogInteractionEventService catalogInteractionEventService;
@@ -141,30 +146,34 @@ public class CatalogInteractionEventServiceTest {
         return adInteractionEvent;
     }
 
-    public CampaignCatalogMetrics getSampleCampaignCatalogMetrics() {
-        CampaignCatalogMetrics campaignCatalogMetrics = new CampaignCatalogMetrics();
-        campaignCatalogMetrics.setCatalogId(3L);
-        campaignCatalogMetrics.setCampaignId(1L);
-        campaignCatalogMetrics.setOriginWiseClickCount(new HashMap<>());
-        campaignCatalogMetrics.setWeightedClickCount(new BigDecimal(20));
-        return campaignCatalogMetrics;
+    public CampaignCatalogDateMetrics getSampleCampaignCatalogMetrics() {
+        CampaignCatalogDateMetrics campaignCatalogDateMetrics = new CampaignCatalogDateMetrics();
+        campaignCatalogDateMetrics.setCatalogId(3L);
+        campaignCatalogDateMetrics.setCampaignId(1L);
+        campaignCatalogDateMetrics.setDate(LocalDate.now());
+        campaignCatalogDateMetrics.setClickCount(20L);
+        return campaignCatalogDateMetrics;
     }
 
-    public CampaignCatalogMetrics getSampleCampaignCatalogMetricsForBillShares() {
-        CampaignCatalogMetrics campaignCatalogMetrics = new CampaignCatalogMetrics();
-        campaignCatalogMetrics.setOriginWiseClickCount(new HashMap<>());
-        campaignCatalogMetrics.setCatalogId(3L);
-        campaignCatalogMetrics.setCampaignId(1L);
-        campaignCatalogMetrics.setWeightedClickCount(new BigDecimal(2));
-        campaignCatalogMetrics.setWeightedSharesCount(new BigDecimal(3));
-        campaignCatalogMetrics.setWeightedWishlistCount(new BigDecimal(4));
-        return campaignCatalogMetrics;
+    public CampaignCatalogDateMetrics getSampleCampaignCatalogMetricsForBillShares() {
+        CampaignCatalogDateMetrics campaignCatalogDateMetrics = new CampaignCatalogDateMetrics();
+        campaignCatalogDateMetrics.setCatalogId(3L);
+        campaignCatalogDateMetrics.setCampaignId(1L);
+        campaignCatalogDateMetrics.setDate(LocalDate.now());
+        campaignCatalogDateMetrics.setClickCount(2L);
+        campaignCatalogDateMetrics.setSharesCount(3L);
+        campaignCatalogDateMetrics.setWishlistCount(4L);
+        return campaignCatalogDateMetrics;
     }
 
     public RealEstateMetadata getSampleRealEstateMetadata() {
         RealEstateMetadata realEstateMetadata = new RealEstateMetadata();
         realEstateMetadata.setClickMultiplier(new BigDecimal(2));
         return realEstateMetadata;
+    }
+
+    public LocalDate getSampleDate() {
+        return DateTimeUtils.getCurrentLocalDateTimeInIST().toLocalDate();
     }
 
     @Test
@@ -202,10 +211,13 @@ public class CatalogInteractionEventServiceTest {
         Mockito.doNothing().when(prismService).publishEvent(any(), any());
         Mockito.doReturn(getSampleCatalogMetadataList()).when(adService).getCampaignCatalogMetadata(any());
         Mockito.doReturn(clickBillHandler).when(adBillFactory).getBillHandlerForBillVersion(1);
-        Mockito.doReturn(getSampleCampaignCatalogMetrics()).when(campaignCatalogMetricsRepository).get(1L, 3L);
+        Mockito.doReturn(getSampleCampaignCatalogMetrics()).when(campaignCatalogMetricsRepository).get(any(), any(), any());
         Mockito.doReturn(getSampleRealEstateMetadata())
                 .when(realEstateMetadataCacheDao)
                 .get(Mockito.anyString(), any());
+        Mockito.doReturn(getSampleDate()).when(campaignPerformanceHelper)
+                .getLocalDateForDailyCampaignFromLocalDateTime(any());
+        Mockito.doNothing().when(telegrafMetricsHelper).increment(any(), any(), any());
         catalogInteractionEventService.handle(getSampleAdInteractionEvent());
     }
 
@@ -213,13 +225,16 @@ public class CatalogInteractionEventServiceTest {
     public void testForBillVersionOneStopCampaign() throws ExternalRequestFailedException {
         Mockito.doNothing().when(prismService).publishEvent(any(), any());
         Mockito.doReturn(getSampleCatalogMetadataList()).when(adService).getCampaignCatalogMetadata(any());
-        CampaignCatalogMetrics campaignCatalogMetrics = getSampleCampaignCatalogMetrics();
-        campaignCatalogMetrics.setWeightedClickCount(new BigDecimal(22));
+        CampaignCatalogDateMetrics campaignCatalogDateMetrics = getSampleCampaignCatalogMetrics();
+        campaignCatalogDateMetrics.setClickCount(22L);
         Mockito.doReturn(clickBillHandler).when(adBillFactory).getBillHandlerForBillVersion(1);
-        Mockito.doReturn(campaignCatalogMetrics).when(campaignCatalogMetricsRepository).get(1L, 3L);
+        Mockito.doReturn(campaignCatalogDateMetrics).when(campaignCatalogMetricsRepository).get(any(), any(), any());
         Mockito.doReturn(getSampleRealEstateMetadata())
                 .when(realEstateMetadataCacheDao)
                 .get(Mockito.anyString(), any());
+        Mockito.doReturn(getSampleDate()).when(campaignPerformanceHelper)
+                .getLocalDateForDailyCampaignFromLocalDateTime(any());
+        Mockito.doNothing().when(telegrafMetricsHelper).increment(any(), any(), any());
         catalogInteractionEventService.handle(getSampleAdInteractionEvent());
     }
 
@@ -227,19 +242,16 @@ public class CatalogInteractionEventServiceTest {
     public void testForBillVersionSharesForClick() throws ExternalRequestFailedException {
         Mockito.doNothing().when(prismService).publishEvent(any(), any());
         Mockito.doReturn(getSampleCatalogMetadataListBillVersion2()).when(adService).getCampaignCatalogMetadata(any());
-        Mockito.doReturn(4 * 86400).when(applicationProperties).getUserCatalogInteractionWindowInSeconds();
-        Mockito.doReturn(System.currentTimeMillis() - 5 * 86400000)
-                .when(userCatalogInteractionCacheDao)
-                .get(Mockito.anyString(), any(), any(), any());
         Mockito.doReturn(interactionBillHandler).when(adBillFactory).getBillHandlerForBillVersion(2);
-        Mockito.doReturn(true).when(interactionBillHandler).performWindowDeDuplication();
         Mockito.doReturn(getSampleCampaignCatalogMetricsForBillShares())
                 .when(campaignCatalogMetricsRepository)
-                .get(1L, 3L);
+                .get(any(), any(), any());
         Mockito.doReturn(getSampleRealEstateMetadata())
                 .when(realEstateMetadataCacheDao)
                 .get(Mockito.anyString(), any());
-        Mockito.doNothing().when(campaignCatalogMetricsRepository).put(any());
+        Mockito.doReturn(getSampleDate()).when(campaignPerformanceHelper)
+                .getLocalDateForDailyCampaignFromLocalDateTime(any());
+        Mockito.doNothing().when(telegrafMetricsHelper).increment(any(), any(), any());
         catalogInteractionEventService.handle(getSampleAdInteractionEvent());
     }
 
@@ -250,10 +262,13 @@ public class CatalogInteractionEventServiceTest {
         Mockito.doReturn(interactionBillHandler).when(adBillFactory).getBillHandlerForBillVersion(2);
         Mockito.doReturn(getSampleCampaignCatalogMetricsForBillShares())
                 .when(campaignCatalogMetricsRepository)
-                .get(1L, 3L);
+                .get(any(), any(), any());
         Mockito.doReturn(getSampleRealEstateMetadata())
                 .when(realEstateMetadataCacheDao)
                 .get(Mockito.anyString(), any());
+        Mockito.doReturn(getSampleDate()).when(campaignPerformanceHelper)
+                .getLocalDateForDailyCampaignFromLocalDateTime(any());
+        Mockito.doNothing().when(telegrafMetricsHelper).increment(any(), any(), any());
         catalogInteractionEventService.handle(getSampleAdInteractionEvent());
     }
 
@@ -264,11 +279,13 @@ public class CatalogInteractionEventServiceTest {
         Mockito.doReturn(interactionBillHandler).when(adBillFactory).getBillHandlerForBillVersion(2);
         Mockito.doReturn(getSampleCampaignCatalogMetricsForBillShares())
                 .when(campaignCatalogMetricsRepository)
-                .get(1L, 3L);
+                .get(any(), any(), any());
         Mockito.doReturn(getSampleRealEstateMetadata())
                 .when(realEstateMetadataCacheDao)
                 .get(Mockito.anyString(), any());
-        Mockito.doNothing().when(campaignCatalogMetricsRepository).put(any());
+        Mockito.doReturn(getSampleDate()).when(campaignPerformanceHelper)
+                .getLocalDateForDailyCampaignFromLocalDateTime(any());
+        Mockito.doNothing().when(telegrafMetricsHelper).increment(any(), any(), any());
         catalogInteractionEventService.handle(getSampleAdInteractionEventShared());
     }
 
@@ -276,19 +293,16 @@ public class CatalogInteractionEventServiceTest {
     public void testForBillVersionSharesForClickStopCampaign() throws ExternalRequestFailedException {
         Mockito.doNothing().when(prismService).publishEvent(any(), any());
         Mockito.doReturn(getSampleCatalogMetadataListBillVersion2()).when(adService).getCampaignCatalogMetadata(any());
-        CampaignCatalogMetrics campaignCatalogMetrics = getSampleCampaignCatalogMetricsForBillShares();
-        campaignCatalogMetrics.setWeightedClickCount(new BigDecimal(14));
+        CampaignCatalogDateMetrics campaignCatalogDateMetrics = getSampleCampaignCatalogMetricsForBillShares();
+        campaignCatalogDateMetrics.setClickCount(14L);
         Mockito.doReturn(interactionBillHandler).when(adBillFactory).getBillHandlerForBillVersion(2);
-        Mockito.doReturn(true).when(interactionBillHandler).performWindowDeDuplication();
-        Mockito.doReturn(4 * 86400).when(applicationProperties).getUserCatalogInteractionWindowInSeconds();
-        Mockito.doReturn(System.currentTimeMillis() - 5 * 86400000)
-                .when(userCatalogInteractionCacheDao)
-                .get(Mockito.anyString(), any(), any(), any());
-        Mockito.doReturn(campaignCatalogMetrics).when(campaignCatalogMetricsRepository).get(1L, 3L);
+        Mockito.doReturn(campaignCatalogDateMetrics).when(campaignCatalogMetricsRepository).get(any(), any(), any());
         Mockito.doReturn(getSampleRealEstateMetadata())
                 .when(realEstateMetadataCacheDao)
                 .get(Mockito.anyString(), any());
-        Mockito.doNothing().when(campaignCatalogMetricsRepository).put(any());
+        Mockito.doReturn(getSampleDate()).when(campaignPerformanceHelper)
+                .getLocalDateForDailyCampaignFromLocalDateTime(any());
+        Mockito.doNothing().when(telegrafMetricsHelper).increment(any(), any(), any());
         catalogInteractionEventService.handle(getSampleAdInteractionEvent());
     }
 
@@ -296,19 +310,16 @@ public class CatalogInteractionEventServiceTest {
     public void testForBillVersionSharesForSharesStopCampaign() throws ExternalRequestFailedException {
         Mockito.doNothing().when(prismService).publishEvent(any(), any());
         Mockito.doReturn(getSampleCatalogMetadataListBillVersion2()).when(adService).getCampaignCatalogMetadata(any());
-        Mockito.doReturn(4 * 86400).when(applicationProperties).getUserCatalogInteractionWindowInSeconds();
-        CampaignCatalogMetrics campaignCatalogMetrics = getSampleCampaignCatalogMetricsForBillShares();
-        Mockito.doReturn(System.currentTimeMillis() - 5 * 86400000)
-                .when(userCatalogInteractionCacheDao)
-                .get(Mockito.anyString(), any(), any(), any());
-        campaignCatalogMetrics.setWeightedSharesCount(new BigDecimal(15));
+        CampaignCatalogDateMetrics campaignCatalogDateMetrics = getSampleCampaignCatalogMetricsForBillShares();
+        campaignCatalogDateMetrics.setSharesCount(15L);
         Mockito.doReturn(interactionBillHandler).when(adBillFactory).getBillHandlerForBillVersion(2);
-        Mockito.doReturn(true).when(interactionBillHandler).performWindowDeDuplication();
-        Mockito.doReturn(campaignCatalogMetrics).when(campaignCatalogMetricsRepository).get(1L, 3L);
+        Mockito.doReturn(campaignCatalogDateMetrics).when(campaignCatalogMetricsRepository).get(any(), any(), any());
         Mockito.doReturn(getSampleRealEstateMetadata())
                 .when(realEstateMetadataCacheDao)
                 .get(Mockito.anyString(), any());
-        Mockito.doNothing().when(campaignCatalogMetricsRepository).put(any());
+        Mockito.doReturn(getSampleDate()).when(campaignPerformanceHelper)
+                .getLocalDateForDailyCampaignFromLocalDateTime(any());
+        Mockito.doNothing().when(telegrafMetricsHelper).increment(any(), any(), any());
         catalogInteractionEventService.handle(getSampleAdInteractionEventShared());
     }
 
@@ -316,19 +327,16 @@ public class CatalogInteractionEventServiceTest {
     public void testForBillVersionSharesForWishlistStopCampaign() throws ExternalRequestFailedException {
         Mockito.doNothing().when(prismService).publishEvent(any(), any());
         Mockito.doReturn(getSampleCatalogMetadataListBillVersion2()).when(adService).getCampaignCatalogMetadata(any());
-        Mockito.doReturn(4 * 86400).when(applicationProperties).getUserCatalogInteractionWindowInSeconds();
-        Mockito.doReturn(System.currentTimeMillis() - 5 * 86400000)
-                .when(userCatalogInteractionCacheDao)
-                .get(Mockito.anyString(), any(), any(), any());
-        CampaignCatalogMetrics campaignCatalogMetrics = getSampleCampaignCatalogMetricsForBillShares();
-        campaignCatalogMetrics.setWeightedWishlistCount(new BigDecimal(16));
+        CampaignCatalogDateMetrics campaignCatalogDateMetrics = getSampleCampaignCatalogMetricsForBillShares();
+        campaignCatalogDateMetrics.setWishlistCount(16L);
         Mockito.doReturn(interactionBillHandler).when(adBillFactory).getBillHandlerForBillVersion(2);
-        Mockito.doReturn(true).when(interactionBillHandler).performWindowDeDuplication();
-        Mockito.doReturn(campaignCatalogMetrics).when(campaignCatalogMetricsRepository).get(1L, 3L);
+        Mockito.doReturn(campaignCatalogDateMetrics).when(campaignCatalogMetricsRepository).get(any(), any(), any());
         Mockito.doReturn(getSampleRealEstateMetadata())
                 .when(realEstateMetadataCacheDao)
                 .get(Mockito.anyString(), any());
-        Mockito.doNothing().when(campaignCatalogMetricsRepository).put(any());
+        Mockito.doReturn(getSampleDate()).when(campaignPerformanceHelper)
+                .getLocalDateForDailyCampaignFromLocalDateTime(any());
+        Mockito.doNothing().when(telegrafMetricsHelper).increment(any(), any(), any());
         catalogInteractionEventService.handle(getSampleAdInteractionEventWishlisted());
     }
 

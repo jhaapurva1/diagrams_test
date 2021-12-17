@@ -1,25 +1,21 @@
 package com.meesho.cps.controller;
 
 import com.meesho.cps.constants.Constants;
-import com.meesho.cps.data.entity.hbase.CampaignCatalogMetrics;
+import com.meesho.cps.data.entity.hbase.CampaignCatalogDateMetrics;
 import com.meesho.cps.data.entity.hbase.CampaignDatewiseMetrics;
 import com.meesho.cps.data.entity.hbase.CampaignMetrics;
-import com.meesho.cps.data.request.CampaignCatalogMetricsSaveRequest;
+import com.meesho.cps.data.request.CampaignCatalogDateMetricsSaveRequest;
 import com.meesho.cps.data.request.CampaignDatewiseMetricsSaveRequest;
 import com.meesho.cps.data.request.CampaignMetricsSaveRequest;
 import com.meesho.cps.service.DebugService;
-
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-
-import io.swagger.annotations.ApiOperation;
+import java.time.LocalDate;
 
 /**
  * @author shubham.aggarwal
@@ -36,8 +32,8 @@ public class DebugController {
             "campaignCatalogMetrics", produces = MediaType.APPLICATION_JSON_VALUE)
     @RequestMapping(value = Constants.API.DEBUG_API.SAVE_CAMPAIGN_CATALOG_METRICS, method = RequestMethod.POST,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public CampaignCatalogMetrics saveCampaignCatalogMetrics(
-            @Valid @RequestBody CampaignCatalogMetricsSaveRequest request) throws Exception {
+    public CampaignCatalogDateMetrics saveCampaignCatalogMetrics(
+            @Valid @RequestBody CampaignCatalogDateMetricsSaveRequest request) throws Exception {
         return debugService.saveCampaignCatalogMetrics(request);
     }
 
@@ -80,10 +76,19 @@ public class DebugController {
             "campaignCatalogMetrics", produces = MediaType.APPLICATION_JSON_VALUE)
     @RequestMapping(value = Constants.API.DEBUG_API.GET_CAMPAIGN_CATALOG_METRICS, method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public CampaignCatalogMetrics getCampaignCatalogMetrics(@RequestParam("campaignId") Long campaignId,
-                                                            @RequestParam("catalogId") Long catalogId)
+    public CampaignCatalogDateMetrics getCampaignCatalogMetrics(@RequestParam("campaignId") Long campaignId,
+                                                                @RequestParam("catalogId") Long catalogId,
+                                                                @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date)
             throws Exception {
-        return debugService.getCampaignCatalogMetrics(campaignId, catalogId);
+        return debugService.getCampaignCatalogMetrics(campaignId, catalogId, date);
+    }
+
+    @ApiOperation(value = Constants.API.DEBUG_API.CAMPAIGN_PERFORMANCE_MIGRATE, notes = "returns " +
+            "campaignCatalogMetrics", produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = Constants.API.DEBUG_API.CAMPAIGN_PERFORMANCE_MIGRATE, method = RequestMethod.POST,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public void performMigrationOfCampaignPerformance() throws Exception {
+        debugService.performMigrationOfCampaignPerformance();
     }
 
 }

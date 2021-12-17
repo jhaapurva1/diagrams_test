@@ -1,5 +1,7 @@
 package com.meesho.cps.constants;
 
+import java.time.LocalDate;
+
 /**
  * @author shubham.aggarwal
  * 03/08/21
@@ -31,6 +33,7 @@ public class Constants {
             public static final String SAVE_CAMPAIGN_CATALOG_METRICS = "/campaign_catalog_metrics/save";
             public static final String SAVE_CAMPAIGN_DATEWISE_METRICS = "/campaign_datewise_metrics/save";
             public static final String GET_CAMPAIGN_CATALOG_METRICS = "/campaign_catalog_metrics/get";
+            public static final String CAMPAIGN_PERFORMANCE_MIGRATE = "/campaign_performance/migrate";
             public static final String GET_CAMPAIGN_DATEWISE_METRICS = "/campaign_datewise_metrics/get";
         }
 
@@ -54,10 +57,18 @@ public class Constants {
             public static final String ENABLE_SCHEDULER = "#{${scheduler.real_estate_metadata.cache.sync.enable}}";
             public static final String BATCH_SIZE = "#{${scheduler.real_estate_metadata.cache.sync.batch.size}}";
         }
+
+        public static class CAMPAIGN_PERFORMANCE_ES_INDEXING {
+            public static final String MONITOR_CODE = "#{${scheduler.campaign_performance_es_indexing.monitor.code}}";
+            public static final String CRON_EXPRESSION = "#{${scheduler.campaign_performance_es_indexing.cron.expression}}";
+            public static final String ENABLE_SCHEDULER = "#{${scheduler.campaign_performance_es_indexing.enable}}";
+            public static final String BATCH_SIZE = "#{${scheduler.campaign_performance_es_indexing.batch.size}}";
+        }
     }
 
     public static class PrismEventNames {
         public static final String AD_INTERACTIONS = "ad_interaction_events";
+        public static final String DAY_WISE_PERF_EVENTS = "campaign_catalog_day_performance_events";
     }
 
     public static class DefaultRealEstateMetaData {
@@ -67,6 +78,20 @@ public class Constants {
 
     public static class DailyBudgetConstants {
         public static final String TIME_FORMAT = "HH:mm:ss";
+    }
+
+    public static class ESConstants {
+        public static final String BY_CAMPAIGN = "by_campaign";
+        public static final String BY_CATALOG = "by_catalog";
+        public static final String DAY_DATE_FORMAT = "yyyy-MM-dd";
+        public static final String MONTH_DATE_FORMAT = "yyyy-MM";
+        public static final String TOTAL_VIEWS = "total_views";
+        public static final String TOTAL_CLICKS = "total_clicks";
+        public static final String TOTAL_SHARES = "total_shares";
+        public static final String TOTAL_WISHLIST = "total_wishlist";
+        public static final String TOTAL_ORDERS = "total_orders";
+        public static final String TOTAL_REVENUE = "total_revenues";
+        public static final String TOTAL_BUDGET_UTILISED = "total_budget_utilised";
     }
 
 }

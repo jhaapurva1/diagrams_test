@@ -1,30 +1,22 @@
 package com.meesho.cps.helper;
 
-import com.meesho.ad.client.response.CampaignDetails;
 import com.meesho.cps.config.ApplicationProperties;
 import com.meesho.cps.constants.Constants;
-import com.meesho.cps.data.entity.hbase.CampaignCatalogMetrics;
-import com.meesho.cps.data.entity.mysql.CampaignPerformance;
-import com.meesho.cps.db.hbase.repository.CampaignCatalogMetricsRepository;
-import com.meesho.cps.factory.AdBillFactory;
-import com.meesho.cps.service.BillHandler;
-import com.meesho.cps.service.external.AdService;
+import com.meesho.cps.constants.DBConstants;
+import com.meesho.cps.data.internal.ElasticFiltersRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.elasticsearch.search.aggregations.AggregationBuilder;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.time.temporal.TemporalAdjusters;
+import java.util.*;
 
 /**
  * @author shubham.aggarwal
@@ -35,47 +27,7 @@ import java.util.stream.Collectors;
 public class CampaignPerformanceHelper {
 
     @Autowired
-    CampaignCatalogMetricsRepository campaignCatalogMetricsRepository;
-
-    @Autowired
     ApplicationProperties applicationProperties;
-
-    @Autowired
-    private AdBillFactory adBillFactory;
-
-    @Autowired
-    private AdService adService;
-
-    public void updateCampaignPerformanceFromHbase(List<CampaignPerformance> entitiesToBeUpdated,
-                                                   Map<Long, CampaignDetails> campaignIdAndCampaignDetailsMap) {
-        List<Pair<Long, Long>> campaignCatalogIds = entitiesToBeUpdated.stream()
-                .map(e -> Pair.of(e.getCampaignId(), e.getCatalogId()))
-                .collect(Collectors.toList());
-
-        List<CampaignCatalogMetrics> campaignCatalogMetricsList =
-                campaignCatalogMetricsRepository.getAll(campaignCatalogIds);
-
-        campaignCatalogMetricsList = campaignCatalogMetricsList.stream()
-                .filter(x -> Objects.nonNull(x.getCampaignId()) && Objects.nonNull(x.getCatalogId()))
-                .collect(Collectors.toList());
-
-        Map<Pair<Long, Long>, CampaignCatalogMetrics> catalogMetricsMap = campaignCatalogMetricsList.stream()
-                .collect(Collectors.toMap(ccm -> Pair.of(ccm.getCampaignId(), ccm.getCatalogId()),
-                        Function.identity()));
-
-        entitiesToBeUpdated.forEach(campaignPerformance -> {
-            BillHandler billHandler = adBillFactory.getBillHandlerForBillVersion(
-                    campaignIdAndCampaignDetailsMap.get(campaignPerformance.getCampaignId()).getBillVersion());
-
-            CampaignCatalogMetrics campaignCatalogMetrics = catalogMetricsMap.get(
-                    Pair.of(campaignPerformance.getCampaignId(), campaignPerformance.getCatalogId()));
-            if (Objects.nonNull(campaignCatalogMetrics)) {
-                campaignPerformance.setTotalViews(campaignCatalogMetrics.getViewCount());
-                campaignPerformance.setTotalClicks(billHandler.getTotalInteractions(campaignCatalogMetrics).longValue());
-                campaignPerformance.setBudgetUtilised(campaignCatalogMetrics.getBudgetUtilised());
-            }
-        });
-    }
 
     public LocalDate getLocalDateForDailyCampaignFromLocalDateTime(LocalDateTime eventTime) {
         if (beforeResetTimeOfDailyBudgetForCampaign(eventTime)) {
@@ -96,4 +48,58 @@ public class CampaignPerformanceHelper {
         return eventTime.toLocalTime().isBefore(resetTime);
     }
 
+    public List<AggregationBuilder> createAggregations() {
+        List<AggregationBuilder> aggregationBuilders = new ArrayList<>();
+        aggregationBuilders.add(AggregationBuilders.sum(Constants.ESConstants.TOTAL_CLICKS).field(DBConstants.ElasticSearch.CLICKS));
+        aggregationBuilders.add(AggregationBuilders.sum(Constants.ESConstants.TOTAL_VIEWS).field(DBConstants.ElasticSearch.VIEWS));
+        aggregationBuilders.add(AggregationBuilders.sum(Constants.ESConstants.TOTAL_SHARES).field(DBConstants.ElasticSearch.SHARES));
+        aggregationBuilders.add(AggregationBuilders.sum(Constants.ESConstants.TOTAL_WISHLIST).field(DBConstants.ElasticSearch.WISHLIST));
+        aggregationBuilders.add(AggregationBuilders.sum(Constants.ESConstants.TOTAL_ORDERS).field(DBConstants.ElasticSearch.ORDERS));
+        aggregationBuilders.add(AggregationBuilders.sum(Constants.ESConstants.TOTAL_REVENUE).field(DBConstants.ElasticSearch.REVENUE));
+        aggregationBuilders.add(AggregationBuilders.sum(Constants.ESConstants.TOTAL_BUDGET_UTILISED).field(DBConstants.ElasticSearch.BUDGET_UTILISED));
+        return aggregationBuilders;
+    }
+
+    public List<AggregationBuilder> createBucketAggregations(String term, String fieldName) {
+        AggregationBuilder aggregationBuilderRoot = AggregationBuilders.terms(term).field(fieldName);
+        List<AggregationBuilder> aggregationBuilders = createAggregations();
+
+        for (AggregationBuilder aggregationBuilder : aggregationBuilders) {
+            aggregationBuilderRoot.subAggregation(aggregationBuilder);
+        }
+
+        return Collections.singletonList(aggregationBuilderRoot);
+    }
+
+    public List<ElasticFiltersRequest.RangeFilter> addTillDateRangeFilter() {
+        List<ElasticFiltersRequest.RangeFilter> rangeFilters = new ArrayList<>();
+        rangeFilters.add(ElasticFiltersRequest.RangeFilter.builder()
+                .gte(applicationProperties.getCampaignDatewiseMetricsReferenceDate().format(DateTimeFormatter.ofPattern(Constants.ESConstants.MONTH_DATE_FORMAT)))
+                .lte(LocalDate.now().format(DateTimeFormatter.ofPattern(Constants.ESConstants.MONTH_DATE_FORMAT))).fieldName(DBConstants.ElasticSearch.MONTH)
+                .format(Constants.ESConstants.MONTH_DATE_FORMAT).build());
+        return rangeFilters;
+    }
+
+    public List<ElasticFiltersRequest.RangeFilter> addMonthWiseRangeFilter(LocalDate startDate, LocalDate endDate) {
+        List<ElasticFiltersRequest.RangeFilter> rangeFilters = new ArrayList<>();
+        rangeFilters.add(ElasticFiltersRequest.RangeFilter.builder()
+                .gt(startDate.with(TemporalAdjusters.lastDayOfMonth()).format(DateTimeFormatter.ofPattern(Constants.ESConstants.MONTH_DATE_FORMAT)))
+                .lt(endDate.with(TemporalAdjusters.firstDayOfMonth()).format(DateTimeFormatter.ofPattern(Constants.ESConstants.MONTH_DATE_FORMAT)))
+                .fieldName(DBConstants.ElasticSearch.MONTH).format(Constants.ESConstants.MONTH_DATE_FORMAT).build());
+        return rangeFilters;
+    }
+
+    public List<ElasticFiltersRequest.RangeFilter> addDateWiseRangeFilters(LocalDate startDate, LocalDate endDate) {
+        List<ElasticFiltersRequest.RangeFilter> rangeFilters = new ArrayList<>();
+        if ((startDate.getMonth() == endDate.getMonth()) && (startDate.getYear() == endDate.getYear())) {
+            rangeFilters.add(ElasticFiltersRequest.RangeFilter.builder().gte(startDate).lte(endDate)
+                    .fieldName(DBConstants.ElasticSearch.DATE).format(Constants.ESConstants.DAY_DATE_FORMAT).build());
+        } else {
+            rangeFilters.add(ElasticFiltersRequest.RangeFilter.builder().fieldName(DBConstants.ElasticSearch.DATE).gte(startDate)
+                    .lte(startDate.with(TemporalAdjusters.lastDayOfMonth())).format(Constants.ESConstants.DAY_DATE_FORMAT).build());
+            rangeFilters.add(ElasticFiltersRequest.RangeFilter.builder().fieldName(DBConstants.ElasticSearch.DATE).format(Constants.ESConstants.DAY_DATE_FORMAT)
+                    .gte(endDate.with(TemporalAdjusters.firstDayOfMonth())).lte(endDate).build());
+        }
+        return rangeFilters;
+    }
 }

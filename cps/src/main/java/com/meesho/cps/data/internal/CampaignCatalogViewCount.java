@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Data;
 
+import java.time.LocalDate;
+
 
 @Data
 @Builder
@@ -14,6 +16,7 @@ public class CampaignCatalogViewCount {
 
     private Long campaignId;
     private Long catalogId;
+    private LocalDate date;
     private Integer count;
 
 }

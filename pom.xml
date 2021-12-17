@@ -16,7 +16,7 @@
 
     <groupId>com.meesho</groupId>
     <artifactId>campaign-performance-service</artifactId>
-    <version>0.0.8-RELEASE</version>
+    <version>0.0.9-RELEASE</version>
     <name>campaign-performance-service</name>
     <description>Campaign Performance Service</description>
     <packaging>pom</packaging>
@@ -61,7 +61,7 @@
 
     </dependencies>
 
-    <distributionManagement>
+    <!--<distributionManagement>
         <repository>
             <id>central-dev</id>
             <name>MvnTest</name>
@@ -72,9 +72,9 @@
             <name>MvnTest</name>
             <url>http://ja-dev.internal.meeshotest.in/artifactory/MvnTest</url>
         </snapshotRepository>
-    </distributionManagement>
+    </distributionManagement>-->
 
-    <!--<distributionManagement>
+    <distributionManagement>
         <repository>
             <id>central</id>
             <name>ip-172-31-32-151-releases</name>
@@ -85,6 +85,6 @@
             <name>ip-172-31-32-151-snapshot</name>
             <url>http://bac-p-jfrog.meeshoint.in/artifactory/lib-snapshot</url>
         </snapshotRepository>
-    </distributionManagement>-->
+    </distributionManagement>
 
 </project>
