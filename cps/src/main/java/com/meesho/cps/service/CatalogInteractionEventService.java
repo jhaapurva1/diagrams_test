@@ -6,25 +6,22 @@ import com.meesho.ad.client.response.CampaignCatalogMetadataResponse;
 import com.meesho.ad.client.response.CampaignDetails;
 import com.meesho.ads.lib.helper.TelegrafMetricsHelper;
 import com.meesho.ads.lib.utils.DateTimeUtils;
-import com.meesho.ads.lib.utils.Utils;
 import com.meesho.cps.config.ApplicationProperties;
 import com.meesho.cps.constants.*;
-import com.meesho.cps.data.entity.hbase.CampaignCatalogMetrics;
 import com.meesho.cps.data.entity.kafka.AdInteractionEvent;
 import com.meesho.cps.data.entity.kafka.AdInteractionPrismEvent;
 import com.meesho.cps.data.entity.kafka.BudgetExhaustedEvent;
-import com.meesho.cps.data.entity.mysql.RealEstateMetadata;
-import com.meesho.cps.db.hbase.repository.CampaignCatalogMetricsRepository;
+import com.meesho.cps.data.internal.CampaignCatalogDate;
+import com.meesho.cps.db.hbase.repository.CampaignCatalogDateMetricsRepository;
 import com.meesho.cps.db.hbase.repository.CampaignDatewiseMetricsRepository;
 import com.meesho.cps.db.hbase.repository.CampaignMetricsRepository;
-import com.meesho.cps.db.redis.dao.RealEstateMetadataCacheDao;
+import com.meesho.cps.db.redis.dao.UpdatedCampaignCatalogCacheDao;
 import com.meesho.cps.db.redis.dao.UserCatalogInteractionCacheDao;
 import com.meesho.cps.exception.ExternalRequestFailedException;
 import com.meesho.cps.factory.AdBillFactory;
 import com.meesho.cps.helper.CampaignPerformanceHelper;
 import com.meesho.cps.service.external.AdService;
 import com.meesho.cps.service.external.PrismService;
-import com.meesho.cps.transformer.CampaignPerformanceTransformer;
 import com.meesho.cps.transformer.PrismEventTransformer;
 import com.meesho.instrumentation.annotation.DigestLogger;
 import com.meesho.instrumentation.enums.MetricType;
@@ -36,7 +33,10 @@ import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
 import static com.meesho.cps.constants.TelegrafConstants.*;
 
@@ -55,13 +55,10 @@ public class CatalogInteractionEventService {
     private KafkaService kafkaService;
 
     @Autowired
-    private CampaignCatalogMetricsRepository campaignCatalogMetricsRepository;
+    private CampaignCatalogDateMetricsRepository campaignCatalogDateMetricsRepository;
 
     @Autowired
     private CampaignDatewiseMetricsRepository campaignDatewiseMetricsRepository;
-
-    @Autowired
-    private RealEstateMetadataCacheDao realEstateMetadataCacheDao;
 
     @Autowired
     private UserCatalogInteractionCacheDao userCatalogInteractionCacheDao;
@@ -86,6 +83,9 @@ public class CatalogInteractionEventService {
 
     @Autowired
     private TelegrafMetricsHelper telegrafMetricsHelper;
+
+    @Autowired
+    private UpdatedCampaignCatalogCacheDao updatedCampaignCatalogCacheDao;
 
     @DigestLogger(metricType = MetricType.METHOD, tagSet = "class=CatalogInteractionEventService")
     public void handle(AdInteractionEvent adInteractionEvent) throws ExternalRequestFailedException {
@@ -118,43 +118,14 @@ public class CatalogInteractionEventService {
         BigDecimal cpc = catalogMetadata.getCpc();
         CampaignType campaignType = CampaignType.fromValue(catalogMetadata.getCampaignType());
         adInteractionPrismEvent.setCampaignId(campaignId);
+        LocalDate eventDate = campaignHelper.getLocalDateForDailyCampaignFromLocalDateTime(
+                DateTimeUtils.getCurrentLocalDateTimeInIST());
 
-        if (StringUtils.isEmpty(adInteractionEvent.getProperties().getScreen())) {
-            adInteractionEvent.getProperties().setScreen(Constants.DefaultRealEstateMetaData.SCREEN);
-        }
-
-        CampaignCatalogMetrics campaignCatalogMetrics = campaignCatalogMetricsRepository.get(campaignId, catalogId);
-        if (Objects.isNull(campaignCatalogMetrics)) {
-            log.info("Creating campaignCatalogMetrics for campaignId {}, catalogId {}",campaignId, catalogId);
-            CampaignCatalogMetrics newEntity =
-                    CampaignPerformanceTransformer.getCampaignCatalogMetricsFromRequest(campaignId, catalogId);
-            campaignCatalogMetrics = newEntity;
-            campaignCatalogMetricsRepository.put(newEntity);
-            log.info("new entity {}", campaignCatalogMetrics);
-        }
-
-        //hotfix
-        if (Objects.isNull(campaignCatalogMetrics.getCampaignId()) || Objects.isNull(campaignCatalogMetrics.getCatalogId())) {
-            campaignCatalogMetrics = CampaignPerformanceTransformer.getCampaignCatalogMetricsFromExistingEntity(
-                    campaignId, catalogId, campaignCatalogMetrics
-            );
-        }
-
-        String origin = adInteractionEvent.getProperties().getOrigin();
-        String screen = adInteractionEvent.getProperties().getScreen();
-        RealEstateMetadata realEstateMetadata = realEstateMetadataCacheDao.get(origin, Utils.getCountry());
-        if (Objects.isNull(realEstateMetadata)) {
-            log.warn("Invalid click event with origin {}", origin);
-            realEstateMetadata =
-                    realEstateMetadataCacheDao.get(Constants.DefaultRealEstateMetaData.ORIGIN, Utils.getCountry());
-        }
-        adInteractionPrismEvent.setClickMultiplier(realEstateMetadata.getClickMultiplier());
+        log.info("CPC for event_id {} catalog id {} in campaign {} is {}", adInteractionEvent.getEventId(), catalogId,
+                campaignId, cpc);
+        adInteractionPrismEvent.setCpc(cpc);
 
         BillHandler billHandler = adBillFactory.getBillHandlerForBillVersion(billVersion);
-
-        log.info("CPC for event_id {} catalog id {} in campaign {} is {}", adInteractionEvent.getEventId(),
-                campaignCatalogMetrics.getCatalogId(), campaignId, cpc);
-        adInteractionPrismEvent.setCpc(cpc);
 
         //Check if event is valid for the bill version of campaign
         if (!billHandler.getValidEvents().contains(adInteractionEvent.getEventName())) {
@@ -167,6 +138,11 @@ public class CatalogInteractionEventService {
             return;
         }
 
+        if (StringUtils.isEmpty(adInteractionEvent.getProperties().getScreen())) {
+            adInteractionEvent.getProperties().setScreen(Constants.DefaultRealEstateMetaData.SCREEN);
+        }
+        String origin = adInteractionEvent.getProperties().getOrigin();
+        String screen = adInteractionEvent.getProperties().getScreen();
         //Perform deduplication
         if (billHandler.performWindowDeDuplication()) {
             Long previousInteractionTime = userCatalogInteractionCacheDao.get(userId, catalogId, origin, screen);
@@ -184,24 +160,10 @@ public class CatalogInteractionEventService {
             userCatalogInteractionCacheDao.set(userId, catalogId, origin, screen, interactionTime);
         }
 
-        LocalDate eventDate = campaignHelper.getLocalDateForDailyCampaignFromLocalDateTime(
-                DateTimeUtils.getCurrentLocalDateTimeInIST());
-
-        //Update campaign catalog metrics
-        modifyInteractionCounts(campaignCatalogMetrics, realEstateMetadata.getClickMultiplier(),
-                adInteractionEvent.getEventName());
-
-        Map<String, Long> originWiseClickCount = campaignCatalogMetrics.getOriginWiseClickCount();
-        originWiseClickCount = Objects.isNull(originWiseClickCount) ? new HashMap<>() : originWiseClickCount;
-        originWiseClickCount.put(origin, originWiseClickCount.getOrDefault(origin, 0L) + 1);
-        campaignCatalogMetrics.setOriginWiseClickCount(originWiseClickCount);
-        campaignCatalogMetricsRepository.put(campaignCatalogMetrics);
-
+        //Update campaign catalog date metrics
+        incrementInteractionCount(campaignId, catalogId, eventDate, adInteractionEvent.getEventName());
         // Update budget utilised
-        BigDecimal budgetUtilised =
-                modifyAndGetBudgetUtilised(cpc, realEstateMetadata.getClickMultiplier(), campaignId, catalogId,
-                        eventDate, campaignType);
-
+        BigDecimal budgetUtilised = modifyAndGetBudgetUtilised(cpc, campaignId, catalogId, eventDate, campaignType);
 
         if (budgetUtilised.compareTo(totalBudget) >= 0) {
             BudgetExhaustedEvent budgetExhaustedEvent = BudgetExhaustedEvent.builder().campaignId(campaignId).build();
@@ -214,11 +176,14 @@ public class CatalogInteractionEventService {
         }
         adInteractionPrismEvent.setStatus(AdInteractionStatus.VALID);
         publishPrismEvent(adInteractionPrismEvent);
+
+        updatedCampaignCatalogCacheDao.add(Arrays.asList(new CampaignCatalogDate(campaignId, catalogId,
+                eventDate.toString())));
+
         telegrafMetricsHelper.increment(INTERACTION_EVENT_KEY, INTERACTION_EVENT_TAGS,
                 adInteractionEvent.getEventName(), adInteractionEvent.getProperties().getScreen(), adInteractionEvent.getProperties().getOrigin(),
                 AdInteractionStatus.VALID.name(), NAN);
-        int cpcNormalised = cpc.multiply(BigDecimal.valueOf(100)).multiply(realEstateMetadata.getClickMultiplier())
-                .intValue();
+        int cpcNormalised = cpc.multiply(BigDecimal.valueOf(100)).intValue();
         telegrafMetricsHelper.increment(INTERACTION_EVENT_CPC_KEY, cpcNormalised, INTERACTION_EVENT_CPC_TAGS,
                 adInteractionEvent.getEventName(), adInteractionEvent.getProperties().getScreen(), adInteractionEvent.getProperties().getOrigin());
     }
@@ -239,37 +204,32 @@ public class CatalogInteractionEventService {
                 (interactionTime - previousInteractionTime >= windowTimeInMillis));
     }
 
-    public void modifyInteractionCounts(CampaignCatalogMetrics campaignCatalogMetrics, BigDecimal clickMultiplier,
-                                        String eventName) {
-        log.info("campaignCatalogMetrics {}, clickMultiplier {}, eventName {}" , campaignCatalogMetrics, clickMultiplier, eventName);
+    public void incrementInteractionCount(Long campaignId, Long catalogId, LocalDate date, String eventName) {
+        log.info("campaignId {}, catalogId {}, date{}, eventName {}" , campaignId, catalogId, date, eventName);
         // CAUTION: Please do not change the order of cases here since action is the combination of multiple cases
         switch (eventName) {
             case ConsumerConstants.IngestionInteractionEvents.ANONYMOUS_AD_SHARED_TOPIC:
             case ConsumerConstants.IngestionInteractionEvents.AD_SHARED_TOPIC:
-                campaignCatalogMetrics.setWeightedSharesCount(
-                        clickMultiplier.add(campaignCatalogMetrics.getWeightedSharesCount()));
+                campaignCatalogDateMetricsRepository.incrementSharesCount(campaignId, catalogId, date);
                 break;
             case ConsumerConstants.IngestionInteractionEvents.ANONYMOUS_AD_WISHLISTED_TOPIC:
             case ConsumerConstants.IngestionInteractionEvents.AD_WISHLISTED_TOPIC:
-                campaignCatalogMetrics.setWeightedWishlistCount(
-                        clickMultiplier.add(campaignCatalogMetrics.getWeightedWishlistCount()));
+                campaignCatalogDateMetricsRepository.incrementWishlistCount(campaignId, catalogId, date);
                 break;
             case ConsumerConstants.IngestionInteractionEvents.ANONYMOUS_AD_CLICK_TOPIC:
             case ConsumerConstants.IngestionInteractionEvents.AD_CLICK_TOPIC:
-                campaignCatalogMetrics.setWeightedClickCount(
-                        clickMultiplier.add(campaignCatalogMetrics.getWeightedClickCount()));
+                campaignCatalogDateMetricsRepository.incrementClickCount(campaignId, catalogId, date);
                 break;
         }
     }
 
-    public BigDecimal modifyAndGetBudgetUtilised(BigDecimal cpc, BigDecimal clickMultiplier, Long campaignId,
-                                                 Long catalogId, LocalDate date, CampaignType campaignType) {
-        BigDecimal interactionMultiplier = clickMultiplier.multiply(cpc);
-        campaignCatalogMetricsRepository.incrementBudgetUtilised(campaignId, catalogId, interactionMultiplier);
+    public BigDecimal modifyAndGetBudgetUtilised(BigDecimal cpc, Long campaignId, Long catalogId, LocalDate date,
+                                                 CampaignType campaignType) {
+        campaignCatalogDateMetricsRepository.incrementBudgetUtilised(campaignId, catalogId, date, cpc);
         if (CampaignType.DAILY_BUDGET.equals(campaignType)) {
-            return campaignDatewiseMetricsRepository.incrementBudgetUtilised(campaignId, date, interactionMultiplier);
+            return campaignDatewiseMetricsRepository.incrementBudgetUtilised(campaignId, date, cpc);
         }
-        return campaignMetricsRepository.incrementBudgetUtilised(campaignId, interactionMultiplier);
+        return campaignMetricsRepository.incrementBudgetUtilised(campaignId, cpc);
     }
 
 }

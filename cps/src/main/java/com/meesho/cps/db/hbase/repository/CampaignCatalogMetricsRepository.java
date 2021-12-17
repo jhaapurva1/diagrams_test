@@ -1,11 +1,13 @@
 package com.meesho.cps.db.hbase.repository;
 
+import com.meesho.ads.lib.data.internal.PaginatedResult;
 import com.meesho.ads.lib.exception.HbaseException;
 import com.meesho.ads.lib.utils.HbaseUtils;
 import com.meesho.cps.constants.DBConstants;
 import com.meesho.cps.data.entity.hbase.CampaignCatalogMetrics;
 
 import com.meesho.cps.data.internal.CampaignCatalogViewCount;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -25,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * @author shubham.aggarwal
  * 02/08/21
+ * //TODO Can be deleted after migration of day wise perf metrics
  */
 @Slf4j
 @Repository
@@ -203,4 +206,41 @@ public class CampaignCatalogMetricsRepository {
         }
     }
 
+    // TODO: remove this method after the script
+    public PaginatedResult<String, CampaignCatalogMetrics> scan(String cursor, int batchSize) {
+        try (Table table = getTable()) {
+            Scan scan = new Scan();
+            List<CampaignCatalogMetrics> campaignCatalogMetricsList = new ArrayList<>();
+            scan.setCaching(batchSize);
+            scan.setLimit(batchSize);
+            scan.addFamily(COLUMN_FAMILY);
+            if(!StringUtils.isEmpty(cursor)){
+                scan.withStartRow(cursor.getBytes(),false);
+            }
+            int countRetrievedFromDB = 0;
+
+            try (ResultScanner rs = table.getScanner(scan)) {
+                for (Result result = rs.next(); result != null; result = rs.next()) {
+                    countRetrievedFromDB++;
+                    CampaignCatalogMetrics campaignCatalogMetrics = mapper(result);
+                    if(campaignCatalogMetrics.getCampaignId() != null && campaignCatalogMetrics.getCatalogId() != null) {
+                        campaignCatalogMetricsList.add(mapper(result));
+                    }
+                }
+            }
+
+            PaginatedResult<String, CampaignCatalogMetrics> paginatedResult = new PaginatedResult<>();
+            paginatedResult.setResults(campaignCatalogMetricsList);
+            if(countRetrievedFromDB < batchSize){
+                paginatedResult.setHasNext(false);
+            } else {
+                paginatedResult.setHasNext(true);
+                paginatedResult.setCursor(campaignCatalogMetricsList.get(campaignCatalogMetricsList.size()-1).getRowKey());
+            }
+            return paginatedResult;
+        } catch (IOException e) {
+            log.error("Error in CampaignCatalogMetricsRepository scan", e);
+            throw new HbaseException(e.getMessage());
+        }
+    }
 }

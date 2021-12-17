@@ -132,7 +132,7 @@ public class AdService {
     }
 
     public List<CampaignDetails> getCampaignMetadata(List<Long> campaignIds) {
-        log.info("getCampaignMetadata request, catalogIds {}", campaignIds);
+        log.info("getCampaignMetadata request, campaignIds {}", campaignIds);
         CampaignMetadataRequest request = CampaignMetadataRequest.builder().campaignIds(campaignIds).build();
         ServiceRequest<CampaignMetadataRequest> serviceRequest = ServiceRequest.of(request);
         ServiceResponse<CampaignMetadataResponse> response = null;
@@ -158,5 +158,4 @@ public class AdService {
 
         return response.getResponse().getCampaignDetailsList();
     }
-
 }

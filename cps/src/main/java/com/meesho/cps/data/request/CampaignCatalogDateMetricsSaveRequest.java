@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Map;
 
 import javax.validation.constraints.NotNull;
@@ -18,7 +19,7 @@ import lombok.Data;
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class CampaignCatalogMetricsSaveRequest {
+public class CampaignCatalogDateMetricsSaveRequest {
 
     @JsonProperty("campaign_id")
     @NotNull
@@ -28,19 +29,29 @@ public class CampaignCatalogMetricsSaveRequest {
     @NotNull
     private Long catalogId;
 
+    @JsonProperty("date")
+    @NotNull
+    private LocalDate date;
+
     @JsonProperty("view_count")
     private Long viewCount;
 
-    @JsonProperty("weighted_click_count")
-    private BigDecimal weightedClickCount;
+    @JsonProperty("click_count")
+    private Long clickCount;
 
-    @JsonProperty("weighted_shares_count")
-    private BigDecimal weightedSharesCount;
+    @JsonProperty("shares_count")
+    private Long sharesCount;
 
-    @JsonProperty("weighted_wishlist_count")
-    private BigDecimal weightedWishlistCount;
+    @JsonProperty("wishlist_count")
+    private Long wishlistCount;
 
-    @JsonProperty("origin_wise_click_count")
-    private Map<String, Long> originWiseClickCount;
+    @JsonProperty("orders")
+    private Integer orders;
+
+    @JsonProperty("revenue")
+    private BigDecimal revenue;
+
+    @JsonProperty("budget_utilised")
+    private BigDecimal budgetUtilised;
 
 }

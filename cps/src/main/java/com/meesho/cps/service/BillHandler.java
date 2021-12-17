@@ -1,7 +1,7 @@
 package com.meesho.cps.service;
 
 import com.meesho.cps.constants.BillVersion;
-import com.meesho.cps.data.entity.hbase.CampaignCatalogMetrics;
+import com.meesho.cps.data.entity.hbase.CampaignCatalogDateMetrics;
 
 import java.math.BigDecimal;
 import java.util.Set;
@@ -14,7 +14,7 @@ public interface BillHandler {
 
     Set<String> getValidEvents();
 
-    BigDecimal getTotalInteractions(CampaignCatalogMetrics baseCampaignMetrics);
+    Long getTotalInteractions(CampaignCatalogDateMetrics baseCampaignMetrics);
 
     boolean performWindowDeDuplication();
 

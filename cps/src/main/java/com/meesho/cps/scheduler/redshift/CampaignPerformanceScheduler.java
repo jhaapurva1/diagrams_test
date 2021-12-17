@@ -4,7 +4,7 @@ import com.meesho.ads.lib.data.internal.RedshiftProcessedMetadata;
 import com.meesho.ads.lib.scheduler.RedshiftAbstractScheduler;
 import com.meesho.cps.constants.DBConstants;
 import com.meesho.cps.constants.SchedulerType;
-import com.meesho.cps.data.entity.mysql.CampaignPerformance;
+import com.meesho.cps.data.redshift.CampaignPerformanceRedshift;
 import com.meesho.cps.service.redshift.CampaignPerformanceHandler;
 import com.meesho.instrumentation.annotation.DigestLogger;
 import com.meesho.instrumentation.enums.MetricType;
@@ -24,10 +24,11 @@ import java.util.List;
 @Slf4j
 @Component
 @EnableScheduling
-public class CampaignPerformanceScheduler extends RedshiftAbstractScheduler<CampaignPerformance> {
+public class CampaignPerformanceScheduler extends RedshiftAbstractScheduler<CampaignPerformanceRedshift> {
 
     private static final String QUERY = "SELECT * FROM " + DBConstants.Redshift.Tables.CAMPAIGN_PERFORMANCE_METRICS +
-            " where created_at > '%s' order by created_at LIMIT '%d' OFFSET '%d'";
+            " where created_at > '%s' AND dt >= '2021-12-18' order by created_at LIMIT '%d' OFFSET '%d'";
+
     @Autowired
     private CampaignPerformanceHandler campaignPerformanceHandler;
 
@@ -37,8 +38,8 @@ public class CampaignPerformanceScheduler extends RedshiftAbstractScheduler<Camp
     }
 
     @Override
-    public String getSchedulerKey(CampaignPerformance campaignPerformance) {
-        return campaignPerformanceHandler.getUniqueKey(campaignPerformance);
+    public String getSchedulerKey(CampaignPerformanceRedshift campaignPerformanceRedshift) {
+        return campaignPerformanceHandler.getUniqueKey(campaignPerformanceRedshift);
     }
 
     @Override
@@ -47,13 +48,13 @@ public class CampaignPerformanceScheduler extends RedshiftAbstractScheduler<Camp
     }
 
     @Override
-    public RedshiftProcessedMetadata<CampaignPerformance> transformResults(ResultSet resultSet) throws SQLException {
+    public RedshiftProcessedMetadata<CampaignPerformanceRedshift> transformResults(ResultSet resultSet) throws SQLException {
         return campaignPerformanceHandler.transformResults(resultSet);
     }
 
     @Override
     @DigestLogger(metricType = MetricType.METHOD, tagSet = "CampaignPerformanceScheduler")
-    public void handle(List<CampaignPerformance> entities) {
+    public void handle(List<CampaignPerformanceRedshift> entities) {
         campaignPerformanceHandler.handle(entities);
     }
 

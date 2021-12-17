@@ -1,17 +1,15 @@
 package com.meesho.cps.service.redshift;
 
-import com.meesho.ad.client.response.CampaignDetails;
-import com.meesho.ads.lib.constants.Constants;
 import com.meesho.ads.lib.data.internal.RedshiftProcessedMetadata;
-import com.meesho.commons.enums.Country;
 import com.meesho.cps.constants.DBConstants;
-import com.meesho.cps.data.entity.mysql.CampaignPerformance;
-import com.meesho.cps.db.mysql.dao.CampaignPerformanceDao;
-import com.meesho.cps.helper.CampaignPerformanceHelper;
-import com.meesho.cps.service.external.AdService;
+import com.meesho.cps.data.entity.hbase.CampaignCatalogDateMetrics;
+import com.meesho.cps.data.internal.CampaignCatalogDate;
+import com.meesho.cps.data.redshift.CampaignPerformanceRedshift;
+import com.meesho.cps.db.hbase.repository.CampaignCatalogDateMetricsRepository;
+import com.meesho.cps.db.redis.dao.UpdatedCampaignCatalogCacheDao;
+import com.meesho.cps.transformer.CampaignPerformanceTransformer;
 import com.meesho.cps.utils.CommonUtils;
-
-import org.slf4j.MDC;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,9 +23,6 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.CollectionUtils;
-
 /**
  * @author shubham.aggarwal
  * 09/08/21
@@ -37,26 +32,28 @@ import org.springframework.util.CollectionUtils;
 public class CampaignPerformanceHandler {
 
     @Autowired
-    private AdService adService;
+    private UpdatedCampaignCatalogCacheDao updatedCampaignCatalogCacheDao;
 
     @Autowired
-    private CampaignPerformanceDao campaignPerformanceDao;
+    private CampaignCatalogDateMetricsRepository campaignCatalogMetricsRepository;
 
-    @Autowired
-    private CampaignPerformanceHelper campaignPerformanceHelper;
-
-    public RedshiftProcessedMetadata<CampaignPerformance> transformResults(ResultSet resultSet) throws SQLException {
-        RedshiftProcessedMetadata<CampaignPerformance> redshiftProcessedMetadata =
+    public RedshiftProcessedMetadata<CampaignPerformanceRedshift> transformResults(ResultSet resultSet)
+            throws SQLException {
+        RedshiftProcessedMetadata<CampaignPerformanceRedshift> redshiftProcessedMetadata =
                 CommonUtils.getDefaultRedshitProcessedMetadata();
-        List<CampaignPerformance> entities = new ArrayList<>();
-        CampaignPerformance.CampaignPerformanceBuilder campaignPerformanceBuilder = CampaignPerformance.builder();
+        List<CampaignPerformanceRedshift> entities = new ArrayList<>();
+        CampaignPerformanceRedshift.CampaignPerformanceRedshiftBuilder campaignPerformanceBuilder =
+                CampaignPerformanceRedshift.builder();
 
         int i = 0;
         while (resultSet.next()) {
             Long campaignId = resultSet.getLong("campaign_id");
+            long catalogId = resultSet.getLong("catalog_id");
+            String date = resultSet.getString("dt");
+            String[] dateTimeSplit = date.split(" ");
+            date = dateTimeSplit[0];
             BigDecimal revenue = resultSet.getBigDecimal("revenue");
             Integer orderCount = resultSet.getInt("order_count");
-            long catalogId = resultSet.getLong("catalog_id");
 
             //Temporary fix to handle issue where some rows are having catalog_id as null. Can be removed once
             // redshift issue is fixed
@@ -69,9 +66,9 @@ public class CampaignPerformanceHandler {
 
             campaignPerformanceBuilder.campaignId(campaignId)
                     .catalogId(catalogId)
+                    .date(date)
                     .revenue(revenue)
-                    .orderCount(orderCount)
-                    .country(Country.getValue(MDC.get(Constants.COUNTRY_CODE)));
+                    .orderCount(orderCount);
             entities.add(campaignPerformanceBuilder.build());
         }
         redshiftProcessedMetadata.setProcessedDataSize(i);
@@ -79,43 +76,25 @@ public class CampaignPerformanceHandler {
         return redshiftProcessedMetadata;
     }
 
-    public void handle(List<CampaignPerformance> campaignPerformanceList) {
-        List<Long> campaignIds = campaignPerformanceList.stream()
-                .map(CampaignPerformance::getCampaignId)
+    public void handle(List<CampaignPerformanceRedshift> campaignPerformanceRedshiftList) {
+        List<String> keys = campaignPerformanceRedshiftList.stream()
+                .map(this::getUniqueKey)
                 .collect(Collectors.toList());
+        List<CampaignCatalogDateMetrics> campaignCatalogDateMetricsList = campaignPerformanceRedshiftList.stream()
+                        .map(CampaignPerformanceTransformer::transform).collect(Collectors.toList());
+        campaignCatalogMetricsRepository.putOrdersAndRevenueColumns(campaignCatalogDateMetricsList);
 
-        List<CampaignDetails> catalogMetadataList = adService.getCampaignMetadata(campaignIds);
-        if (!CollectionUtils.isEmpty(catalogMetadataList)) {
-            Map<Long, CampaignDetails> campaignIdAndCampaignDetailsMap = catalogMetadataList.stream()
-                    .collect(Collectors.toMap(CampaignDetails::getCampaignId, Function.identity()));
-
-            campaignPerformanceHelper.updateCampaignPerformanceFromHbase(campaignPerformanceList, campaignIdAndCampaignDetailsMap);
-            // update supplier id
-            for (CampaignPerformance entity : campaignPerformanceList) {
-                CampaignDetails campaignDetails = campaignIdAndCampaignDetailsMap.get(entity.getCampaignId());
-                entity.setSupplierId(Objects.nonNull(campaignDetails) ? campaignDetails.getSupplierId() : null);
-            }
-        }
-
-        List<CampaignPerformance> existingEntities = campaignPerformanceDao.findAllByCampaignIds(campaignIds);
-
-        Map<String, CampaignPerformance> existingEntitiesMap = existingEntities.stream()
-                .collect(Collectors.toMap(this::getUniqueKey, Function.identity()));
-
-        for (CampaignPerformance entity : campaignPerformanceList) {
-            String key = getUniqueKey(entity);
-            if (existingEntitiesMap.containsKey(key)) {
-                CampaignPerformance existingEntity = existingEntitiesMap.get(key);
-                entity.setId(existingEntity.getId());
-            }
-        }
-        campaignPerformanceDao.saveAll(campaignPerformanceList);
-        log.info("CampaignPerformance scheduler processed result set for campaign ids {} ", campaignIds);
+        //update redis set
+        List<CampaignCatalogDate> campaignCatalogDates = campaignCatalogDateMetricsList.stream()
+                .map(x -> new CampaignCatalogDate(x.getCampaignId(), x.getCatalogId(), x.getDate().toString()))
+                .collect(Collectors.toList());
+        updatedCampaignCatalogCacheDao.add(campaignCatalogDates);
+        log.info("CampaignPerformance scheduler processed result set for campaign_catalog_date {} ", keys);
     }
 
-    public String getUniqueKey(CampaignPerformance campaignPerformance) {
-        return String.format(DBConstants.Redshift.CAMPAIGN_CATALOG_KEY, campaignPerformance.getCampaignId(),
-                campaignPerformance.getCatalogId());
+    public String getUniqueKey(CampaignPerformanceRedshift entity) {
+        return String.format(DBConstants.Redshift.CAMPAIGN_CATALOG_DATE_KEY, entity.getCampaignId(),
+                entity.getCatalogId(), entity.getDate());
     }
 
 }

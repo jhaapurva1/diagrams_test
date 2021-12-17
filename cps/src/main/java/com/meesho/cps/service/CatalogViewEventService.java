@@ -2,12 +2,16 @@ package com.meesho.cps.service;
 
 import com.google.common.collect.Lists;
 import com.meesho.ad.client.response.CampaignCatalogMetadataResponse;
+import com.meesho.ads.lib.utils.DateTimeUtils;
 import com.meesho.cps.config.ApplicationProperties;
 import com.meesho.cps.constants.AdInteractionInvalidReason;
 import com.meesho.cps.data.entity.kafka.AdViewEvent;
+import com.meesho.cps.data.internal.CampaignCatalogDate;
 import com.meesho.cps.data.internal.CampaignCatalogViewCount;
-import com.meesho.cps.db.hbase.repository.CampaignCatalogMetricsRepository;
+import com.meesho.cps.db.hbase.repository.CampaignCatalogDateMetricsRepository;
+import com.meesho.cps.db.redis.dao.UpdatedCampaignCatalogCacheDao;
 import com.meesho.cps.exception.ExternalRequestFailedException;
+import com.meesho.cps.helper.CampaignPerformanceHelper;
 import com.meesho.cps.service.external.AdService;
 import com.meesho.instrumentation.annotation.DigestLogger;
 import com.meesho.instrumentation.enums.MetricType;
@@ -15,13 +19,13 @@ import com.meesho.instrumentation.metric.statsd.StatsdMetricManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.CollectionUtils;
 import static com.meesho.cps.constants.TelegrafConstants.*;
 
 /**
@@ -33,7 +37,7 @@ import static com.meesho.cps.constants.TelegrafConstants.*;
 public class CatalogViewEventService {
 
     @Autowired
-    private CampaignCatalogMetricsRepository campaignCatalogMetricsRepository;
+    private CampaignCatalogDateMetricsRepository campaignCatalogMetricsRepository;
 
     @Autowired
     private AdService adService;
@@ -44,14 +48,22 @@ public class CatalogViewEventService {
     @Autowired
     private ApplicationProperties applicationProperties;
 
-    private String getCampaignCatalogKey(Long campaignId, Long catalogId) {
-        return String.valueOf(campaignId).concat("_").concat(String.valueOf(catalogId));
+    @Autowired
+    private CampaignPerformanceHelper campaignPerformanceHelper;
+
+    @Autowired
+    private UpdatedCampaignCatalogCacheDao updatedCampaignCatalogCacheDao;
+
+    private String getCampaignCatalogKey(Long campaignId, Long catalogId, LocalDate date) {
+        return String.valueOf(campaignId).concat("_").concat(String.valueOf(catalogId)).concat("_").concat(date.toString());
     }
 
     private Map<String, CampaignCatalogViewCount> getCampaignCatalogViewCountsFromCatalogMetadata(
             List<AdViewEvent> adViewEvents, Map<Long, CampaignCatalogMetadataResponse.CatalogMetadata> catalogMetadataMap) {
 
         Map<String, CampaignCatalogViewCount> campaignCatalogViewCountMap = new HashMap<>();
+        LocalDate eventDate = campaignPerformanceHelper.getLocalDateForDailyCampaignFromLocalDateTime(
+                DateTimeUtils.getCurrentLocalDateTimeInIST());
 
         for (AdViewEvent adViewEvent : adViewEvents) {
 
@@ -73,7 +85,7 @@ public class CatalogViewEventService {
                     adViewEvent.getEventName(), adViewEvent.getProperties().getScreen(), adViewEvent.getProperties().getOrigin(), VALID, NAN));
 
 
-            String campaignCatalogViewCountKey = getCampaignCatalogKey(campaignId, catalogId);
+            String campaignCatalogViewCountKey = getCampaignCatalogKey(campaignId, catalogId, eventDate);
 
             if (campaignCatalogViewCountMap.containsKey(campaignCatalogViewCountKey)) {
                 CampaignCatalogViewCount campaignCatalogViewCount =
@@ -81,8 +93,8 @@ public class CatalogViewEventService {
                 campaignCatalogViewCount.setCount(campaignCatalogViewCount.getCount() + 1);
                 campaignCatalogViewCountMap.put(campaignCatalogViewCountKey, campaignCatalogViewCount);
             } else {
-                campaignCatalogViewCountMap.put(campaignCatalogViewCountKey,
-                        CampaignCatalogViewCount.builder().campaignId(campaignId).catalogId(catalogId).count(1).build());
+                campaignCatalogViewCountMap.put(campaignCatalogViewCountKey, CampaignCatalogViewCount.builder()
+                        .campaignId(campaignId).catalogId(catalogId).date(eventDate).count(1).build());
             }
         }
 
@@ -115,6 +127,11 @@ public class CatalogViewEventService {
             campaignCatalogMetricsRepository.bulkIncrementViewCount(eachPartitionedList);
         }
 
+        // update redis set for campaign_catalog_date
+        List<CampaignCatalogDate> campaignCatalogDates = campaignCatalogViewCountList.stream()
+                .map(x -> new CampaignCatalogDate(x.getCampaignId(), x.getCatalogId(), x.getDate().toString()))
+                .collect(Collectors.toList());
+        updatedCampaignCatalogCacheDao.add(campaignCatalogDates);
     }
 
 }
