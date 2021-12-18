@@ -19,6 +19,7 @@ import org.elasticsearch.search.aggregations.metrics.Sum;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,14 +39,14 @@ public class CampaignPerformanceTransformer {
         for (CampaignMetrics campaignMetric : campaignMetrics) {
             budgetUtilisedDetails.add(com.meesho.cpsclient.response.BudgetUtilisedResponse.BudgetUtilisedDetails.builder()
                     .campaignId(campaignMetric.getCampaignId())
-                    .budgetUtilised(campaignMetric.getBudgetUtilised())
+                    .budgetUtilised(campaignMetric.getBudgetUtilised().setScale(2, RoundingMode.HALF_UP))
                     .build());
         }
 
         for (CampaignDatewiseMetrics campaignDatewiseMetric : campaignDatewiseMetrics) {
             budgetUtilisedDetails.add(com.meesho.cpsclient.response.BudgetUtilisedResponse.BudgetUtilisedDetails.builder()
                     .campaignId(campaignDatewiseMetric.getCampaignId())
-                    .budgetUtilised(campaignDatewiseMetric.getBudgetUtilised())
+                    .budgetUtilised(campaignDatewiseMetric.getBudgetUtilised().setScale(2, RoundingMode.HALF_UP))
                     .build());
         }
 
@@ -67,8 +68,8 @@ public class CampaignPerformanceTransformer {
 
         PerformancePojo pp = getPerformancePojoFromAggregations(dateWiseResponse.getAggregations(), monthWiseResponse.getAggregations());
         return SupplierPerformanceResponse.builder()
-                .budgetUtilised(pp.getTotalBudgetUtilised())
-                .revenue(pp.getTotalRevenue())
+                .budgetUtilised(pp.getTotalBudgetUtilised().setScale(2, RoundingMode.HALF_UP))
+                .revenue(pp.getTotalRevenue().setScale(2, RoundingMode.HALF_UP))
                 .totalViews(pp.getTotalViews())
                 .totalClicks(pp.getTotalClicks() + pp.getTotalShares() + pp.getTotalWishlist())
                 .orderCount(pp.getTotalOrders())
@@ -99,9 +100,11 @@ public class CampaignPerformanceTransformer {
                     .map(Terms.Bucket::getAggregations).orElse(null));
 
             campaignDetailsList.add(CampaignPerformanceResponse.CampaignDetails.builder().campaignId(campaignId)
-                    .budgetUtilised(pp.getTotalBudgetUtilised())
+                    .budgetUtilised(pp.getTotalBudgetUtilised().setScale(2, RoundingMode.HALF_UP))
                     .totalClicks(pp.getTotalClicks() + pp.getTotalShares() + pp.getTotalWishlist())
-                    .totalViews(pp.getTotalViews()).revenue(pp.getTotalRevenue()).orderCount(pp.getTotalOrders())
+                    .totalViews(pp.getTotalViews())
+                    .revenue(pp.getTotalRevenue().setScale(2, RoundingMode.HALF_UP))
+                    .orderCount(pp.getTotalOrders())
                     .roi(CalculationUtils.getRoi(pp.getTotalRevenue(), pp.getTotalBudgetUtilised()))
                     .conversionRate(CalculationUtils.getConversionRate(pp.getTotalOrders(), pp.getTotalClicks())).build());
         }
@@ -134,9 +137,11 @@ public class CampaignPerformanceTransformer {
                     .map(Terms.Bucket::getAggregations).orElse(null));
 
             catalogDetailsList.add(CampaignCatalogPerformanceResponse.CatalogDetails.builder().campaignId(campaignId)
-                    .budgetUtilised(pp.getTotalBudgetUtilised())
+                    .budgetUtilised(pp.getTotalBudgetUtilised().setScale(2, RoundingMode.HALF_UP))
                     .totalClicks(pp.getTotalClicks() + pp.getTotalShares() + pp.getTotalWishlist())
-                    .totalViews(pp.getTotalViews()).revenue(pp.getTotalRevenue()).orderCount(pp.getTotalOrders())
+                    .totalViews(pp.getTotalViews())
+                    .revenue(pp.getTotalRevenue().setScale(2, RoundingMode.HALF_UP))
+                    .orderCount(pp.getTotalOrders())
                     .roi(CalculationUtils.getRoi(pp.getTotalRevenue(), pp.getTotalBudgetUtilised()))
                     .conversionRate(CalculationUtils.getConversionRate(pp.getTotalOrders(), pp.getTotalClicks())).catalogId(catalogId).build());
         }
