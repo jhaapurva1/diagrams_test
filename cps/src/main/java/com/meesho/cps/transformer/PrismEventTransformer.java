@@ -3,16 +3,14 @@ package com.meesho.cps.transformer;
 import com.meesho.ads.lib.utils.Utils;
 import com.meesho.commons.utils.DateUtils;
 import com.meesho.cps.data.entity.elasticsearch.ESDailyIndexDocument;
+import com.meesho.cps.data.entity.hbase.CampaignCatalogDateMetrics;
 import com.meesho.cps.data.entity.kafka.AdInteractionEvent;
 import com.meesho.cps.data.entity.kafka.AdInteractionPrismEvent;
 import com.meesho.cps.data.entity.kafka.DayWisePerformancePrismEvent;
 import com.meesho.cps.utils.DateTimeHelper;
-import org.joda.time.DateTime;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,6 +54,26 @@ public class PrismEventTransformer {
                     .shares(document.getShares())
                     .wishlist(document.getWishlist())
                     .views(document.getViews())
+                    .build());
+        });
+        return events;
+    }
+
+    public static List<DayWisePerformancePrismEvent> getDayWisePerformancePrismEvent(List<CampaignCatalogDateMetrics> campaignCatalogDateMetricsList) {
+        List<DayWisePerformancePrismEvent> events = new ArrayList<>();
+        campaignCatalogDateMetricsList.forEach(campaignCatalogDateMetrics -> {
+            events.add(DayWisePerformancePrismEvent.builder()
+                    .budgetUtilised(campaignCatalogDateMetrics.getBudgetUtilised())
+                    .campaignId(campaignCatalogDateMetrics.getCampaignId())
+                    .clicks(campaignCatalogDateMetrics.getClickCount())
+                    .catalogId(campaignCatalogDateMetrics.getCatalogId())
+                    .currentTimestamp(LocalDateTime.now().format(DateTimeHelper.dateTimeFormat))
+                    .date(campaignCatalogDateMetrics.getDate().format(DateTimeHelper.dateTimeFormat))
+                    .orders(campaignCatalogDateMetrics.getOrders())
+                    .revenue(campaignCatalogDateMetrics.getRevenue())
+                    .shares(campaignCatalogDateMetrics.getSharesCount())
+                    .wishlist(campaignCatalogDateMetrics.getWishlistCount())
+                    .views(campaignCatalogDateMetrics.getViewCount())
                     .build());
         });
         return events;

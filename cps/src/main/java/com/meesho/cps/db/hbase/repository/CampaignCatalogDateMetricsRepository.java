@@ -14,10 +14,18 @@ import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.ByteBuffer;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -88,6 +96,23 @@ public class CampaignCatalogDateMetricsRepository {
         campaignCatalogDateMetrics.setOrders(HbaseUtils.getColumnAsInteger(COLUMN_FAMILY, COLUMN_ORDERS, result));
         campaignCatalogDateMetrics.setRevenue(HbaseUtils.getColumnAsBigDecimal(COLUMN_FAMILY, COLUMN_REVENUE, result));
         return campaignCatalogDateMetrics;
+    }
+
+    private CampaignCatalogDateMetrics mapper(Result result){
+
+        return CampaignCatalogDateMetrics.builder()
+                .campaignId(HbaseUtils.getColumnAsLong(COLUMN_FAMILY, COLUMN_CAMPAIGN_ID, result))
+                .catalogId(HbaseUtils.getColumnAsLong(COLUMN_FAMILY, COLUMN_CATALOG_ID, result))
+                .date(HbaseUtils.getColumnAsLocalDate(COLUMN_FAMILY,COLUMN_DATE, result))
+                .clickCount(HbaseUtils.getColumnAsLong(COLUMN_FAMILY, COLUMN_CLICK_COUNT, result))
+                .sharesCount(HbaseUtils.getColumnAsLong(COLUMN_FAMILY, COLUMN_SHARES_COUNT, result))
+                .wishlistCount(HbaseUtils.getColumnAsLong(COLUMN_FAMILY, COLUMN_WISHLIST_COUNT, result))
+                .viewCount(HbaseUtils.getColumnAsLong(COLUMN_FAMILY, COLUMN_VIEW_COUNT, result))
+                .budgetUtilised(HbaseUtils.getLongColumnAsBigDecimal(
+                        COLUMN_FAMILY, COLUMN_BUDGET_UTILISED, result, MULTIPLIER))
+                .orders(HbaseUtils.getColumnAsInteger(COLUMN_FAMILY, COLUMN_ORDERS, result))
+                .revenue(HbaseUtils.getColumnAsBigDecimal(COLUMN_FAMILY, COLUMN_REVENUE, result))
+                .build();
     }
 
     public CampaignCatalogDateMetrics get(Long campaignId, Long catalogId, LocalDate date) {
@@ -261,5 +286,24 @@ public class CampaignCatalogDateMetricsRepository {
             throw new HbaseException(e.getMessage());
         }
     }
+    public List<CampaignCatalogDateMetrics> scanInDateRange(LocalDateTime dateTime){
+        try(Table table = getTable()){
+            Scan scan = new Scan();
+            scan.setColumnFamilyTimeRange(Bytes.toBytes(ByteBuffer.wrap(COLUMN_DATE)), 0L,
+                    Timestamp.valueOf(dateTime).getTime());
+            ResultScanner resultScanner = table.getScanner(scan);
+            List<CampaignCatalogDateMetrics> campaignCatalogDateMetricsList = new ArrayList<>();
+            resultScanner.forEach(result -> {
+                if(!result.isEmpty()){
+                    campaignCatalogDateMetricsList.add(mapper(result));
+                }
+            });
 
+            return campaignCatalogDateMetricsList;
+
+        } catch (IOException e) {
+            log.error("Error in CampaignCatalogDateMetricsRepository scan in Back fill to prism debug api ", e);
+            throw new HbaseException(e.getMessage());
+        }
+    }
 }

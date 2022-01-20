@@ -63,4 +63,12 @@ public class CampaignPerformanceController {
         return performanceService.getBudgetUtilised(budgetUtilisedRequest);
     }
 
+    @ApiOperation(value = Constants.API.DEBUG_API.BACKFILL_CAMPAIGN_CATALOG_DAY_PERFORMANCE_EVENT,
+            notes = "Backfill the missing data from hbase, by calling prism api",
+    consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(path = Constants.API.DEBUG_API.BACKFILL_CAMPAIGN_CATALOG_DAY_PERFORMANCE_EVENT,
+    method = RequestMethod.POST)
+    public void postBackfillCampaignCatalogDayPerformanceEventsToPrism(){
+        performanceService.BackillCampaignCatalogDayPerformanceEventsToPrism();
+    }
 }

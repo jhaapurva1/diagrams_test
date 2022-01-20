@@ -1,12 +1,15 @@
 package com.meesho.cps.service;
 
 import com.meesho.ads.lib.utils.DateTimeUtils;
+import com.meesho.cps.config.ApplicationProperties;
 import com.meesho.cps.constants.CampaignType;
 import com.meesho.cps.constants.Constants;
 import com.meesho.cps.constants.DBConstants;
 import com.meesho.cps.data.entity.elasticsearch.EsCampaignCatalogAggregateResponse;
+import com.meesho.cps.data.entity.hbase.CampaignCatalogDateMetrics;
 import com.meesho.cps.data.entity.hbase.CampaignDatewiseMetrics;
 import com.meesho.cps.data.entity.hbase.CampaignMetrics;
+import com.meesho.cps.data.entity.kafka.DayWisePerformancePrismEvent;
 import com.meesho.cps.data.internal.ElasticFiltersRequest;
 import com.meesho.cps.db.elasticsearch.ElasticSearchRepository;
 import com.meesho.cps.db.hbase.repository.CampaignCatalogDateMetricsRepository;
@@ -14,7 +17,9 @@ import com.meesho.cps.db.hbase.repository.CampaignDatewiseMetricsRepository;
 import com.meesho.cps.db.hbase.repository.CampaignMetricsRepository;
 import com.meesho.cps.db.mysql.dao.CampaignPerformanceDao;
 import com.meesho.cps.helper.CampaignPerformanceHelper;
+import com.meesho.cps.service.external.PrismService;
 import com.meesho.cps.transformer.CampaignPerformanceTransformer;
+import com.meesho.cps.transformer.PrismEventTransformer;
 import com.meesho.cps.utils.CommonUtils;
 import com.meesho.cpsclient.request.BudgetUtilisedRequest;
 import com.meesho.cpsclient.request.CampaignCatalogPerformanceRequest;
@@ -24,12 +29,16 @@ import com.meesho.cpsclient.response.BudgetUtilisedResponse;
 import com.meesho.cpsclient.response.CampaignCatalogPerformanceResponse;
 import com.meesho.cpsclient.response.CampaignPerformanceResponse;
 import com.meesho.cpsclient.response.SupplierPerformanceResponse;
+import io.swagger.models.auth.In;
 import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -64,6 +73,12 @@ public class CampaignPerformanceService {
 
     @Autowired
     private CampaignPerformanceHelper campaignPerformanceHelper;
+
+    @Autowired
+    private ApplicationProperties applicationProperties;
+
+    @Autowired
+    private PrismService prismService;
 
     public SupplierPerformanceResponse getSupplierPerformanceMetrics(SupplierPerformanceRequest request) throws IOException {
         ElasticFiltersRequest elasticFiltersRequestMonthWise = ElasticFiltersRequest.builder()
@@ -165,4 +180,37 @@ public class CampaignPerformanceService {
         return campaignPerformanceTransformer.getBudgetUtilisedResponse(campaignMetrics, campaignDatewiseMetrics);
     }
 
+    // Debug service
+    public void BackillCampaignCatalogDayPerformanceEventsToPrism(){
+
+        List<CampaignCatalogDateMetrics> campaignCatalogDateMetricsList = campaignCatalogMetricsRepository
+                .scanInDateRange(LocalDateTime.of(2021, Month.DECEMBER, 22, 0,0));
+
+        Integer eventBatchSize = applicationProperties.getBackfillDateWiseMetricsBatchSize();
+
+        List<DayWisePerformancePrismEvent> dayWisePerformancePrismEvents = PrismEventTransformer
+                .getDayWisePerformancePrismEvent(campaignCatalogDateMetricsList);
+
+        int eventSize = dayWisePerformancePrismEvents.size();
+        int start = 0, batch = 1;
+
+        while (start < eventBatchSize) {
+            int toIndex;
+            if(start+eventBatchSize<eventSize){
+                toIndex = start+eventBatchSize-1;
+            }else {
+                toIndex = eventSize-1;
+            }
+            prismService.publishEvent(Constants.PrismEventNames.DAY_WISE_PERF_EVENTS,dayWisePerformancePrismEvents
+                    .subList(start, toIndex));
+
+            log.info("Backfill event batch "+ batch, dayWisePerformancePrismEvents
+                    .subList(start, toIndex));
+
+            start = start + eventBatchSize;
+            batch += 1;
+
+        }
+
+    }
 }
