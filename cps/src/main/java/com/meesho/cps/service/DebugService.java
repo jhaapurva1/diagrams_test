@@ -2,15 +2,18 @@ package com.meesho.cps.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
 import com.meesho.ads.lib.data.internal.PaginatedResult;
 import com.meesho.ads.lib.utils.DateTimeUtils;
 import com.meesho.ads.lib.utils.HbaseUtils;
 import com.meesho.cps.config.ApplicationProperties;
+import com.meesho.cps.constants.Constants;
 import com.meesho.cps.constants.ConsumerConstants;
 import com.meesho.cps.data.entity.hbase.CampaignCatalogDateMetrics;
 import com.meesho.cps.data.entity.hbase.CampaignCatalogMetrics;
 import com.meesho.cps.data.entity.hbase.CampaignDatewiseMetrics;
 import com.meesho.cps.data.entity.hbase.CampaignMetrics;
+import com.meesho.cps.data.entity.kafka.DayWisePerformancePrismEvent;
 import com.meesho.cps.data.entity.mysql.CampaignPerformance;
 import com.meesho.cps.data.internal.CampaignCatalogDate;
 import com.meesho.cps.data.request.CampaignCatalogDateMetricsSaveRequest;
@@ -22,7 +25,9 @@ import com.meesho.cps.db.hbase.repository.CampaignDatewiseMetricsRepository;
 import com.meesho.cps.db.hbase.repository.CampaignMetricsRepository;
 import com.meesho.cps.db.mysql.dao.CampaignPerformanceDao;
 import com.meesho.cps.db.redis.dao.UpdatedCampaignCatalogCacheDao;
+import com.meesho.cps.service.external.PrismService;
 import com.meesho.cps.transformer.DebugTransformer;
+import com.meesho.cps.transformer.PrismEventTransformer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,8 +36,11 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Month;
 import java.time.Period;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -67,6 +75,9 @@ public class DebugService {
 
     @Autowired
     ObjectMapper objectMapper;
+
+    @Autowired
+    private PrismService prismService;
 
     @Autowired
     private UpdatedCampaignCatalogCacheDao updatedCampaignCatalogCacheDao;
@@ -165,5 +176,30 @@ public class DebugService {
             processedRows += campaignCatalogDateMetricsList.size();
             log.info("Processed rows {}", processedRows);
         } while (page.isHasNext());
+    }
+
+    // Debug service
+    public void BackillCampaignCatalogDayPerformanceEventsToPrism(){
+
+        List<CampaignCatalogDateMetrics> campaignCatalogDateMetricsList = campaignCatalogDateMetricsRepository
+                .scanInDateRange(LocalDateTime.of(0,Month.JANUARY,0,0,0),
+                        LocalDateTime.of(2021, Month.DECEMBER, 22, 0,0));
+
+        Integer eventBatchSize = applicationProperties.getBackfillDateWiseMetricsBatchSize();
+
+        List<DayWisePerformancePrismEvent> dayWisePerformancePrismEvents = PrismEventTransformer
+                .getDayWisePerformancePrismEvent(campaignCatalogDateMetricsList);
+
+        AtomicInteger index = new AtomicInteger(1);
+
+        List<List<DayWisePerformancePrismEvent>> batchEventLists = Lists.partition(dayWisePerformancePrismEvents,
+                eventBatchSize);
+
+        batchEventLists.forEach(batch -> {
+            prismService.publishEvent(Constants.PrismEventNames.DAY_WISE_PERF_EVENTS, batch);
+            log.info("Backfill event batch "+ index, batch.toString());
+            index.addAndGet(1);
+        });
+
     }
 }

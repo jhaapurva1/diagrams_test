@@ -286,11 +286,12 @@ public class CampaignCatalogDateMetricsRepository {
             throw new HbaseException(e.getMessage());
         }
     }
-    public List<CampaignCatalogDateMetrics> scanInDateRange(LocalDateTime dateTime){
+    public List<CampaignCatalogDateMetrics> scanInDateRange(LocalDateTime startDateTime, LocalDateTime endDateTime){
         try(Table table = getTable()){
             Scan scan = new Scan();
-            scan.setColumnFamilyTimeRange(Bytes.toBytes(ByteBuffer.wrap(COLUMN_DATE)), 0L,
-                    Timestamp.valueOf(dateTime).getTime());
+            scan.setColumnFamilyTimeRange(Bytes.toBytes(ByteBuffer.wrap(COLUMN_DATE)),
+                    Timestamp.valueOf(startDateTime).getTime(),
+                    Timestamp.valueOf(endDateTime).getTime());
             ResultScanner resultScanner = table.getScanner(scan);
             List<CampaignCatalogDateMetrics> campaignCatalogDateMetricsList = new ArrayList<>();
             resultScanner.forEach(result -> {

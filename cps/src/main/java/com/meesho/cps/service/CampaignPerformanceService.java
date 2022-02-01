@@ -180,37 +180,4 @@ public class CampaignPerformanceService {
         return campaignPerformanceTransformer.getBudgetUtilisedResponse(campaignMetrics, campaignDatewiseMetrics);
     }
 
-    // Debug service
-    public void BackillCampaignCatalogDayPerformanceEventsToPrism(){
-
-        List<CampaignCatalogDateMetrics> campaignCatalogDateMetricsList = campaignCatalogMetricsRepository
-                .scanInDateRange(LocalDateTime.of(2021, Month.DECEMBER, 22, 0,0));
-
-        Integer eventBatchSize = applicationProperties.getBackfillDateWiseMetricsBatchSize();
-
-        List<DayWisePerformancePrismEvent> dayWisePerformancePrismEvents = PrismEventTransformer
-                .getDayWisePerformancePrismEvent(campaignCatalogDateMetricsList);
-
-        int eventSize = dayWisePerformancePrismEvents.size();
-        int start = 0, batch = 1;
-
-        while (start < eventBatchSize) {
-            int toIndex;
-            if(start+eventBatchSize<eventSize){
-                toIndex = start+eventBatchSize-1;
-            }else {
-                toIndex = eventSize-1;
-            }
-            prismService.publishEvent(Constants.PrismEventNames.DAY_WISE_PERF_EVENTS,dayWisePerformancePrismEvents
-                    .subList(start, toIndex));
-
-            log.info("Backfill event batch "+ batch, dayWisePerformancePrismEvents
-                    .subList(start, toIndex));
-
-            start = start + eventBatchSize;
-            batch += 1;
-
-        }
-
-    }
 }
