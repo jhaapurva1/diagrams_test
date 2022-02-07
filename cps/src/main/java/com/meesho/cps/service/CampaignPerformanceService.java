@@ -74,12 +74,6 @@ public class CampaignPerformanceService {
     @Autowired
     private CampaignPerformanceHelper campaignPerformanceHelper;
 
-    @Autowired
-    private ApplicationProperties applicationProperties;
-
-    @Autowired
-    private PrismService prismService;
-
     public SupplierPerformanceResponse getSupplierPerformanceMetrics(SupplierPerformanceRequest request) throws IOException {
         ElasticFiltersRequest elasticFiltersRequestMonthWise = ElasticFiltersRequest.builder()
                 .supplierIds(Collections.singletonList(request.getSupplierId()))

@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author shubham.aggarwal
@@ -74,6 +75,7 @@ public class PrismEventTransformer {
                     .shares(campaignCatalogDateMetrics.getSharesCount())
                     .wishlist(campaignCatalogDateMetrics.getWishlistCount())
                     .views(campaignCatalogDateMetrics.getViewCount())
+                    .eventId(UUID.randomUUID().toString())
                     .build());
         });
         return events;
