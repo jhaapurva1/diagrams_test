@@ -60,8 +60,8 @@ public class CampaignPerformanceHelper {
         return aggregationBuilders;
     }
 
-    public List<AggregationBuilder> createBucketAggregations(String term, String fieldName) {
-        AggregationBuilder aggregationBuilderRoot = AggregationBuilders.terms(term).field(fieldName);
+    public List<AggregationBuilder> createBucketAggregations(String term, String fieldName, Integer size) {
+        AggregationBuilder aggregationBuilderRoot = AggregationBuilders.terms(term).field(fieldName).size(size);
         List<AggregationBuilder> aggregationBuilders = createAggregations();
 
         for (AggregationBuilder aggregationBuilder : aggregationBuilders) {
