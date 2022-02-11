@@ -98,7 +98,7 @@ public class AdsDeductionCampaignSupplierHandler {
         adsDeductionCampaignSupplierList.forEach(adsDeductionCampaignSupplier -> {
             try {
                 kafkaService.sendMessage(Constants.ADS_COST_TOPIC,
-                        getUniqueKey(adsDeductionCampaignSupplier),
+                        null,
                         objectMapper.writeValueAsString(adsDeductionCampaignSupplier),
                         retryCount);
             } catch (Exception e) {
