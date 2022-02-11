@@ -23,14 +23,14 @@ import java.util.List;
 public class AdsDeductionCampaignSupplierScheduler extends RedshiftAbstractScheduler<AdsDeductionCampaignSupplier> {
 
     private static final String QUERY = "SELECT * FROM " + DBConstants.Redshift.Tables.ADS_DEDUCTION_CAMPAIGN_SUPPLIER +
-            " LIMIT '%d' OFFSET '%d'";
+            "  where created_at > '%s' order by created_at LIMIT '%d' OFFSET '%d' ";
 
     @Autowired
     private AdsDeductionCampaignSupplierHandler adsDeductionCampaignSupplierHandler;
 
     @Override
     public String getQuery(String startTime, long offset, int limit) {
-        return String.format(QUERY, limit, offset);
+        return String.format(QUERY, startTime, limit, offset);
     }
 
     @Override

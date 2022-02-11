@@ -2,6 +2,9 @@ package com.meesho.cps.service.redshift;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.meesho.ads.lib.data.internal.RedshiftProcessedMetadata;
+import com.meesho.ads.lib.utils.Utils;
+import com.meesho.commons.utils.DateUtils;
+import com.meesho.cps.constants.AdsDeductionCampaignEventType;
 import com.meesho.cps.constants.Constants;
 import com.meesho.cps.constants.DBConstants;
 import com.meesho.cps.constants.SchedulerType;
@@ -17,6 +20,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -47,21 +51,32 @@ public class AdsDeductionCampaignSupplierHandler {
             BigDecimal netDeduction = resultSet.getBigDecimal("net_deduction");
             BigDecimal credits = resultSet.getBigDecimal("credits");
             BigDecimal adsCost = resultSet.getBigDecimal("ads_cost");
+            String transactionId= resultSet.getString("transaction_id");
 
             i++;
 
-            //TODO add null check
+            redshiftProcessedMetadata.setLastEntryCreatedAt(resultSet.getString("created_at"));
 
-            //TODO add last processed at
-
-            adsDeductionCampaignSupplierBuilder.campaignId(campaignId)
-                    .netDeduction(netDeduction)
-                    .adsCost(adsCost)
-                    .credits(credits)
-                    .gst(gst)
-                    .startDate(startDate)
-                    .deductionDuration(deductionDuration)
-                    .supplierId(supplierId);
+            adsDeductionCampaignSupplierBuilder
+                    .metaData(AdsDeductionCampaignSupplier.MetaData.builder()
+                            .timestamp(DateUtils.toIsoString(DateUtils.getCurrentTimestamp(Utils.getCountry()), Utils.getCountry()))
+                            .requestId(UUID.randomUUID().toString())
+                            .build())
+                    .data(AdsDeductionCampaignSupplier.AdsDeductionCampaignEventData.builder()
+                            .supplierId(supplierId)
+                            .transactionId(transactionId)
+                            .paymentType(AdsDeductionCampaignEventType.ADS_COST.name())
+                            .metadata(AdsDeductionCampaignSupplier.AdsDeductionCampaignSupplierData.builder()
+                                    .campaignId(campaignId)
+                                    .adsCost(adsCost)
+                                    .credits(credits)
+                                    .deductionDuration(deductionDuration)
+                                    .netDeduction(netDeduction)
+                                    .gst(gst)
+                                    .startDate(startDate)
+                                    .supplierId(supplierId)
+                                    .build())
+                            .build());
 
             entities.add(adsDeductionCampaignSupplierBuilder.build());
 
@@ -96,8 +111,8 @@ public class AdsDeductionCampaignSupplierHandler {
     }
 
     public String getUniqueKey(AdsDeductionCampaignSupplier entity) {
-        return String.format(DBConstants.Redshift.ADS_DEDUCTION_CAMPAIGN_KEY, entity.getSupplierId(),
-                entity.getCampaignId(), entity.getStartDate());
+        return String.format(DBConstants.Redshift.ADS_DEDUCTION_CAMPAIGN_KEY, entity.getData().getSupplierId(),
+                entity.getData().getMetadata().getCampaignId(), entity.getData().getMetadata().getStartDate());
     }
 
 }
