@@ -8,6 +8,7 @@ import com.meesho.cps.data.redshift.AdsDeductionCampaignSupplier;
 import com.meesho.cps.service.redshift.AdsDeductionCampaignSupplierHandler;
 import com.meesho.instrumentation.annotation.DigestLogger;
 import com.meesho.instrumentation.enums.MetricType;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Component;
@@ -16,18 +17,20 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
+@Slf4j
 @Component
 @EnableScheduling
 public class AdsDeductionCampaignSupplierScheduler extends RedshiftAbstractScheduler<AdsDeductionCampaignSupplier> {
 
-    private static final String QUERY = "SELECT * FROM " + DBConstants.Redshift.Tables.ADS_DEDUCTION_CAMPAIGN_SUPPLIER;
+    private static final String QUERY = "SELECT * FROM " + DBConstants.Redshift.Tables.ADS_DEDUCTION_CAMPAIGN_SUPPLIER +
+            " LIMIT '%d' OFFSET '%d'";
 
     @Autowired
     private AdsDeductionCampaignSupplierHandler adsDeductionCampaignSupplierHandler;
 
     @Override
     public String getQuery(String startTime, long offset, int limit) {
-        return String.format(QUERY, startTime, limit, offset);
+        return String.format(QUERY, limit, offset);
     }
 
     @Override

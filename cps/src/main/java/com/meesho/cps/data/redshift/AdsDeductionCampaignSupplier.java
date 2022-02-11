@@ -15,7 +15,7 @@ public class AdsDeductionCampaignSupplier {
     private BigDecimal adsCost;
     private BigDecimal gst;
     private BigDecimal netDeduction;
-    private Long credits;
+    private BigDecimal credits;
     private String deductionDuration;
 
 }

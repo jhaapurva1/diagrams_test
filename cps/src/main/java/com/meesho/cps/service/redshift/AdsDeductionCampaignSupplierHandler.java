@@ -45,7 +45,7 @@ public class AdsDeductionCampaignSupplierHandler {
             String startDate = resultSet.getString("start_date");
             BigDecimal gst = resultSet.getBigDecimal("gst");
             BigDecimal netDeduction = resultSet.getBigDecimal("net_deduction");
-            Long credits = resultSet.getLong("credits");
+            BigDecimal credits = resultSet.getBigDecimal("credits");
             BigDecimal adsCost = resultSet.getBigDecimal("ads_cost");
 
             i++;
