@@ -63,20 +63,20 @@ public class PrismEventTransformer {
     public static List<DayWisePerformancePrismEvent> getDayWisePerformancePrismEvent(
             List<CampaignCatalogDateMetrics> campaignCatalogDateMetricsList) {
         List<DayWisePerformancePrismEvent> events = new ArrayList<>();
-        campaignCatalogDateMetricsList.forEach(campaignCatalogDateMetrics -> {
+        campaignCatalogDateMetricsList.forEach(ccd -> {
             events.add(DayWisePerformancePrismEvent.builder()
-                    .budgetUtilised(campaignCatalogDateMetrics.getBudgetUtilised())
-                    .campaignId(campaignCatalogDateMetrics.getCampaignId())
-                    .clicks(campaignCatalogDateMetrics.getClickCount())
-                    .catalogId(campaignCatalogDateMetrics.getCatalogId())
+                    .budgetUtilised(ccd.getBudgetUtilised())
+                    .campaignId(ccd.getCampaignId())
+                    .clicks(ccd.getClickCount())
+                    .catalogId(ccd.getCatalogId())
                     .currentTimestamp(LocalDateTime.now().format(DateTimeHelper.dateTimeFormat))
-                    .date(campaignCatalogDateMetrics.getDate().format(DateTimeHelper.dateTimeFormat))
-                    .orders(campaignCatalogDateMetrics.getOrders())
-                    .revenue(campaignCatalogDateMetrics.getRevenue())
-                    .shares(campaignCatalogDateMetrics.getSharesCount())
-                    .wishlist(campaignCatalogDateMetrics.getWishlistCount())
-                    .views(campaignCatalogDateMetrics.getViewCount())
-                    .eventId(UUID.randomUUID().toString())
+                    .date(ccd.getDate().format(DateTimeHelper.dateTimeFormat))
+                    .orders(ccd.getOrders())
+                    .revenue(ccd.getRevenue())
+                    .shares(ccd.getSharesCount())
+                    .wishlist(ccd.getWishlistCount())
+                    .views(ccd.getViewCount())
+                    .eventId(ccd.getCampaignId() + "_" + ccd.getCatalogId() + "_" + ccd.getDate())
                     .build());
         });
         return events;
