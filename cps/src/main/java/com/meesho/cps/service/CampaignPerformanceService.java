@@ -101,7 +101,9 @@ public class CampaignPerformanceService {
     public CampaignPerformanceResponse getCampaignPerformanceMetrics(CampaignPerformanceRequest request) throws IOException {
         ElasticFiltersRequest elasticFiltersRequestMonthWise = ElasticFiltersRequest.builder()
                 .campaignIds(request.getCampaignIds())
-                .aggregationBuilders(campaignPerformanceHelper.createBucketAggregations(Constants.ESConstants.BY_CAMPAIGN, DBConstants.ElasticSearch.CAMPAIGN_ID))
+                .aggregationBuilders(campaignPerformanceHelper.createBucketAggregations(
+                        Constants.ESConstants.BY_CAMPAIGN, DBConstants.ElasticSearch.CAMPAIGN_ID,
+                        request.getCampaignIds().size()))
                 .build();
 
         EsCampaignCatalogAggregateResponse monthWiseResponse = new EsCampaignCatalogAggregateResponse();
@@ -125,7 +127,9 @@ public class CampaignPerformanceService {
         ElasticFiltersRequest elasticFiltersRequestMonthWise = ElasticFiltersRequest.builder()
                 .campaignIds(Collections.singletonList(request.getCampaignId()))
                 .catalogIds(request.getCatalogIds())
-                .aggregationBuilders(campaignPerformanceHelper.createBucketAggregations(Constants.ESConstants.BY_CATALOG, DBConstants.ElasticSearch.CATALOG_ID))
+                .aggregationBuilders(campaignPerformanceHelper.createBucketAggregations(
+                        Constants.ESConstants.BY_CATALOG, DBConstants.ElasticSearch.CATALOG_ID,
+                        request.getCatalogIds().size()))
                 .build();
 
         EsCampaignCatalogAggregateResponse monthWiseResponse = new EsCampaignCatalogAggregateResponse();
