@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.meesho.ads.lib.data.internal.RedshiftProcessedMetadata;
 import com.meesho.ads.lib.utils.Utils;
 import com.meesho.commons.utils.DateUtils;
-import com.meesho.cps.constants.AdsDeductionCampaignEventType;
+import com.meesho.cps.constants.AdsDeductionPaymentType;
 import com.meesho.cps.constants.Constants;
 import com.meesho.cps.constants.DBConstants;
 import com.meesho.cps.constants.SchedulerType;
@@ -41,9 +41,9 @@ public class AdsDeductionCampaignSupplierHandler {
         List<AdsDeductionCampaignSupplier> entities = new ArrayList<>();
         AdsDeductionCampaignSupplier.AdsDeductionCampaignSupplierBuilder adsDeductionCampaignSupplierBuilder =
                 AdsDeductionCampaignSupplier.builder();
-        int i = 0;
-        while (resultSet.next()){
-            Long campaignId  = resultSet.getLong("campaign_id");
+
+        while (resultSet.next()) {
+            Long campaignId = resultSet.getLong("campaign_id");
             Long supplierId = resultSet.getLong("supplier_id");
             String deductionDuration = resultSet.getString("deduction_duration");
             String startDate = resultSet.getString("start_date");
@@ -51,21 +51,19 @@ public class AdsDeductionCampaignSupplierHandler {
             BigDecimal netDeduction = resultSet.getBigDecimal("net_deduction");
             BigDecimal credits = resultSet.getBigDecimal("credits");
             BigDecimal adsCost = resultSet.getBigDecimal("ads_cost");
-            String transactionId= resultSet.getString("transaction_id");
-
-            i++;
+            String transactionId = resultSet.getString("transaction_id");
 
             redshiftProcessedMetadata.setLastEntryCreatedAt(resultSet.getString("created_at"));
 
             adsDeductionCampaignSupplierBuilder
-                    .metaData(AdsDeductionCampaignSupplier.MetaData.builder()
+                    .metadata(AdsDeductionCampaignSupplier.MetaData.builder()
                             .timestamp(DateUtils.toIsoString(DateUtils.getCurrentTimestamp(Utils.getCountry()), Utils.getCountry()))
                             .requestId(UUID.randomUUID().toString())
                             .build())
                     .data(AdsDeductionCampaignSupplier.AdsDeductionCampaignEventData.builder()
                             .supplierId(supplierId)
                             .transactionId(transactionId)
-                            .paymentType(AdsDeductionCampaignEventType.ADS_COST.name())
+                            .paymentType(AdsDeductionPaymentType.ADS_COST.name())
                             .metadata(AdsDeductionCampaignSupplier.AdsDeductionCampaignSupplierData.builder()
                                     .campaignId(campaignId)
                                     .adsCost(adsCost)
@@ -82,32 +80,33 @@ public class AdsDeductionCampaignSupplierHandler {
 
         }
 
-        redshiftProcessedMetadata.setProcessedDataSize(i);
+        redshiftProcessedMetadata.setProcessedDataSize(entities.size());
         redshiftProcessedMetadata.setEntities(entities);
         return redshiftProcessedMetadata;
     }
 
     public void handle(List<AdsDeductionCampaignSupplier> adsDeductionCampaignSupplierList) {
 
-        final int retryCount  = 0;
+        List<AdsDeductionCampaignSupplier> result = adsDeductionCampaignSupplierList.stream()
+                .filter(adsDeductionCampaignSupplier -> {
+                    try {
+                        kafkaService.sendMessage(Constants.ADS_COST_TOPIC,
+                                null,
+                                objectMapper.writeValueAsString(adsDeductionCampaignSupplier));
+                        return true;
+                    } catch (Exception e) {
+                        log.error("Exception while sending Ads_Cost event {}", adsDeductionCampaignSupplier, e);
+                        return false;
+                    }
+                }).collect(Collectors.toList());
 
-        List<String> keys = adsDeductionCampaignSupplierList.stream()
+        List<String> keys = result.stream()
                 .map(this::getUniqueKey)
                 .collect(Collectors.toList());
 
-        adsDeductionCampaignSupplierList.forEach(adsDeductionCampaignSupplier -> {
-            try {
-                kafkaService.sendMessage(Constants.ADS_COST_TOPIC,
-                        null,
-                        objectMapper.writeValueAsString(adsDeductionCampaignSupplier),
-                        retryCount);
-            } catch (Exception e) {
-                log.error("Exception while sending Ads_Cost event {}", adsDeductionCampaignSupplier, e);
-            }
-        });
-
-        log.info(SchedulerType.ADS_DEDUCTION_CAMPAIGN_SUPPLIER.name() +
-                "Scheduler processed result set for ad seduction show in payment tab {}", keys);
+        if (!keys.isEmpty())
+            log.info(SchedulerType.ADS_DEDUCTION_CAMPAIGN_SUPPLIER.name() +
+                    "Scheduler processed result set for ad seduction show in payment tab {}", keys);
     }
 
     public String getUniqueKey(AdsDeductionCampaignSupplier entity) {

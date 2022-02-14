@@ -1,5 +1,5 @@
 package com.meesho.cps.constants;
 
-public enum AdsDeductionCampaignEventType {
+public enum AdsDeductionPaymentType {
     ADS_COST
 }
