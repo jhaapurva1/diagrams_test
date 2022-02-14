@@ -60,7 +60,8 @@ public class PrismEventTransformer {
         return events;
     }
 
-    public static List<DayWisePerformancePrismEvent> getDayWisePerformancePrismEvent(List<CampaignCatalogDateMetrics> campaignCatalogDateMetricsList) {
+    public static List<DayWisePerformancePrismEvent> getDayWisePerformancePrismEvent(
+            List<CampaignCatalogDateMetrics> campaignCatalogDateMetricsList) {
         List<DayWisePerformancePrismEvent> events = new ArrayList<>();
         campaignCatalogDateMetricsList.forEach(campaignCatalogDateMetrics -> {
             events.add(DayWisePerformancePrismEvent.builder()
