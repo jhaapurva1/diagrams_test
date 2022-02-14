@@ -25,6 +25,7 @@ import com.meesho.cps.db.hbase.repository.CampaignDatewiseMetricsRepository;
 import com.meesho.cps.db.hbase.repository.CampaignMetricsRepository;
 import com.meesho.cps.db.mysql.dao.CampaignPerformanceDao;
 import com.meesho.cps.db.redis.dao.UpdatedCampaignCatalogCacheDao;
+import com.meesho.cps.helper.BackfillCampaignHelper;
 import com.meesho.cps.service.external.PrismService;
 import com.meesho.cps.transformer.DebugTransformer;
 import com.meesho.cps.transformer.PrismEventTransformer;
@@ -34,6 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
+import java.io.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -179,27 +181,39 @@ public class DebugService {
     }
 
     // Debug service
-    public void BackillCampaignCatalogDayPerformanceEventsToPrism(){
+    public void BackillCampaignCatalogDayPerformanceEventsToPrism() throws IOException {
 
-        List<CampaignCatalogDateMetrics> campaignCatalogDateMetricsList = campaignCatalogDateMetricsRepository
-                .scanInDateRange(LocalDateTime.of(0,Month.JANUARY,0,0,0),
-                        LocalDateTime.of(2021, Month.DECEMBER, 22, 0,0));
+        FileReader fileReader = new FileReader("/");
+        BufferedReader bufferedReader = new BufferedReader(fileReader);
+        List<CampaignCatalogDate> campaignCatalogDates = BackfillCampaignHelper.getCampaignCatalogAndDateFromCSV(bufferedReader);
+
+        List<CampaignCatalogDateMetrics> campaignCatalogDateMetricsList = new ArrayList<>();
+
+        campaignCatalogDates.forEach(campaignCatalogDate -> {
+            List<CampaignCatalogDateMetrics> campaignCatalogDateMetrics = campaignCatalogDateMetricsRepository
+                    .scan(campaignCatalogDate.getCampaignId(),campaignCatalogDate.getCatalogId(),
+                            getMonthPrefix(campaignCatalogDate.getDate()));
+
+            campaignCatalogDateMetricsList.addAll(campaignCatalogDateMetrics);
+        });
 
         Integer eventBatchSize = applicationProperties.getBackfillDateWiseMetricsBatchSize();
 
         List<DayWisePerformancePrismEvent> dayWisePerformancePrismEvents = PrismEventTransformer
                 .getDayWisePerformancePrismEvent(campaignCatalogDateMetricsList);
 
-        AtomicInteger index = new AtomicInteger(1);
+
 
         List<List<DayWisePerformancePrismEvent>> batchEventLists = Lists.partition(dayWisePerformancePrismEvents,
                 eventBatchSize);
 
-        batchEventLists.forEach(batch -> {
-            prismService.publishEvent(Constants.PrismEventNames.DAY_WISE_PERF_EVENTS, batch);
-            log.info("Backfill event batch "+ index, batch.toString());
-            index.addAndGet(1);
-        });
+        for (int i = 1; i <= batchEventLists.size(); i++) {
+            prismService.publishEvent(Constants.PrismEventNames.DAY_WISE_PERF_EVENTS, batchEventLists.get(i));
+            log.info("Backfill event batch processed "+ i+" {} ", batchEventLists.get(i).toString());
+        }
 
+    }
+    private String getMonthPrefix(String date) {
+        return date.substring(0, date.length() - 3);
     }
 }

@@ -98,23 +98,6 @@ public class CampaignCatalogDateMetricsRepository {
         return campaignCatalogDateMetrics;
     }
 
-    private CampaignCatalogDateMetrics mapper(Result result){
-
-        return CampaignCatalogDateMetrics.builder()
-                .campaignId(HbaseUtils.getColumnAsLong(COLUMN_FAMILY, COLUMN_CAMPAIGN_ID, result))
-                .catalogId(HbaseUtils.getColumnAsLong(COLUMN_FAMILY, COLUMN_CATALOG_ID, result))
-                .date(HbaseUtils.getColumnAsLocalDate(COLUMN_FAMILY,COLUMN_DATE, result))
-                .clickCount(HbaseUtils.getColumnAsLong(COLUMN_FAMILY, COLUMN_CLICK_COUNT, result))
-                .sharesCount(HbaseUtils.getColumnAsLong(COLUMN_FAMILY, COLUMN_SHARES_COUNT, result))
-                .wishlistCount(HbaseUtils.getColumnAsLong(COLUMN_FAMILY, COLUMN_WISHLIST_COUNT, result))
-                .viewCount(HbaseUtils.getColumnAsLong(COLUMN_FAMILY, COLUMN_VIEW_COUNT, result))
-                .budgetUtilised(HbaseUtils.getLongColumnAsBigDecimal(
-                        COLUMN_FAMILY, COLUMN_BUDGET_UTILISED, result, MULTIPLIER))
-                .orders(HbaseUtils.getColumnAsInteger(COLUMN_FAMILY, COLUMN_ORDERS, result))
-                .revenue(HbaseUtils.getColumnAsBigDecimal(COLUMN_FAMILY, COLUMN_REVENUE, result))
-                .build();
-    }
-
     public CampaignCatalogDateMetrics get(Long campaignId, Long catalogId, LocalDate date) {
         Get get = new Get(Bytes.toBytes(CampaignCatalogDateMetrics.generateRowKey(campaignId, catalogId, date)));
         try (Table table = getTable()) {
@@ -283,27 +266,6 @@ public class CampaignCatalogDateMetricsRepository {
             return campaignCatalogMetricsList;
         } catch (IOException e) {
             log.error("Error in CampaignCatalogDateMetricsRepository scan", e);
-            throw new HbaseException(e.getMessage());
-        }
-    }
-    public List<CampaignCatalogDateMetrics> scanInDateRange(LocalDateTime startDateTime, LocalDateTime endDateTime){
-        try(Table table = getTable()){
-            Scan scan = new Scan();
-            scan.setColumnFamilyTimeRange(Bytes.toBytes(ByteBuffer.wrap(COLUMN_DATE)),
-                    Timestamp.valueOf(startDateTime).getTime(),
-                    Timestamp.valueOf(endDateTime).getTime());
-            ResultScanner resultScanner = table.getScanner(scan);
-            List<CampaignCatalogDateMetrics> campaignCatalogDateMetricsList = new ArrayList<>();
-            resultScanner.forEach(result -> {
-                if(!result.isEmpty()){
-                    campaignCatalogDateMetricsList.add(mapper(result));
-                }
-            });
-
-            return campaignCatalogDateMetricsList;
-
-        } catch (IOException e) {
-            log.error("Error in CampaignCatalogDateMetricsRepository scan in Back fill to prism debug api ", e);
             throw new HbaseException(e.getMessage());
         }
     }
