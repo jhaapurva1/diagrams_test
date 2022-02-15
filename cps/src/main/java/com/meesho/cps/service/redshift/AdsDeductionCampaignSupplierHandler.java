@@ -1,5 +1,6 @@
 package com.meesho.cps.service.redshift;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.meesho.ads.lib.data.internal.RedshiftProcessedMetadata;
 import com.meesho.ads.lib.utils.Utils;
@@ -85,28 +86,16 @@ public class AdsDeductionCampaignSupplierHandler {
         return redshiftProcessedMetadata;
     }
 
-    public void handle(List<AdsDeductionCampaignSupplier> adsDeductionCampaignSupplierList) {
+    public void handle(List<AdsDeductionCampaignSupplier> adsDeductionCampaignSupplierList) throws JsonProcessingException {
 
-        List<AdsDeductionCampaignSupplier> result = adsDeductionCampaignSupplierList.stream()
-                .filter(adsDeductionCampaignSupplier -> {
-                    try {
-                        kafkaService.sendMessage(Constants.ADS_COST_TOPIC,
-                                null,
-                                objectMapper.writeValueAsString(adsDeductionCampaignSupplier));
-                        return true;
-                    } catch (Exception e) {
-                        log.error("Exception while sending Ads_Cost event {}", adsDeductionCampaignSupplier, e);
-                        return false;
-                    }
-                }).collect(Collectors.toList());
+        for (AdsDeductionCampaignSupplier deduction: adsDeductionCampaignSupplierList) {
+            //No need to catch, if we catch exception, we wont get alerted even if scheduler is failing
+            kafkaService.sendMessage(Constants.ADS_COST_TOPIC,
+                    null,
+                    objectMapper.writeValueAsString(deduction));
 
-        List<String> keys = result.stream()
-                .map(this::getUniqueKey)
-                .collect(Collectors.toList());
+        }
 
-        if (!keys.isEmpty())
-            log.info(SchedulerType.ADS_DEDUCTION_CAMPAIGN_SUPPLIER.name() +
-                    "Scheduler processed result set for ad seduction show in payment tab {}", keys);
     }
 
     public String getUniqueKey(AdsDeductionCampaignSupplier entity) {

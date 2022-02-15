@@ -8,6 +8,7 @@ import com.meesho.cps.data.redshift.AdsDeductionCampaignSupplier;
 import com.meesho.cps.service.redshift.AdsDeductionCampaignSupplierHandler;
 import com.meesho.instrumentation.annotation.DigestLogger;
 import com.meesho.instrumentation.enums.MetricType;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -39,6 +40,7 @@ public class AdsDeductionCampaignSupplierScheduler extends RedshiftAbstractSched
         return adsDeductionCampaignSupplierHandler.transformResults(resultSet);
     }
 
+    @SneakyThrows
     @Override
     @DigestLogger(metricType = MetricType.METHOD, tagSet = "AdsDeductionCampaignSupplierEventScheduler")
     public void handle(List<AdsDeductionCampaignSupplier> entities) throws SQLException {
