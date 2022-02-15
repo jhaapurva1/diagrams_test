@@ -65,6 +65,7 @@ public class AdsDeductionCampaignSupplierHandler {
                             .supplierId(supplierId)
                             .transactionId(transactionId)
                             .paymentType(AdsDeductionPaymentType.ADS_COST.name())
+                            .amount(netDeduction.add(gst))
                             .metadata(AdsDeductionCampaignSupplier.AdsDeductionCampaignSupplierData.builder()
                                     .campaignId(campaignId)
                                     .adsCost(adsCost)
