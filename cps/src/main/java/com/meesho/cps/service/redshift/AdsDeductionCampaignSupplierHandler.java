@@ -11,6 +11,7 @@ import com.meesho.cps.constants.DBConstants;
 import com.meesho.cps.constants.SchedulerType;
 import com.meesho.cps.data.redshift.AdsDeductionCampaignSupplier;
 import com.meesho.cps.service.KafkaService;
+import com.meesho.cps.transformer.AdDeductionCampaignSupplierTransformer;
 import com.meesho.cps.utils.CommonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,8 +41,6 @@ public class AdsDeductionCampaignSupplierHandler {
                 CommonUtils.getDefaultRedshitProcessedMetadata();
 
         List<AdsDeductionCampaignSupplier> entities = new ArrayList<>();
-        AdsDeductionCampaignSupplier.AdsDeductionCampaignSupplierBuilder adsDeductionCampaignSupplierBuilder =
-                AdsDeductionCampaignSupplier.builder();
 
         while (resultSet.next()) {
             Long campaignId = resultSet.getLong("campaign_id");
@@ -56,29 +55,18 @@ public class AdsDeductionCampaignSupplierHandler {
 
             redshiftProcessedMetadata.setLastEntryCreatedAt(resultSet.getString("created_at"));
 
-            adsDeductionCampaignSupplierBuilder
-                    .metadata(AdsDeductionCampaignSupplier.MetaData.builder()
-                            .timestamp(DateUtils.toIsoString(DateUtils.getCurrentTimestamp(Utils.getCountry()), Utils.getCountry()))
-                            .requestId(UUID.randomUUID().toString())
-                            .build())
-                    .data(AdsDeductionCampaignSupplier.AdsDeductionCampaignEventData.builder()
+            entities.add(AdDeductionCampaignSupplierTransformer.transform(
+                    AdsDeductionCampaignSupplier.AdsDeductionCampaignSupplierData.builder()
                             .supplierId(supplierId)
-                            .transactionId(transactionId)
-                            .paymentType(AdsDeductionPaymentType.ADS_COST.name())
-                            .amount(netDeduction.add(gst))
-                            .metadata(AdsDeductionCampaignSupplier.AdsDeductionCampaignSupplierData.builder()
-                                    .campaignId(campaignId)
-                                    .adsCost(adsCost)
-                                    .credits(credits)
-                                    .deductionDuration(deductionDuration)
-                                    .netDeduction(netDeduction)
-                                    .gst(gst)
-                                    .startDate(startDate)
-                                    .supplierId(supplierId)
-                                    .build())
-                            .build());
-
-            entities.add(adsDeductionCampaignSupplierBuilder.build());
+                            .campaignId(campaignId)
+                            .startDate(startDate)
+                            .gst(gst)
+                            .netDeduction(netDeduction)
+                            .deductionDuration(deductionDuration)
+                            .credits(credits)
+                            .adsCost(adsCost)
+                            .build()
+                    , transactionId));
 
         }
 
