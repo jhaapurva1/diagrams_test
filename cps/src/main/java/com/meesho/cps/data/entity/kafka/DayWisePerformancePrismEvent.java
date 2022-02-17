@@ -26,9 +26,6 @@ public class DayWisePerformancePrismEvent {
     @JsonProperty("catalog_id")
     private Long catalogId;
 
-    @JsonProperty("supplier_id")
-    private Long supplierId;
-
     @JsonProperty("clicks")
     private Long clicks;
 
