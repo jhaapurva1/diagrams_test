@@ -29,13 +29,6 @@ public class ConsumerConstants {
         public static final String BATCH_CONTAINER_FACTORY = "ingestionBatchKafkaListenerContainerFactory";
     }
 
-    public static class PayoutServiceKafka {
-        public static final String PAYOUT_BOOTSTRAP_SERVERS = "${payout.bootstrap.servers}";
-        public static final String PRODUCER_PAYOUT_CONFIG = "producer-payout-config";
-        public static final String PRODUCER_PAYOUT_FACTORY = "producer-payout-factory";
-        public static final String PAYOUT_KAFKA_TEMPLATE= "payout-kafka-template";
-    }
-
     public static class IngestionInteractionEvents {
         public static final String AD_CLICK_TOPIC = "ad_click";
         public static final String AD_SHARED_TOPIC = "ad_shared";

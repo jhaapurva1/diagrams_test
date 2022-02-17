@@ -2,7 +2,7 @@ package com.meesho.cps.service;
 
 import com.meesho.ads.lib.constants.Constants;
 import com.meesho.commons.enums.CommonConstants;
-import com.meesho.cps.constants.ConsumerConstants;
+import com.meesho.cps.constants.ProducerConstants;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.internals.RecordHeader;
 import org.slf4j.MDC;
@@ -17,7 +17,7 @@ import org.springframework.util.concurrent.ListenableFuture;
 public class PayoutKafkaService {
 
     @Autowired
-    @Qualifier(ConsumerConstants.PayoutServiceKafka.PAYOUT_KAFKA_TEMPLATE)
+    @Qualifier(ProducerConstants.PayoutServiceKafka.PAYOUT_KAFKA_TEMPLATE)
     private KafkaTemplate<String, String> kafkaTemplate;
 
     public ListenableFuture<SendResult<String, String>> sendMessage(String topic, String key, String msg) {

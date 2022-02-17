@@ -1,6 +1,7 @@
 package com.meesho.cps.config;
 
 import com.meesho.cps.constants.ConsumerConstants;
+import com.meesho.cps.constants.ProducerConstants;
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +36,7 @@ public class KafkaConfig {
     @Value(ConsumerConstants.CommonKafka.BOOTSTRAP_SERVERS)
     private String commonBootstrapServers;
 
-    @Value(ConsumerConstants.PayoutServiceKafka.PAYOUT_BOOTSTRAP_SERVERS)
+    @Value(ProducerConstants.PayoutServiceKafka.PAYOUT_BOOTSTRAP_SERVERS)
     private String payoutServers;
 
     @Value(ConsumerConstants.CommonKafka.AVRO_SCHEMA_REGISTRY_URL)
@@ -127,7 +128,7 @@ public class KafkaConfig {
         return new KafkaTemplate<>(producerFactory());
     }
 
-    @Bean(ConsumerConstants.PayoutServiceKafka.PRODUCER_PAYOUT_CONFIG)
+    @Bean(ProducerConstants.PayoutServiceKafka.PRODUCER_PAYOUT_CONFIG)
     public Map<String, Object> payoutProducerConfig() {
         Map<String, Object> configs = new HashMap<>();
         configs.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, payoutServers);
@@ -136,12 +137,12 @@ public class KafkaConfig {
         return configs;
     }
 
-    @Bean(ConsumerConstants.PayoutServiceKafka.PRODUCER_PAYOUT_FACTORY)
+    @Bean(ProducerConstants.PayoutServiceKafka.PRODUCER_PAYOUT_FACTORY)
     public DefaultKafkaProducerFactory<String, String> payoutProducerFactory() {
         return new DefaultKafkaProducerFactory<>(payoutProducerConfig());
     }
 
-    @Bean(ConsumerConstants.PayoutServiceKafka.PAYOUT_KAFKA_TEMPLATE)
+    @Bean(ProducerConstants.PayoutServiceKafka.PAYOUT_KAFKA_TEMPLATE)
     public KafkaTemplate<String, String> payoutKafkaTemplate() {
         return new KafkaTemplate<>(payoutProducerFactory());
     }
