@@ -12,6 +12,7 @@ public class Constants {
     public static final String INGESTION_VIEW_EVENTS_DEAD_QUEUE_TOPIC = "cps.ingestion-events.view.dead.queue";
     public static final String INGESTION_INTERACTION_EVENTS_DEAD_QUEUE_TOPIC =
             "cps.ingestion-events.interaction.dead.queue";
+    public static final String[] CAMPAIGN_CATALOG_DATE_FORMAT = new String[]{"campaign_id", "catalog_id", "date"};
 
     public static class API {
         public static final String BASE_PATH = "/api/v1";
@@ -35,6 +36,7 @@ public class Constants {
             public static final String GET_CAMPAIGN_CATALOG_METRICS = "/campaign_catalog_metrics/get";
             public static final String CAMPAIGN_PERFORMANCE_MIGRATE = "/campaign_performance/migrate";
             public static final String GET_CAMPAIGN_DATEWISE_METRICS = "/campaign_datewise_metrics/get";
+            public static final String BACKFILL_CAMPAIGN_CATALOG_DAY_PERFORMANCE_EVENT = "/backfill/campaign_catalog_day_performance_events";
         }
 
         public static class PrismService {

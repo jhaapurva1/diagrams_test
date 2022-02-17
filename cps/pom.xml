@@ -5,12 +5,12 @@
     <parent>
         <groupId>com.meesho</groupId>
         <artifactId>campaign-performance-service</artifactId>
-        <version>0.0.11-RELEASE</version>
+        <version>0.0.12-RELEASE</version>
     </parent>
 
     <groupId>com.meesho</groupId>
     <artifactId>cps</artifactId>
-    <version>0.0.11-RELEASE</version>
+    <version>0.0.12-RELEASE</version>
     <name>cps</name>
     <description>Campaign Performance Service</description>
     <properties>
@@ -117,6 +117,12 @@
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
             <version>4.5.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-csv</artifactId>
+            <version>1.8</version>
         </dependency>
 
         <!-- Ads Common Lib-->

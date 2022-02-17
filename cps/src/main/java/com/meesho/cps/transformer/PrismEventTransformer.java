@@ -3,16 +3,14 @@ package com.meesho.cps.transformer;
 import com.meesho.ads.lib.utils.Utils;
 import com.meesho.commons.utils.DateUtils;
 import com.meesho.cps.data.entity.elasticsearch.ESDailyIndexDocument;
+import com.meesho.cps.data.entity.hbase.CampaignCatalogDateMetrics;
 import com.meesho.cps.data.entity.kafka.AdInteractionEvent;
 import com.meesho.cps.data.entity.kafka.AdInteractionPrismEvent;
 import com.meesho.cps.data.entity.kafka.DayWisePerformancePrismEvent;
 import com.meesho.cps.utils.DateTimeHelper;
-import org.joda.time.DateTime;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,10 +50,31 @@ public class PrismEventTransformer {
                     .eventId(document.getId())
                     .orders(document.getOrders())
                     .revenue(document.getRevenue())
-                    .supplierId(document.getSupplierId())
                     .shares(document.getShares())
                     .wishlist(document.getWishlist())
                     .views(document.getViews())
+                    .build());
+        });
+        return events;
+    }
+
+    public static List<DayWisePerformancePrismEvent> getDayWisePerformancePrismEvent(
+            List<CampaignCatalogDateMetrics> campaignCatalogDateMetricsList) {
+        List<DayWisePerformancePrismEvent> events = new ArrayList<>();
+        campaignCatalogDateMetricsList.forEach(ccd -> {
+            events.add(DayWisePerformancePrismEvent.builder()
+                    .budgetUtilised(ccd.getBudgetUtilised())
+                    .campaignId(ccd.getCampaignId())
+                    .clicks(ccd.getClickCount())
+                    .catalogId(ccd.getCatalogId())
+                    .currentTimestamp(LocalDateTime.now().format(DateTimeHelper.dateTimeFormat))
+                    .date(ccd.getDate().toString())
+                    .orders(ccd.getOrders())
+                    .revenue(ccd.getRevenue())
+                    .shares(ccd.getSharesCount())
+                    .wishlist(ccd.getWishlistCount())
+                    .views(ccd.getViewCount())
+                    .eventId(ccd.getCampaignId() + "_" + ccd.getCatalogId() + "_" + ccd.getDate())
                     .build());
         });
         return events;

@@ -105,6 +105,9 @@ public class ApplicationProperties {
     @Value("${campaign.date-wise.metrics.batch-size}")
     private Integer campaignDatewiseMetricsBatchSize;
 
+    @Value("${backfill.date-wise.metrics.prism.batch-size}")
+    private Integer backfillDateWiseMetricsBatchSize;
+
     @Value("#{T(java.time.LocalDate).parse('${campaign.date-wise.metrics.reference-date}')}")
     private LocalDate campaignDatewiseMetricsReferenceDate;
 
