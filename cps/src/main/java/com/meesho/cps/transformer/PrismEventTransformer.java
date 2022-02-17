@@ -51,7 +51,6 @@ public class PrismEventTransformer {
                     .eventId(document.getId())
                     .orders(document.getOrders())
                     .revenue(document.getRevenue())
-                    .supplierId(document.getSupplierId())
                     .shares(document.getShares())
                     .wishlist(document.getWishlist())
                     .views(document.getViews())
