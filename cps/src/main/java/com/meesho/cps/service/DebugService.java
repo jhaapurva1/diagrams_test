@@ -180,9 +180,9 @@ public class DebugService {
     }
 
     // Debug service
-    public void BackillCampaignCatalogDayPerformanceEventsToPrism() throws IOException {
+    public void BackillCampaignCatalogDayPerformanceEventsToPrism(String filePath) throws IOException {
 
-        FileReader fileReader = new FileReader("/Users/vineetyadav/Desktop/Ads/campaign-performance/cps/src/main/resources/CampaignCatalogDate.csv");
+        FileReader fileReader = new FileReader(filePath);
         BufferedReader bufferedReader = new BufferedReader(fileReader);
         List<CampaignCatalogDate> campaignCatalogDates =
                 BackfillCampaignHelper.getCampaignCatalogAndDateFromCSV(bufferedReader);
@@ -208,7 +208,7 @@ public class DebugService {
 
         for (int i = 1; i <= batchEventLists.size(); i++) {
             prismService.publishEvent(Constants.PrismEventNames.DAY_WISE_PERF_EVENTS, batchEventLists.get(i-1));
-            log.info("Backfill event batch processed "+ i +" {} ", batchEventLists.get(i-1).toString());
+            log.info("Backfill event batch processed "+ i);
         }
     }
 
