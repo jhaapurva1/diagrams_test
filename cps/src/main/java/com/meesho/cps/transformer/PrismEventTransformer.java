@@ -69,7 +69,7 @@ public class PrismEventTransformer {
                     .clicks(ccd.getClickCount())
                     .catalogId(ccd.getCatalogId())
                     .currentTimestamp(LocalDateTime.now().format(DateTimeHelper.dateTimeFormat))
-                    .date(ccd.getDate().format(DateTimeHelper.dateTimeFormat))
+                    .date(ccd.getDate().toString())
                     .orders(ccd.getOrders())
                     .revenue(ccd.getRevenue())
                     .shares(ccd.getSharesCount())
