@@ -11,6 +11,7 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
@@ -33,6 +34,9 @@ public class KafkaConfig {
 
     @Value(ConsumerConstants.CommonKafka.BOOTSTRAP_SERVERS)
     private String commonBootstrapServers;
+
+    @Value(ConsumerConstants.PayoutServiceKafka.PAYOUT_BOOTSTRAP_SERVERS)
+    private String payoutServers;
 
     @Value(ConsumerConstants.CommonKafka.AVRO_SCHEMA_REGISTRY_URL)
     private String avroSchemaRegistryUrl;
@@ -102,6 +106,7 @@ public class KafkaConfig {
     }
 
     @Bean
+    @Primary
     public Map<String, Object> producerConfigs() {
         Map<String, Object> configs = new HashMap<>();
         configs.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, commonBootstrapServers);
@@ -111,13 +116,34 @@ public class KafkaConfig {
     }
 
     @Bean
-    public DefaultKafkaProducerFactory<String,String> producerFactory() {
+    @Primary
+    public DefaultKafkaProducerFactory<String, String> producerFactory() {
         return new DefaultKafkaProducerFactory<>(producerConfigs());
     }
 
     @Bean
-    public KafkaTemplate<String,String> kafkaTemplate() {
+    @Primary
+    public KafkaTemplate<String, String> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
+    }
+
+    @Bean(ConsumerConstants.PayoutServiceKafka.PRODUCER_PAYOUT_CONFIG)
+    public Map<String, Object> payoutProducerConfig() {
+        Map<String, Object> configs = new HashMap<>();
+        configs.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, payoutServers);
+        configs.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configs.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        return configs;
+    }
+
+    @Bean(ConsumerConstants.PayoutServiceKafka.PRODUCER_PAYOUT_FACTORY)
+    public DefaultKafkaProducerFactory<String, String> payoutProducerFactory() {
+        return new DefaultKafkaProducerFactory<>(payoutProducerConfig());
+    }
+
+    @Bean(ConsumerConstants.PayoutServiceKafka.PAYOUT_KAFKA_TEMPLATE)
+    public KafkaTemplate<String, String> payoutKafkaTemplate() {
+        return new KafkaTemplate<>(payoutProducerFactory());
     }
 
 }

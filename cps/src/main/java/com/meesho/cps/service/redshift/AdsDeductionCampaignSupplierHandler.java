@@ -3,14 +3,10 @@ package com.meesho.cps.service.redshift;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.meesho.ads.lib.data.internal.RedshiftProcessedMetadata;
-import com.meesho.ads.lib.utils.Utils;
-import com.meesho.commons.utils.DateUtils;
-import com.meesho.cps.constants.AdsDeductionPaymentType;
 import com.meesho.cps.constants.Constants;
 import com.meesho.cps.constants.DBConstants;
-import com.meesho.cps.constants.SchedulerType;
 import com.meesho.cps.data.redshift.AdsDeductionCampaignSupplier;
-import com.meesho.cps.service.KafkaService;
+import com.meesho.cps.service.PayoutKafkaService;
 import com.meesho.cps.transformer.AdDeductionCampaignSupplierTransformer;
 import com.meesho.cps.utils.CommonUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -22,15 +18,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 public class AdsDeductionCampaignSupplierHandler {
 
     @Autowired
-    private KafkaService kafkaService;
+    private PayoutKafkaService payoutKafkaService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -79,7 +73,7 @@ public class AdsDeductionCampaignSupplierHandler {
 
         for (AdsDeductionCampaignSupplier deduction: adsDeductionCampaignSupplierList) {
             //No need to catch, if we catch exception, we wont get alerted even if scheduler is failing
-            kafkaService.sendMessage(Constants.ADS_COST_TOPIC,
+            payoutKafkaService.sendMessage(Constants.ADS_COST_DEDUCTION_TOPIC,
                     null,
                     objectMapper.writeValueAsString(deduction));
 
