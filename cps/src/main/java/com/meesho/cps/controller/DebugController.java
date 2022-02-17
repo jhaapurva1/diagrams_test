@@ -15,7 +15,6 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.io.IOException;
 import java.time.LocalDate;
 
 /**
@@ -97,8 +96,8 @@ public class DebugController {
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @RequestMapping(path = Constants.API.DEBUG_API.BACKFILL_CAMPAIGN_CATALOG_DAY_PERFORMANCE_EVENT,
             method = RequestMethod.GET)
-    public void postBackfillCampaignCatalogDayPerformanceEventsToPrism(@RequestParam("path") String path)
-            throws IOException {
+    public void postBackfillCampaignCatalogDayPerformanceEventsToPrism(@RequestParam("path") String path) {
         debugService.BackillCampaignCatalogDayPerformanceEventsToPrism(path);
     }
+
 }

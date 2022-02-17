@@ -180,12 +180,17 @@ public class DebugService {
     }
 
     // Debug service
-    public void BackillCampaignCatalogDayPerformanceEventsToPrism(String filePath) throws IOException {
-
-        FileReader fileReader = new FileReader(filePath);
-        BufferedReader bufferedReader = new BufferedReader(fileReader);
-        List<CampaignCatalogDate> campaignCatalogDates =
-                BackfillCampaignHelper.getCampaignCatalogAndDateFromCSV(bufferedReader);
+    public void BackillCampaignCatalogDayPerformanceEventsToPrism(String filePath) {
+        log.info("Starting day performance events back fill script");
+        List<CampaignCatalogDate> campaignCatalogDates = new ArrayList<>();
+        try {
+            FileReader fileReader = new FileReader(filePath);
+            BufferedReader bufferedReader = new BufferedReader(fileReader);
+            campaignCatalogDates = BackfillCampaignHelper.getCampaignCatalogAndDateFromCSV(bufferedReader);
+        } catch (IOException e) {
+            log.error("Error reading file {}", filePath, e);
+            return;
+        }
 
         List<CampaignCatalogDateMetrics> campaignCatalogDateMetricsList = new ArrayList<>();
 
