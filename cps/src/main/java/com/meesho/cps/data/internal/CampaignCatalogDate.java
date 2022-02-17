@@ -1,6 +1,7 @@
 package com.meesho.cps.data.internal;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -9,6 +10,7 @@ import lombok.NoArgsConstructor;
  * 13/12/21
  */
 @Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class CampaignCatalogDate {
