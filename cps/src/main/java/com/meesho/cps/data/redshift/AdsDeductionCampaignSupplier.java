@@ -27,7 +27,7 @@ public class AdsDeductionCampaignSupplier {
     public static class MetaData{
 
         @JsonProperty("timestamp")
-        private String timestamp;
+        private Long timestamp;
 
         @JsonProperty("request_id")
         private String requestId;
@@ -56,7 +56,7 @@ public class AdsDeductionCampaignSupplier {
         private BigDecimal amount;
 
         @JsonProperty("metadata")
-        private AdsDeductionCampaignSupplierData metadata;
+        private String metadata;
     }
 
     @Data

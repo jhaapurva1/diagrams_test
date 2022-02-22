@@ -123,7 +123,7 @@
         <dependency>
             <groupId>com.meesho</groupId>
             <artifactId>ads-common-lib</artifactId>
-            <version>0.0.15-RELEASE</version>
+            <version>0.0.18-RELEASE</version>
         </dependency>
 
         <!-- Kafka -->

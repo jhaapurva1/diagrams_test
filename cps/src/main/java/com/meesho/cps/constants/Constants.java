@@ -11,6 +11,7 @@ public class Constants {
     public static final String INGESTION_INTERACTION_EVENTS_DEAD_QUEUE_TOPIC =
             "cps.ingestion-events.interaction.dead.queue";
     public static final String ADS_COST_DEDUCTION_TOPIC = "sp.other_business_payments";
+    public static final String ADS_COST_DEDUCTION_EVENT_TYPE = "SUPPLIER";
 
     public static class API {
         public static final String BASE_PATH = "/api/v1";
