@@ -29,11 +29,8 @@ public class AdsDeductionCampaignSupplierHandler {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Autowired
-    private AdDeductionCampaignSupplierTransformer adDeductionCampaignSupplierTransformer;
-
     public RedshiftProcessedMetadata<AdsDeductionCampaignSupplier> transformResults(ResultSet resultSet)
-            throws SQLException{
+            throws SQLException, JsonProcessingException {
         RedshiftProcessedMetadata<AdsDeductionCampaignSupplier> redshiftProcessedMetadata =
                 CommonUtils.getDefaultRedshitProcessedMetadata();
 
@@ -52,7 +49,7 @@ public class AdsDeductionCampaignSupplierHandler {
 
             redshiftProcessedMetadata.setLastEntryCreatedAt(resultSet.getString("created_at"));
 
-            entities.add(adDeductionCampaignSupplierTransformer.transform(
+            entities.add(AdDeductionCampaignSupplierTransformer.transform(
                     AdsDeductionCampaignSupplier.AdsDeductionCampaignSupplierData.builder()
                             .supplierId(supplierId)
                             .campaignId(campaignId)
@@ -72,13 +69,13 @@ public class AdsDeductionCampaignSupplierHandler {
         return redshiftProcessedMetadata;
     }
 
-    public void handle(List<AdsDeductionCampaignSupplier> adsDeductionCampaignSupplierList) {
+    public void handle(List<AdsDeductionCampaignSupplier> adsDeductionCampaignSupplierList) throws JsonProcessingException {
 
-        for (AdsDeductionCampaignSupplier deduction: adsDeductionCampaignSupplierList) {
+        for (AdsDeductionCampaignSupplier deduction : adsDeductionCampaignSupplierList) {
             //No need to catch, if we catch exception, we wont get alerted even if scheduler is failing
             payoutKafkaService.sendMessage(Constants.ADS_COST_DEDUCTION_TOPIC,
                     null,
-                    getStringifyData(deduction));
+                    objectMapper.writeValueAsString(deduction));
 
         }
 
@@ -87,18 +84,6 @@ public class AdsDeductionCampaignSupplierHandler {
     public String getUniqueKey(AdsDeductionCampaignSupplier entity) {
         return String.format(DBConstants.Redshift.ADS_DEDUCTION_CAMPAIGN_KEY,
                 entity.getData().getTransactionId());
-    }
-
-    private String getStringifyData(AdsDeductionCampaignSupplier data) {
-
-        try {
-            return objectMapper.writeValueAsString(data);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-
-        return null;
-
     }
 
 }

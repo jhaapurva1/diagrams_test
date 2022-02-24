@@ -7,19 +7,14 @@ import com.meesho.commons.utils.DateUtils;
 import com.meesho.cps.constants.AdsDeductionPaymentType;
 import com.meesho.cps.constants.Constants;
 import com.meesho.cps.data.redshift.AdsDeductionCampaignSupplier;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
-@Component
 public class AdDeductionCampaignSupplierTransformer {
 
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    public  AdsDeductionCampaignSupplier transform(
-            AdsDeductionCampaignSupplier.AdsDeductionCampaignSupplierData data, String transactionId) {
+    public static AdsDeductionCampaignSupplier transform(
+            AdsDeductionCampaignSupplier.AdsDeductionCampaignSupplierData data, String transactionId)
+            throws JsonProcessingException {
 
         return AdsDeductionCampaignSupplier.builder()
                 .metadata(AdsDeductionCampaignSupplier.MetaData.builder()
@@ -32,20 +27,15 @@ public class AdDeductionCampaignSupplierTransformer {
                         .transactionId(transactionId)
                         .paymentType(AdsDeductionPaymentType.ADS_COST.name())
                         .amount(data.getNetDeduction().add(data.getGst()))
-                        .metadata(getMetadata(data))
+                        .metadata(objectMapper().writeValueAsString(data))
                         .build())
                 .build();
     }
 
-    private String getMetadata(AdsDeductionCampaignSupplier.AdsDeductionCampaignSupplierData data){
-
-        try {
-            return objectMapper.writeValueAsString(data);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-        return null;
-
+    public static ObjectMapper objectMapper() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.findAndRegisterModules();
+        return objectMapper;
     }
 
 }

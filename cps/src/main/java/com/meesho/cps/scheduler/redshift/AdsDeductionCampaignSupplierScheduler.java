@@ -34,12 +34,14 @@ public class AdsDeductionCampaignSupplierScheduler extends RedshiftAbstractSched
         return String.format(QUERY, startTime, limit, offset);
     }
 
+    @SneakyThrows
     @Override
     public RedshiftProcessedMetadata<AdsDeductionCampaignSupplier> transformResults(ResultSet resultSet)
             throws SQLException {
         return adsDeductionCampaignSupplierHandler.transformResults(resultSet);
     }
 
+    @SneakyThrows
     @Override
     @DigestLogger(metricType = MetricType.METHOD, tagSet = "AdsDeductionCampaignSupplierEventScheduler")
     public void handle(List<AdsDeductionCampaignSupplier> entities) throws SQLException {
