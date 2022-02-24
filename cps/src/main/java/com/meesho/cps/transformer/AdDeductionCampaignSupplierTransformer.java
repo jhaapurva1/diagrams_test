@@ -12,6 +12,8 @@ import java.util.UUID;
 
 public class AdDeductionCampaignSupplierTransformer {
 
+    public static final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
+
     public static AdsDeductionCampaignSupplier transform(
             AdsDeductionCampaignSupplier.AdsDeductionCampaignSupplierData data, String transactionId)
             throws JsonProcessingException {
@@ -27,15 +29,9 @@ public class AdDeductionCampaignSupplierTransformer {
                         .transactionId(transactionId)
                         .paymentType(AdsDeductionPaymentType.ADS_COST.name())
                         .amount(data.getNetDeduction().add(data.getGst()))
-                        .metadata(objectMapper().writeValueAsString(data))
+                        .metadata(objectMapper.writeValueAsString(data))
                         .build())
                 .build();
-    }
-
-    public static ObjectMapper objectMapper() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.findAndRegisterModules();
-        return objectMapper;
     }
 
 }
