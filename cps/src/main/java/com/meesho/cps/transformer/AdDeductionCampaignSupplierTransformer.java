@@ -7,6 +7,7 @@ import com.meesho.commons.utils.DateUtils;
 import com.meesho.cps.constants.AdsDeductionPaymentType;
 import com.meesho.cps.constants.Constants;
 import com.meesho.cps.data.redshift.AdsDeductionCampaignSupplier;
+import com.meesho.cps.data.redshift.AdsDeductionCampaignSupplierData;
 
 import java.util.UUID;
 
@@ -15,7 +16,7 @@ public class AdDeductionCampaignSupplierTransformer {
     public static final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
     public static AdsDeductionCampaignSupplier transform(
-            AdsDeductionCampaignSupplier.AdsDeductionCampaignSupplierData data, String transactionId)
+            AdsDeductionCampaignSupplierData data, String transactionId)
             throws JsonProcessingException {
 
         return AdsDeductionCampaignSupplier.builder()
