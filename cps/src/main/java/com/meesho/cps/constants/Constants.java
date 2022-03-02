@@ -1,7 +1,5 @@
 package com.meesho.cps.constants;
 
-import java.time.LocalDate;
-
 /**
  * @author shubham.aggarwal
  * 03/08/21
@@ -12,6 +10,8 @@ public class Constants {
     public static final String INGESTION_VIEW_EVENTS_DEAD_QUEUE_TOPIC = "cps.ingestion-events.view.dead.queue";
     public static final String INGESTION_INTERACTION_EVENTS_DEAD_QUEUE_TOPIC =
             "cps.ingestion-events.interaction.dead.queue";
+    public static final String ADS_COST_DEDUCTION_TOPIC = "sp.other_business_payments";
+    public static final String ADS_COST_DEDUCTION_EVENT_TYPE = "SUPPLIER";
     public static final String[] CAMPAIGN_CATALOG_DATE_FORMAT = new String[]{"campaign_id", "catalog_id", "date"};
 
     public static class API {
@@ -65,6 +65,14 @@ public class Constants {
             public static final String CRON_EXPRESSION = "#{${scheduler.campaign_performance_es_indexing.cron.expression}}";
             public static final String ENABLE_SCHEDULER = "#{${scheduler.campaign_performance_es_indexing.enable}}";
             public static final String BATCH_SIZE = "#{${scheduler.campaign_performance_es_indexing.batch.size}}";
+        }
+
+        public static class ADS_DEDUCTION_CAMPAIGN_SUPPLIER {
+            public static final String MONITOR_CODE = "#{${scheduler.ads.deduction.campaign.supplier.monitor.code}}";
+            public static final String CRON_EXPRESSION = "#{${scheduler.ads.deduction.campaign.supplier.cron.expression}}";
+            public static final String ENABLE_SCHEDULER = "#{${scheduler.ads.deduction.campaign.supplier.enable}}";
+            public static final String BATCH_SIZE = "#{${scheduler.ads.deduction.campaign.supplier.batch.size}}";
+            public static final String PROCESS_BATCH_SIZE = "#{${scheduler.ads.deduction.campaign.supplier.process.batch.size}}";
         }
     }
 
