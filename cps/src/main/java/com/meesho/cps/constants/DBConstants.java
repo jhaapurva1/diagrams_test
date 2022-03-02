@@ -19,9 +19,11 @@ public class DBConstants {
 
         public static final String DELIMITER = "_";
         public static final String CAMPAIGN_CATALOG_DATE_KEY = "%s" + DELIMITER + "%s" + DELIMITER + "%s";
+        public static final String ADS_DEDUCTION_CAMPAIGN_KEY = "%s";
 
         public static class Tables {
             public static final String CAMPAIGN_PERFORMANCE_METRICS = "campaign_performance_ads_dod";
+            public static final String ADS_DEDUCTION_CAMPAIGN_SUPPLIER = "ads_deduction_campaign_supplier";
         }
 
     }

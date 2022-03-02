@@ -40,6 +40,21 @@ public class ApplicationProperties {
     @Value(Constants.Cron.CAMPAIGN_PERFORMANCE.PROCESS_BATCH_SIZE)
     private Map<String, Integer> campaignPerformanceCountryAndCronProcessBatchSizeMap;
 
+    @Value(Constants.Cron.ADS_DEDUCTION_CAMPAIGN_SUPPLIER.MONITOR_CODE)
+    private Map<String, String> adsDeductionCampaignSupplierCountryAndCornitorCodeMap;
+
+    @Value(Constants.Cron.ADS_DEDUCTION_CAMPAIGN_SUPPLIER.ENABLE_SCHEDULER)
+    private Map<String, Boolean> adsDeductionCampaignSupplierCountryAndCronEnableMap;
+
+    @Value(Constants.Cron.ADS_DEDUCTION_CAMPAIGN_SUPPLIER.CRON_EXPRESSION)
+    private Map<String, String> adsDeductionCampaignSupplierCountryAndCronExpMap;
+
+    @Value(Constants.Cron.ADS_DEDUCTION_CAMPAIGN_SUPPLIER.BATCH_SIZE)
+    private Map<String, Integer> adsDeductionCampaignSupplierCountryAndCronBatchSizeMap;
+
+    @Value(Constants.Cron.ADS_DEDUCTION_CAMPAIGN_SUPPLIER.PROCESS_BATCH_SIZE)
+    private Map<String, Integer> adsDeductionCampaignSupplierCountryAndCronProcessBatchSizeMap;
+
     @Value(Constants.Cron.REAL_ESTATE_METADATA_CACHE_SYNC.MONITOR_CODE)
     private Map<String, String> realEstateMetadataCacheSyncCountryAndCronitorCodeMap;
 
@@ -146,6 +161,16 @@ public class ApplicationProperties {
                         batchSize = campaignPerformanceHbaseESCountryAndCronBatchSizeMap.get(country.getCountryCode());
                         processBatchSize = 0; // setting to 0 as this config is not used
                         break;
+                    case ADS_DEDUCTION_CAMPAIGN_SUPPLIER:
+                        enableCron = adsDeductionCampaignSupplierCountryAndCronEnableMap.get(country.getCountryCode());
+                        cronitorCode =
+                                adsDeductionCampaignSupplierCountryAndCornitorCodeMap.get(country.getCountryCode());
+                        cronExpression = adsDeductionCampaignSupplierCountryAndCronExpMap.get(country.getCountryCode());
+                        batchSize =
+                                adsDeductionCampaignSupplierCountryAndCronBatchSizeMap.get(country.getCountryCode());
+                        processBatchSize =
+                                adsDeductionCampaignSupplierCountryAndCronProcessBatchSizeMap
+                                        .get(country.getCountryCode());
                 }
                 Map<String, SchedulerProperty> countryAndSchedulerPropertyMap =
                         schedulerTypeCountryAndPropertyMap.getOrDefault(schedulerType.name(), new HashMap<>());
