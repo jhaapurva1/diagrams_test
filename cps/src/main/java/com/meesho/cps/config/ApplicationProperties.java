@@ -171,6 +171,7 @@ public class ApplicationProperties {
                         processBatchSize =
                                 adsDeductionCampaignSupplierCountryAndCronProcessBatchSizeMap
                                         .get(country.getCountryCode());
+                        break;
                 }
                 Map<String, SchedulerProperty> countryAndSchedulerPropertyMap =
                         schedulerTypeCountryAndPropertyMap.getOrDefault(schedulerType.name(), new HashMap<>());
