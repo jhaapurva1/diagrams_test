@@ -36,11 +36,11 @@ public class ManualSchedulerController {
 
     @ApiOperation(value = Constants.API.MANUAL_SCHEDULER_START, notes = "API to manually start cron", produces = MediaType.APPLICATION_JSON_VALUE)
     @RequestMapping(value = Constants.API.MANUAL_SCHEDULER_START, method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    ServiceResponse<String> initScheduler(@RequestBody @Valid ManualSchedulerStartRequest schedulerStartRequest) throws Exception {
+    ServiceResponse<String> initScheduler(@RequestBody @Valid ManualSchedulerStartRequest request) throws Exception {
         String countryCode = MDC.get(com.meesho.ads.lib.constants.Constants.COUNTRY_CODE);
-        AbstractScheduler scheduler = SchedulerFactory.getByType(schedulerStartRequest.getSchedulerType().name());
+        AbstractScheduler scheduler = SchedulerFactory.getByType(request.getSchedulerType().name());
         Map<String, SchedulerProperty> configMap =
-                applicationProperties.getSchedulerTypeCountryAndPropertyMap().get(schedulerStartRequest.getSchedulerType());
+                applicationProperties.getSchedulerTypeCountryAndPropertyMap().get(request.getSchedulerType().name());
         SchedulerProperty schedulerProperty = configMap.get(countryCode);
 
         Long processedRows = scheduler.process(
