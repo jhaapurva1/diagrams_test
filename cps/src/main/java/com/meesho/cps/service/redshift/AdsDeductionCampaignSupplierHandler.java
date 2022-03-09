@@ -19,6 +19,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -58,7 +59,7 @@ public class AdsDeductionCampaignSupplierHandler {
                             .gst(gst)
                             .netDeduction(netDeduction)
                             .deductionDuration(deductionDuration)
-                            .credits(credits)
+                            .credits(Objects.nonNull(credits)?credits.abs(): null)
                             .adsCost(adsCost)
                             .build()
                     , transactionId));
