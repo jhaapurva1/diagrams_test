@@ -28,6 +28,10 @@ public class DBConstants {
 
     }
 
+    public static class PrestoTables {
+        public static final String CAMPAIGN_PERFORMANCE_METRICS = "gold.campaign_performance_ads_dod";
+    }
+
     public static class HBase {
         public static final String NAMESPACE = "adserver";
         public static final String KEY_SEPARATOR = ":";

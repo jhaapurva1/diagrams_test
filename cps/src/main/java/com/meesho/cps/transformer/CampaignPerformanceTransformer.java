@@ -6,6 +6,7 @@ import com.meesho.cps.data.entity.hbase.CampaignCatalogDateMetrics;
 import com.meesho.cps.data.entity.hbase.CampaignDatewiseMetrics;
 import com.meesho.cps.data.entity.hbase.CampaignMetrics;
 import com.meesho.cps.data.internal.PerformancePojo;
+import com.meesho.cps.data.presto.CampaignPerformancePrestoData;
 import com.meesho.cps.data.redshift.CampaignPerformanceRedshift;
 import com.meesho.cps.utils.CalculationUtils;
 import com.meesho.cpsclient.response.BudgetUtilisedResponse;
@@ -53,13 +54,13 @@ public class CampaignPerformanceTransformer {
         return BudgetUtilisedResponse.builder().budgetUtilisedDetails(budgetUtilisedDetails).build();
     }
 
-    public static CampaignCatalogDateMetrics transform(CampaignPerformanceRedshift campaignPerformanceRedshift) {
+    public static CampaignCatalogDateMetrics transform(CampaignPerformancePrestoData campaignPerformancePrestoData) {
         return CampaignCatalogDateMetrics.builder()
-                .campaignId(campaignPerformanceRedshift.getCampaignId())
-                .catalogId(campaignPerformanceRedshift.getCatalogId())
-                .date(LocalDate.parse(campaignPerformanceRedshift.getDate()))
-                .orders(campaignPerformanceRedshift.getOrderCount())
-                .revenue(campaignPerformanceRedshift.getRevenue())
+                .campaignId(campaignPerformancePrestoData.getCampaignId())
+                .catalogId(campaignPerformancePrestoData.getCatalogId())
+                .date(LocalDate.parse(campaignPerformancePrestoData.getDate()))
+                .orders(campaignPerformancePrestoData.getOrderCount())
+                .revenue(BigDecimal.valueOf(campaignPerformancePrestoData.getRevenue()))
                 .build();
     }
 

@@ -2,7 +2,7 @@ package com.meesho.cps.service.redshift;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.meesho.ads.lib.data.internal.RedshiftProcessedMetadata;
+import com.meesho.ads.lib.data.internal.IngestionProcessedMetadata;
 import com.meesho.cps.constants.Constants;
 import com.meesho.cps.constants.DBConstants;
 import com.meesho.cps.data.redshift.AdsDeductionCampaignSupplier;
@@ -31,9 +31,9 @@ public class AdsDeductionCampaignSupplierHandler {
     @Autowired
     private ObjectMapper objectMapper;
 
-    public RedshiftProcessedMetadata<AdsDeductionCampaignSupplier> transformResults(ResultSet resultSet)
+    public IngestionProcessedMetadata<AdsDeductionCampaignSupplier> transformResults(ResultSet resultSet)
             throws SQLException, JsonProcessingException {
-        RedshiftProcessedMetadata<AdsDeductionCampaignSupplier> redshiftProcessedMetadata =
+        IngestionProcessedMetadata<AdsDeductionCampaignSupplier> redshiftProcessedMetadata =
                 CommonUtils.getDefaultRedshitProcessedMetadata();
 
         List<AdsDeductionCampaignSupplier> entities = new ArrayList<>();

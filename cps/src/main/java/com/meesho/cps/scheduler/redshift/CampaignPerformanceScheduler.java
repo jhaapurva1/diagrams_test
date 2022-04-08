@@ -1,9 +1,9 @@
 package com.meesho.cps.scheduler.redshift;
 
-import com.meesho.ads.lib.data.internal.RedshiftProcessedMetadata;
-import com.meesho.ads.lib.scheduler.RedshiftAbstractScheduler;
+import com.meesho.ads.lib.scheduler.PrestoFeedIngestionScheduler;
 import com.meesho.cps.constants.DBConstants;
 import com.meesho.cps.constants.SchedulerType;
+import com.meesho.cps.data.presto.CampaignPerformancePrestoData;
 import com.meesho.cps.data.redshift.CampaignPerformanceRedshift;
 import com.meesho.cps.service.redshift.CampaignPerformanceHandler;
 import com.meesho.instrumentation.annotation.DigestLogger;
@@ -13,8 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Component;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -24,7 +22,7 @@ import java.util.List;
 @Slf4j
 @Component
 @EnableScheduling
-public class CampaignPerformanceScheduler extends RedshiftAbstractScheduler<CampaignPerformanceRedshift> {
+public class CampaignPerformanceScheduler extends PrestoFeedIngestionScheduler<CampaignPerformancePrestoData> {
 
     private static final String QUERY = "SELECT * FROM " + DBConstants.Redshift.Tables.CAMPAIGN_PERFORMANCE_METRICS +
             " where created_at > '%s' AND dt >= '2021-12-18' order by created_at LIMIT '%d' OFFSET '%d'";
@@ -38,24 +36,23 @@ public class CampaignPerformanceScheduler extends RedshiftAbstractScheduler<Camp
     }
 
     @Override
-    public String getSchedulerKey(CampaignPerformanceRedshift campaignPerformanceRedshift) {
+    public String getSchedulerKey(CampaignPerformancePrestoData campaignPerformanceRedshift) {
         return campaignPerformanceHandler.getUniqueKey(campaignPerformanceRedshift);
     }
 
     @Override
-    public String getQuery(String startTime, long offset, int limit) {
-        return String.format(QUERY, startTime, limit, offset);
-    }
-
-    @Override
-    public RedshiftProcessedMetadata<CampaignPerformanceRedshift> transformResults(ResultSet resultSet) throws SQLException {
-        return campaignPerformanceHandler.transformResults(resultSet);
-    }
-
-    @Override
     @DigestLogger(metricType = MetricType.METHOD, tagSet = "CampaignPerformanceScheduler")
-    public void handle(List<CampaignPerformanceRedshift> entities) {
-        campaignPerformanceHandler.handle(entities);
+    public void handle(List<CampaignPerformancePrestoData> campaignPerformancePrestoDataList) {
+        campaignPerformanceHandler.handle(campaignPerformancePrestoDataList);
     }
 
+    @Override
+    public String getPrestoTableName() {
+        return DBConstants.PrestoTables.CAMPAIGN_PERFORMANCE_METRICS;
+    }
+
+    @Override
+    public Class<CampaignPerformancePrestoData> getClassType() {
+        return CampaignPerformancePrestoData.class;
+    }
 }

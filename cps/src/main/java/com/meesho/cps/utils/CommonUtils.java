@@ -1,6 +1,6 @@
 package com.meesho.cps.utils;
 
-import com.meesho.ads.lib.data.internal.RedshiftProcessedMetadata;
+import com.meesho.ads.lib.data.internal.IngestionProcessedMetadata;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -12,8 +12,8 @@ import java.time.temporal.TemporalAdjusters;
  */
 public class CommonUtils {
 
-    public static RedshiftProcessedMetadata getDefaultRedshitProcessedMetadata() {
-        return RedshiftProcessedMetadata.builder().processedDataSize(0).lastEntryCreatedAt(null).build();
+    public static IngestionProcessedMetadata getDefaultRedshitProcessedMetadata() {
+        return IngestionProcessedMetadata.builder().processedDataSize(0).lastEntryCreatedAt(null).build();
     }
 
     public static boolean shouldQueryMonthWiseIndex(LocalDate startDate, LocalDate endDate) {
