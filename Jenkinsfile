@@ -6,8 +6,8 @@ def params = ["repo_name":"campaign-performance",
               "notify_channel": "supplier-ads-alerts",
               "branch_params":[
                 "develop":[
-                  "push_to_jfrog": true,
-                  "push_to_s3": true
+                  "push_to_jfrog": false,
+                  "push_to_s3": false
                 ]
               ]
              ]
