@@ -29,6 +29,16 @@ public class ConsumerConstants {
         public static final String BATCH_CONTAINER_FACTORY = "ingestionBatchKafkaListenerContainerFactory";
     }
 
+    public static class IngestionServiceConfluentKafka {
+        public static final String CONTAINER_FACTORY = "confluentIngestionContainerFactory";
+        public static final String BATCH_CONTAINER_FACTORY = "ingestionBatchConfluentKafkaListenerContainerFactory";
+        public static final String BOOTSTRAP_SERVERS = "${ingestion.confluent.bootstrap.servers}";
+        public static final String SASL_USERNAME="${ingestion.confluent.sasl_config.username}";
+        public static final String SASL_PASSWORD="${ingestion.confluent.sasl_config.password}";
+        public static final String AVRO_SCHEMA_REGISTRY_URL = "${ingestion.confluent.consumer.avro.schema.registry.url}";
+
+    }
+
     public static class IngestionInteractionEvents {
         public static final String AD_CLICK_TOPIC = "ad_click";
         public static final String AD_SHARED_TOPIC = "ad_shared";
@@ -41,6 +51,7 @@ public class ConsumerConstants {
     public static class IngestionInteractionEventsConsumer {
         public static final String TOPICS = "${ingestion.interaction.event.consumer.topics}";
         public static final String ID = "adIngestionInteractionEventConsumer";
+        public static final String CONFLUENT_CONSUMER_ID = "cpsIngestionConfluentInteractionEventConsumer";
         public static final String AUTO_START = "${ingestion.interaction.event.consumer.start}";
         public static final String CONCURRENCY = "${ingestion.interaction.event.consumer.concurrency}";
         public static final String MAX_POLL_INTERVAL_MS = "${ingestion.interaction.event.consumer.max.poll.interval.ms}";
@@ -71,8 +82,8 @@ public class ConsumerConstants {
 
     public static class IngestionViewEventsConsumer {
         public static final String TOPICS = "${ingestion.view.event.consumer.topics}";
-        public static final String ANONYMOUS_USER_TOPIC = "anonymous_ad_view";
         public static final String ID = "cpsIngestionViewEventConsumer";
+        public static final String CONFLUENT_CONSUMER_ID = "cpsIngestionConfluentViewEventConsumer";
         public static final String AUTO_START = "${ingestion.view.event.consumer.start}";
         public static final String CONCURRENCY = "${ingestion.view.event.consumer.concurrency}";
         public static final String MAX_POLL_INTERVAL_MS = "${ingestion.view.event.consumer.max.poll.interval.ms}";
