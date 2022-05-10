@@ -30,12 +30,12 @@ public class ConsumerConstants {
     }
 
     public static class IngestionInteractionEvents {
-        public static final String AD_CLICK_TOPIC = "${kafka.ingestion.interaction.ad_click.event.name}";
-        public static final String AD_SHARED_TOPIC = "${kafka.ingestion.interaction.ad_shared.event.name}";
-        public static final String AD_WISHLISTED_TOPIC = "${kafka.ingestion.interaction.ad_wishlisted.event.name}";
-        public static final String ANONYMOUS_AD_CLICK_TOPIC = "${kafka.ingestion.interaction.anonymous_ad_click.event.name}";
-        public static final String ANONYMOUS_AD_SHARED_TOPIC = "${kafka.ingestion.interaction.anonymous_ad_shared.event.name}";
-        public static final String ANONYMOUS_AD_WISHLISTED_TOPIC = "${kafka.ingestion.interaction.anonymous_ad_wishlisted.event.name}";
+        public static final String AD_CLICK_EVENT_NAME= "ad_click";
+        public static final String AD_SHARED_EVENT_NAME = "ad_shared";
+        public static final String AD_WISHLISTED_EVENT_NAME = "ad_wishlisted";
+        public static final String ANONYMOUS_AD_CLICK_EVENT_NAME = "anonymous_ad_click";
+        public static final String ANONYMOUS_AD_SHARED_EVENT_NAME= "anonymous_ad_shared";
+        public static final String ANONYMOUS_AD_WISHLISTED_EVENT_NAME = "anonymous_ad_wishlisted";
     }
 
     public static class CampaignUpdateConsumer {
