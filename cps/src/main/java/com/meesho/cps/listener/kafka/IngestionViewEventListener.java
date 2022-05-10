@@ -8,6 +8,7 @@ import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
@@ -22,12 +23,11 @@ import java.util.List;
 @Component
 public class IngestionViewEventListener {
 
-    @Autowired
     IngestionConfluentKafkaViewEventsListener ingestionConfluentKafkaViewEventsListener;
 
     @KafkaListener(id = ConsumerConstants.IngestionViewEventsConsumer.ID, containerFactory =
             ConsumerConstants.IngestionServiceKafka.BATCH_CONTAINER_FACTORY, topics = {
-            "#{'${ingestion.view.event.consumer.topics}'.split(',')}"}, autoStartup =
+            "#{'${kafka.ingestion.view.event.consumer.topics}'.split(',')}"}, autoStartup =
             ConsumerConstants.IngestionViewEventsConsumer.AUTO_START, concurrency =
             ConsumerConstants.IngestionViewEventsConsumer.CONCURRENCY, properties = {
             ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG + "=" +

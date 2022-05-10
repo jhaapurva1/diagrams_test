@@ -12,6 +12,7 @@ import com.meesho.cps.transformer.AdDeductionCampaignSupplierTransformer;
 import com.meesho.cps.utils.CommonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -30,6 +31,9 @@ public class AdsDeductionCampaignSupplierHandler {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Value(Constants.Kafka.ADS_COST_DEDUCTION_TOPIC)
+    String adsCostDeductionTopic;
 
     public RedshiftProcessedMetadata<AdsDeductionCampaignSupplier> transformResults(ResultSet resultSet)
             throws SQLException, JsonProcessingException {
@@ -75,7 +79,7 @@ public class AdsDeductionCampaignSupplierHandler {
 
         for (AdsDeductionCampaignSupplier deduction : adsDeductionCampaignSupplierList) {
             //No need to catch, if we catch exception, we wont get alerted even if scheduler is failing
-            payoutKafkaService.sendMessage(Constants.ADS_COST_DEDUCTION_TOPIC,
+            payoutKafkaService.sendMessage(adsCostDeductionTopic,
                     deduction.getData().getTransactionId(),
                     objectMapper.writeValueAsString(deduction));
             log.info("Ads deduction campaign supplier {} transaction id sent",deduction.getData().getTransactionId());

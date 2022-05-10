@@ -27,6 +27,7 @@ import com.meesho.instrumentation.annotation.DigestLogger;
 import com.meesho.instrumentation.enums.MetricType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -86,6 +87,9 @@ public class CatalogInteractionEventService {
 
     @Autowired
     private UpdatedCampaignCatalogCacheDao updatedCampaignCatalogCacheDao;
+
+    @Value(Constants.Kafka.BUDGET_EXHAUSTED_TOPIC)
+    String budgetExhaustedTopic;
 
     @DigestLogger(metricType = MetricType.METHOD, tagSet = "class=CatalogInteractionEventService")
     public void handle(AdInteractionEvent adInteractionEvent) throws ExternalRequestFailedException {
@@ -168,7 +172,7 @@ public class CatalogInteractionEventService {
         if (budgetUtilised.compareTo(totalBudget) >= 0) {
             BudgetExhaustedEvent budgetExhaustedEvent = BudgetExhaustedEvent.builder().campaignId(campaignId).build();
             try {
-                kafkaService.sendMessage(Constants.BUDGET_EXHAUSTED_TOPIC, String.valueOf(campaignId),
+                kafkaService.sendMessage(budgetExhaustedTopic, String.valueOf(campaignId),
                         objectMapper.writeValueAsString(budgetExhaustedEvent));
             } catch (Exception e) {
                 log.error("Exception while sending budgetExhausted event {}", budgetExhaustedEvent, e);

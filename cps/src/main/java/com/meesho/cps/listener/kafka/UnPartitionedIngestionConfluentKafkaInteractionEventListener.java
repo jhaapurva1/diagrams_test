@@ -14,6 +14,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
@@ -37,16 +38,22 @@ public class UnPartitionedIngestionConfluentKafkaInteractionEventListener {
     @Autowired
     private KafkaService kafkaService;
 
+    @Value(ConsumerConstants.IngestionInteractionEventsConsumer.DEAD_QUEUE_TOPIC)
+    String ingestionInteractionEventsDeadQueueTopic;
+
+    @Value(ConsumerConstants.InteractionEventsConsumer.TOPIC)
+    String interactionEventsConsumerTopic;
+
     @KafkaListener(id = ConsumerConstants.IngestionInteractionEventsConsumer.CONFLUENT_CONSUMER_ID, containerFactory =
             ConsumerConstants.IngestionServiceConfluentKafka.CONTAINER_FACTORY, topics = {
-            "#{'${ingestion.interaction.event.consumer.topics}'.split(',')}"}, autoStartup =
+            "#{'${kafka.ingestion.interaction.event.consumer.topics}'.split(',')}"}, autoStartup =
             ConsumerConstants.IngestionInteractionEventsConsumer.AUTO_START, concurrency =
             ConsumerConstants.IngestionInteractionEventsConsumer.CONCURRENCY, properties = {
             ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG + "=" +
                     ConsumerConstants.IngestionInteractionEventsConsumer.MAX_POLL_INTERVAL_MS,
             ConsumerConfig.MAX_POLL_RECORDS_CONFIG + "=" +
                     ConsumerConstants.IngestionInteractionEventsConsumer.BATCH_SIZE})
-    @DigestLogger(metricType = MetricType.METHOD, tagSet = "consumer=ingestionConfluentInteractionEventListener")
+    @DigestLogger(metricType = MetricType.METHOD, tagSet = "consumer=IngestionConfluentInteractionEventListener")
     public void listen(ConsumerRecord<String, GenericRecord> consumerRecord) {
         handleIngestionInteractionEvent(consumerRecord);
     }
@@ -62,13 +69,13 @@ public class UnPartitionedIngestionConfluentKafkaInteractionEventListener {
 
             AdInteractionEvent adInteractionEvent = objectMapper.readValue(value, AdInteractionEvent.class);
 
-            kafkaService.sendMessage(ConsumerConstants.InteractionEventsConsumer.TOPIC,
+            kafkaService.sendMessage(interactionEventsConsumerTopic,
                     adInteractionEvent.getProperties().getId().toString(),
                     objectMapper.writeValueAsString(adInteractionEvent));
 
         } catch (Exception e) {
             log.error("Exception while processing ingestion interaction event {}", consumerRecord, e);
-            kafkaService.sendMessage(com.meesho.cps.constants.Constants.INGESTION_INTERACTION_EVENTS_DEAD_QUEUE_TOPIC,
+            kafkaService.sendMessage(ingestionInteractionEventsDeadQueueTopic,
                     consumerRecord.key(), consumerRecord.value().toString());
         } finally {
             MDC.clear();

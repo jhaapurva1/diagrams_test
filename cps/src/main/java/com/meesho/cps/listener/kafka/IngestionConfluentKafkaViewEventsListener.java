@@ -18,6 +18,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
@@ -43,11 +44,14 @@ public class IngestionConfluentKafkaViewEventsListener {
     @Autowired
     private StatsdMetricManager statsdMetricManager;
 
+    @Value(ConsumerConstants.IngestionViewEventsConsumer.DEAD_QUEUE_TOPIC)
+    private String ingestionViewEventsDeadQueueTopic;
+
     @KafkaListener(
             id = ConsumerConstants.IngestionViewEventsConsumer.CONFLUENT_CONSUMER_ID,
             containerFactory = ConsumerConstants.IngestionServiceConfluentKafka.BATCH_CONTAINER_FACTORY,
             topics = {
-                    "#{'${ingestion.view.event.consumer.topics}'.split(',')}"
+                    "#{'${kafka.ingestion.view.event.consumer.topics}'.split(',')}"
             },
             autoStartup = ConsumerConstants.IngestionViewEventsConsumer.AUTO_START,
             concurrency = ConsumerConstants.IngestionViewEventsConsumer.CONCURRENCY,
@@ -83,7 +87,7 @@ public class IngestionConfluentKafkaViewEventsListener {
                 log.error("Invalid event {}", adViewEvent);
                 statsdMetricManager.incrementCounter(VIEW_EVENT_KEY, String.format(VIEW_EVENT_TAGS, NAN, NAN, NAN, INVALID,
                         NAN));
-                kafkaService.sendMessage(com.meesho.cps.constants.Constants.INGESTION_VIEW_EVENTS_DEAD_QUEUE_TOPIC,
+                kafkaService.sendMessage(ingestionViewEventsDeadQueueTopic,
                         consumerRecord.key(), consumerRecord.value().toString());
                 continue;
             }
@@ -98,7 +102,7 @@ public class IngestionConfluentKafkaViewEventsListener {
             for (AdViewEvent adViewEvent : adViewEvents) {
                 try {
                     kafkaService.sendMessage(
-                            com.meesho.cps.constants.Constants.INGESTION_VIEW_EVENTS_DEAD_QUEUE_TOPIC,
+                            ingestionViewEventsDeadQueueTopic,
                             String.valueOf(adViewEvent.getProperties().getId()),
                             objectMapper.writeValueAsString(adViewEvent)
                     );
@@ -108,7 +112,6 @@ public class IngestionConfluentKafkaViewEventsListener {
                 }
             }
         }
-
         MDC.clear();
     }
 }

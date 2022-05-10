@@ -8,6 +8,7 @@ import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
@@ -28,7 +29,7 @@ public class UnPartitionedIngestionInteractionEventListener {
 
     @KafkaListener(id = ConsumerConstants.IngestionInteractionEventsConsumer.ID, containerFactory =
             ConsumerConstants.IngestionServiceKafka.CONTAINER_FACTORY, topics = {
-            "#{'${ingestion.interaction.event.consumer.topics}'.split(',')}"}, autoStartup =
+            "#{'${kafka.ingestion.interaction.event.consumer.topics}'.split(',')}"}, autoStartup =
             ConsumerConstants.IngestionInteractionEventsConsumer.AUTO_START, concurrency =
             ConsumerConstants.IngestionInteractionEventsConsumer.CONCURRENCY, properties = {
             ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG + "=" +

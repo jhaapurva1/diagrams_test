@@ -6,11 +6,6 @@ package com.meesho.cps.constants;
  */
 public class Constants {
 
-    public static final String BUDGET_EXHAUSTED_TOPIC = "cps.budget_exhuasted";
-    public static final String INGESTION_VIEW_EVENTS_DEAD_QUEUE_TOPIC = "cps.ingestion-events.view.dead.queue";
-    public static final String INGESTION_INTERACTION_EVENTS_DEAD_QUEUE_TOPIC =
-            "cps.ingestion-events.interaction.dead.queue";
-    public static final String ADS_COST_DEDUCTION_TOPIC = "sp.other_business_payments";
     public static final String ADS_COST_DEDUCTION_EVENT_TYPE = "SUPPLIER";
     public static final String[] CAMPAIGN_CATALOG_DATE_FORMAT = new String[]{"campaign_id", "catalog_id", "date"};
 
@@ -102,6 +97,12 @@ public class Constants {
         public static final String TOTAL_ORDERS = "total_orders";
         public static final String TOTAL_REVENUE = "total_revenues";
         public static final String TOTAL_BUDGET_UTILISED = "total_budget_utilised";
+    }
+
+    public static class Kafka {
+        public static final String BUDGET_EXHAUSTED_TOPIC = "${kafka.budget_exhausted.topic}";
+
+        public static final String ADS_COST_DEDUCTION_TOPIC = "${kafka.ads.cost.deduction.topic}";
     }
 
 }

@@ -12,6 +12,7 @@ import com.meesho.instrumentation.enums.MetricType;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
@@ -31,6 +32,15 @@ public class CampaignCatalogUpdateEventListener extends BaseKafkaListener<Campai
 
     @Autowired
     CampaignCatalogUpdateEventHelper campaignCatalogUpdateEventHelper;
+
+    @Value(ConsumerConstants.CampaignUpdateConsumer.RETRY_TOPIC)
+    String campaignUpdateConsumerRetryTopic;
+
+    @Value(ConsumerConstants.CampaignUpdateConsumer.DEAD_TOPIC)
+    String campaignUpdateConsumerDeadTopic;
+
+    @Value(ConsumerConstants.DelayedRetryConsumer.TOPIC)
+    String delayedRetryConsumerTopic;
 
     @KafkaListener(id = ConsumerConstants.CampaignUpdateConsumer.ID, containerFactory =
             ConsumerConstants.CommonKafka.CONTAINER_FACTORY, topics = {
@@ -78,17 +88,17 @@ public class CampaignCatalogUpdateEventListener extends BaseKafkaListener<Campai
 
     @Override
     public String getDeadTopic() {
-        return ConsumerConstants.CampaignUpdateConsumer.DEAD_TOPIC;
+        return campaignUpdateConsumerDeadTopic;
     }
 
     @Override
     public String getRetryTopic() {
-        return ConsumerConstants.CampaignUpdateConsumer.RETRY_TOPIC;
+        return campaignUpdateConsumerRetryTopic;
     }
 
     @Override
     public String getDelayedRetryTopic() {
-        return ConsumerConstants.DelayedRetryConsumer.TOPIC;
+        return delayedRetryConsumerTopic;
     }
 
     @Override
