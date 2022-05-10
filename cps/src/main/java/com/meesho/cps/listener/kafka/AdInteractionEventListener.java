@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
@@ -37,6 +38,12 @@ public class AdInteractionEventListener extends BaseKafkaListener<AdInteractionE
 
     @Autowired
     private CatalogInteractionEventService catalogInteractionEventService;
+
+    @Value(ConsumerConstants.InteractionEventsConsumer.DEAD_QUEUE_TOPIC)
+    String interactionEventsConsumerDeadQueueTopic;
+
+    @Value(ConsumerConstants.DelayedRetryConsumer.TOPIC)
+    String delayedRetryConsumerTopic;
 
     @KafkaListener(id = ConsumerConstants.InteractionEventsConsumer.ID, containerFactory =
             ConsumerConstants.CommonKafka.CONTAINER_FACTORY, topics =
@@ -89,7 +96,7 @@ public class AdInteractionEventListener extends BaseKafkaListener<AdInteractionE
 
     @Override
     public String getDeadTopic() {
-        return ConsumerConstants.InteractionEventsConsumer.DEAD_QUEUE_TOPIC;
+        return interactionEventsConsumerDeadQueueTopic;
     }
 
     @Override
@@ -99,7 +106,7 @@ public class AdInteractionEventListener extends BaseKafkaListener<AdInteractionE
 
     @Override
     public String getDelayedRetryTopic() {
-        return ConsumerConstants.DelayedRetryConsumer.TOPIC;
+        return delayedRetryConsumerTopic;
     }
 
     @Override

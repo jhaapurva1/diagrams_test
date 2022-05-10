@@ -7,6 +7,7 @@ import com.meesho.cps.data.internal.CampaignCatalogDate;
 import com.meesho.cps.service.KafkaService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -26,6 +27,9 @@ public class CampaignCatalogUpdateEventHelper {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Value(ConsumerConstants.DayWisePerformanceEventsConsumer.TOPIC)
+    String dayWisePerformanceEventsConsumerTopic;
+
     public void onCampaignCatalogUpdate(CampaignCatalogUpdateEvent.CatalogData catalogData) throws Exception {
         log.info("Received CampaignCatalogUpdateEvent event {}", catalogData);
         Long catalogId = catalogData.getId();
@@ -33,7 +37,7 @@ public class CampaignCatalogUpdateEventHelper {
         LocalDate date = LocalDate.now();
         CampaignCatalogDate campaignCatalogDate = new CampaignCatalogDate(campaignId, catalogId, date.toString());
         // push kafka event here to sync data in ES
-        kafkaService.sendMessage(ConsumerConstants.DayWisePerformanceEventsConsumer.TOPIC, null,
+        kafkaService.sendMessage(dayWisePerformanceEventsConsumerTopic, null,
                 objectMapper.writeValueAsString(Arrays.asList(campaignCatalogDate)));
     }
 

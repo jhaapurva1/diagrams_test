@@ -32,6 +32,7 @@ import com.meesho.cps.transformer.PrismEventTransformer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
@@ -82,6 +83,9 @@ public class DebugService {
 
     @Autowired
     private UpdatedCampaignCatalogCacheDao updatedCampaignCatalogCacheDao;
+
+    @Value(ConsumerConstants.DayWisePerformanceEventsConsumer.TOPIC)
+    String dayWisePerformanceEventsConsumerTopic;
 
     public CampaignCatalogDateMetrics saveCampaignCatalogMetrics(
             CampaignCatalogDateMetricsSaveRequest campaignCatalogMetricsSaveRequest) throws Exception {
@@ -169,7 +173,7 @@ public class DebugService {
                     .map(cm -> new CampaignCatalogDate(cm.getCampaignId(), cm.getCatalogId(), cm.getDate().toString()))
                     .collect(Collectors.toList());
             try {
-                kafkaService.sendMessage(ConsumerConstants.DayWisePerformanceEventsConsumer.TOPIC, null,
+                kafkaService.sendMessage(dayWisePerformanceEventsConsumerTopic, null,
                         objectMapper.writeValueAsString(campaignCatalogDates));
             } catch (JsonProcessingException e) {
                 log.error("failed to send kafka message for campaign catalog dates: {}", campaignCatalogDates);
