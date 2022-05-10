@@ -18,8 +18,8 @@ import java.util.Set;
 public class ClickBillHandlerImpl implements BillHandler {
 
     private final Set<String> VALID_EVENTS = new HashSet<>(
-            Arrays.asList(ConsumerConstants.IngestionInteractionEvents.AD_CLICK_TOPIC,
-                    ConsumerConstants.IngestionInteractionEvents.ANONYMOUS_AD_CLICK_TOPIC));
+            Arrays.asList(ConsumerConstants.IngestionInteractionEvents.AD_CLICK_EVENT_NAME,
+                    ConsumerConstants.IngestionInteractionEvents.ANONYMOUS_AD_CLICK_EVENT_NAME));
 
     @Override
     public Set<String> getValidEvents() {
