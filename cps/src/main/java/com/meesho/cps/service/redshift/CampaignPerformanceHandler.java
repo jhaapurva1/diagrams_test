@@ -1,9 +1,10 @@
 package com.meesho.cps.service.redshift;
 
-import com.meesho.ads.lib.data.internal.RedshiftProcessedMetadata;
+import com.meesho.ads.lib.data.internal.IngestionProcessedMetadata;
 import com.meesho.cps.constants.DBConstants;
 import com.meesho.cps.data.entity.hbase.CampaignCatalogDateMetrics;
 import com.meesho.cps.data.internal.CampaignCatalogDate;
+import com.meesho.cps.data.presto.CampaignPerformancePrestoData;
 import com.meesho.cps.data.redshift.CampaignPerformanceRedshift;
 import com.meesho.cps.db.hbase.repository.CampaignCatalogDateMetricsRepository;
 import com.meesho.cps.db.redis.dao.UpdatedCampaignCatalogCacheDao;
@@ -37,9 +38,9 @@ public class CampaignPerformanceHandler {
     @Autowired
     private CampaignCatalogDateMetricsRepository campaignCatalogMetricsRepository;
 
-    public RedshiftProcessedMetadata<CampaignPerformanceRedshift> transformResults(ResultSet resultSet)
+    public IngestionProcessedMetadata<CampaignPerformanceRedshift> transformResults(ResultSet resultSet)
             throws SQLException {
-        RedshiftProcessedMetadata<CampaignPerformanceRedshift> redshiftProcessedMetadata =
+        IngestionProcessedMetadata<CampaignPerformanceRedshift> redshiftProcessedMetadata =
                 CommonUtils.getDefaultRedshitProcessedMetadata();
         List<CampaignPerformanceRedshift> entities = new ArrayList<>();
         CampaignPerformanceRedshift.CampaignPerformanceRedshiftBuilder campaignPerformanceBuilder =
@@ -76,11 +77,11 @@ public class CampaignPerformanceHandler {
         return redshiftProcessedMetadata;
     }
 
-    public void handle(List<CampaignPerformanceRedshift> campaignPerformanceRedshiftList) {
-        List<String> keys = campaignPerformanceRedshiftList.stream()
+    public void handle(List<CampaignPerformancePrestoData> campaignPerformancePrestoDataList) {
+        List<String> keys = campaignPerformancePrestoDataList.stream()
                 .map(this::getUniqueKey)
                 .collect(Collectors.toList());
-        List<CampaignCatalogDateMetrics> campaignCatalogDateMetricsList = campaignPerformanceRedshiftList.stream()
+        List<CampaignCatalogDateMetrics> campaignCatalogDateMetricsList = campaignPerformancePrestoDataList.stream()
                         .map(CampaignPerformanceTransformer::transform).collect(Collectors.toList());
         campaignCatalogMetricsRepository.putOrdersAndRevenueColumns(campaignCatalogDateMetricsList);
 
@@ -92,7 +93,7 @@ public class CampaignPerformanceHandler {
         log.info("CampaignPerformance scheduler processed result set for campaign_catalog_date {} ", keys);
     }
 
-    public String getUniqueKey(CampaignPerformanceRedshift entity) {
+    public String getUniqueKey(CampaignPerformancePrestoData entity) {
         return String.format(DBConstants.Redshift.CAMPAIGN_CATALOG_DATE_KEY, entity.getCampaignId(),
                 entity.getCatalogId(), entity.getDate());
     }

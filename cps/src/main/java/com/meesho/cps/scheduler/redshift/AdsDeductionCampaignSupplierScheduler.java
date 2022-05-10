@@ -1,7 +1,7 @@
 package com.meesho.cps.scheduler.redshift;
 
-import com.meesho.ads.lib.data.internal.RedshiftProcessedMetadata;
-import com.meesho.ads.lib.scheduler.RedshiftAbstractScheduler;
+import com.meesho.ads.lib.data.internal.IngestionProcessedMetadata;
+import com.meesho.ads.lib.scheduler.RedShiftFeedIngestionScheduler;
 import com.meesho.cps.constants.DBConstants;
 import com.meesho.cps.constants.SchedulerType;
 import com.meesho.cps.data.redshift.AdsDeductionCampaignSupplier;
@@ -21,7 +21,7 @@ import java.util.List;
 @Slf4j
 @Component
 @EnableScheduling
-public class AdsDeductionCampaignSupplierScheduler extends RedshiftAbstractScheduler<AdsDeductionCampaignSupplier> {
+public class AdsDeductionCampaignSupplierScheduler extends RedShiftFeedIngestionScheduler<AdsDeductionCampaignSupplier> {
 
     private static final String QUERY = "SELECT * FROM " + DBConstants.Redshift.Tables.ADS_DEDUCTION_CAMPAIGN_SUPPLIER +
             "  where created_at > '%s' order by created_at LIMIT '%d' OFFSET '%d' ";
@@ -36,7 +36,7 @@ public class AdsDeductionCampaignSupplierScheduler extends RedshiftAbstractSched
 
     @SneakyThrows
     @Override
-    public RedshiftProcessedMetadata<AdsDeductionCampaignSupplier> transformResults(ResultSet resultSet)
+    public IngestionProcessedMetadata<AdsDeductionCampaignSupplier> transformResults(ResultSet resultSet)
             throws SQLException {
         return adsDeductionCampaignSupplierHandler.transformResults(resultSet);
     }
