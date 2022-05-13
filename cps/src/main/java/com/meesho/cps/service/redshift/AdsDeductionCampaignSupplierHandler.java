@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.meesho.ads.lib.data.internal.IngestionProcessedMetadata;
 import com.meesho.cps.constants.Constants;
 import com.meesho.cps.constants.DBConstants;
+import com.meesho.cps.data.presto.AdsDeductionCampaignSupplierPrestoData;
 import com.meesho.cps.data.redshift.AdsDeductionCampaignSupplier;
 import com.meesho.cps.data.redshift.AdsDeductionCampaignSupplierData;
 import com.meesho.cps.service.PayoutKafkaService;
@@ -76,8 +77,29 @@ public class AdsDeductionCampaignSupplierHandler {
         return redshiftProcessedMetadata;
     }
 
-    public void handle(List<AdsDeductionCampaignSupplier> adsDeductionCampaignSupplierList) throws JsonProcessingException {
+    public List<AdsDeductionCampaignSupplier> getAdsDeductionCampaignSupplierEntity
+            (List<AdsDeductionCampaignSupplierPrestoData> adsDeductionCampaignSupplierPrestoDataList) throws JsonProcessingException {
+        List<AdsDeductionCampaignSupplier> adsDeductionCampaignSupplierList = new ArrayList<>();
+        for(AdsDeductionCampaignSupplierPrestoData supplierPrestoData : adsDeductionCampaignSupplierPrestoDataList){
+            AdsDeductionCampaignSupplier adsDeductionCampaignSupplier = AdDeductionCampaignSupplierTransformer.transform(
+                    AdsDeductionCampaignSupplierData.builder()
+                            .supplierId(supplierPrestoData.getSupplierId())
+                            .campaignId(supplierPrestoData.getCampaignId())
+                            .startDate(supplierPrestoData.getStartDate())
+                            .gst(BigDecimal.valueOf(supplierPrestoData.getGst()))
+                            .netDeduction(BigDecimal.valueOf(supplierPrestoData.getNetDeduction()))
+                            .deductionDuration(supplierPrestoData.getDeductionDuration())
+                            .credits(Objects.nonNull(supplierPrestoData.getCredits())?BigDecimal.valueOf(supplierPrestoData.getCredits()).abs(): null)
+                            .adsCost(BigDecimal.valueOf(supplierPrestoData.getAdsCost()))
+                            .build()
+                    , supplierPrestoData.getTransactionId());
+            adsDeductionCampaignSupplierList.add(adsDeductionCampaignSupplier);
+        }
+        return adsDeductionCampaignSupplierList;
+    }
 
+    public void handle(List<AdsDeductionCampaignSupplierPrestoData> adsDeductionCampaignSupplierPrestoDataList) throws JsonProcessingException {
+        List<AdsDeductionCampaignSupplier> adsDeductionCampaignSupplierList = getAdsDeductionCampaignSupplierEntity(adsDeductionCampaignSupplierPrestoDataList);
         for (AdsDeductionCampaignSupplier deduction : adsDeductionCampaignSupplierList) {
             //No need to catch, if we catch exception, we wont get alerted even if scheduler is failing
             payoutKafkaService.sendMessage(adsCostDeductionTopic,
@@ -89,9 +111,9 @@ public class AdsDeductionCampaignSupplierHandler {
 
     }
 
-    public String getUniqueKey(AdsDeductionCampaignSupplier entity) {
+    public String getUniqueKey(AdsDeductionCampaignSupplierPrestoData entity) {
         return String.format(DBConstants.Redshift.ADS_DEDUCTION_CAMPAIGN_KEY,
-                entity.getData().getTransactionId());
+                entity.getTransactionId());
     }
 
 }
