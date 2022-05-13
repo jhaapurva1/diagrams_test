@@ -30,6 +30,7 @@ public class DBConstants {
 
     public static class PrestoTables {
         public static final String CAMPAIGN_PERFORMANCE_METRICS = "gold.campaign_performance_ads_dod";
+        public static final String ADS_DEDUCTION_CAMPAIGN_SUPPLIER = "gold.ads_deduction_transaction_level";
     }
 
     public static class HBase {
