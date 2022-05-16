@@ -166,6 +166,19 @@ public class KafkaConfig {
         return concurrentKafkaListenerContainerFactory;
     }
 
+    @Bean(name = ConsumerConstants.CommonKafka.BATCH_CONTAINER_FACTORY)
+    public ConcurrentKafkaListenerContainerFactory<String, String> commonBulkKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, String> concurrentKafkaListenerContainerFactory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        concurrentKafkaListenerContainerFactory.setConsumerFactory(commonKafkaConsumerFactory());
+        concurrentKafkaListenerContainerFactory.setBatchListener(true);
+        concurrentKafkaListenerContainerFactory.getContainerProperties().setAckMode(ContainerProperties.AckMode.BATCH);
+
+        log.info("Common kafka consumer created with configs {}",
+                concurrentKafkaListenerContainerFactory.getConsumerFactory().getConfigurationProperties());
+        return concurrentKafkaListenerContainerFactory;
+    }
+
     @Bean
     @Primary
     public Map<String, Object> producerConfigs() {

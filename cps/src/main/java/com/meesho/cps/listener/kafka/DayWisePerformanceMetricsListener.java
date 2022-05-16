@@ -43,7 +43,7 @@ public class DayWisePerformanceMetricsListener extends BaseKafkaListener<List<Ca
     String delayedRetryConsumerTopic;
 
     @KafkaListener(id = ConsumerConstants.DayWisePerformanceEventsConsumer.ID, containerFactory =
-            ConsumerConstants.CommonKafka.CONTAINER_FACTORY, topics =
+            ConsumerConstants.CommonKafka.BATCH_CONTAINER_FACTORY, topics =
             {ConsumerConstants.DayWisePerformanceEventsConsumer.TOPIC,
                     ConsumerConstants.DayWisePerformanceEventsConsumer.RETRY_TOPIC}, autoStartup =
             ConsumerConstants.DayWisePerformanceEventsConsumer.AUTO_START, concurrency =
