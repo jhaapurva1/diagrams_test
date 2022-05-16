@@ -11,7 +11,6 @@ public class ConsumerConstants {
         public static final String BOOTSTRAP_SERVERS = "${kafka.common.bootstrap.servers}";
         public static final String AVRO_SCHEMA_REGISTRY_URL = "${kafka.ingestion.consumer.avro.schema.registry.url}";
         public static final String CONTAINER_FACTORY = "commonKafkaListenerContainerFactory";
-        public static final String BATCH_CONTAINER_FACTORY = "commonBatchKafkaListenerContainerFactory";
     }
 
     public static class IngestionServiceKafka {
