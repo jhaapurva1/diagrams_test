@@ -1,23 +1,21 @@
 package com.meesho.cps.scheduler.redshift;
 
-import com.meesho.ads.lib.data.internal.IngestionProcessedMetadata;
 import com.meesho.ads.lib.scheduler.PrestoFeedIngestionScheduler;
-import com.meesho.ads.lib.scheduler.RedShiftFeedIngestionScheduler;
 import com.meesho.cps.constants.DBConstants;
 import com.meesho.cps.constants.SchedulerType;
 import com.meesho.cps.data.presto.AdsDeductionCampaignSupplierPrestoData;
-import com.meesho.cps.data.redshift.AdsDeductionCampaignSupplier;
 import com.meesho.cps.service.redshift.AdsDeductionCampaignSupplierHandler;
 import com.meesho.instrumentation.annotation.DigestLogger;
 import com.meesho.instrumentation.enums.MetricType;
+import com.meesho.prism.beans.PrismSortOrder;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Component;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 @Slf4j
@@ -43,7 +41,7 @@ public class AdsDeductionCampaignSupplierScheduler extends PrestoFeedIngestionSc
 
     @SneakyThrows
     @Override
-    @DigestLogger(metricType = MetricType.METHOD, tagSet = "AdsDeductionCampaignSupplierEventScheduler")
+    @DigestLogger(metricType = MetricType.METHOD, tagSet = "className=adsDeductionCampaignSupplierEventScheduler")
     public void handle(List<AdsDeductionCampaignSupplierPrestoData> entities) throws SQLException {
         adsDeductionCampaignSupplierHandler.handle(entities);
     }
@@ -56,5 +54,10 @@ public class AdsDeductionCampaignSupplierScheduler extends PrestoFeedIngestionSc
     @Override
     public String getType() {
         return SchedulerType.ADS_DEDUCTION_CAMPAIGN_SUPPLIER.name();
+    }
+
+    @Override
+    public void putUniqueKeySortOrder(LinkedHashMap<String, PrismSortOrder> sortOrderMap) {
+        sortOrderMap.put("transaction_id", PrismSortOrder.ASCENDING);
     }
 }
