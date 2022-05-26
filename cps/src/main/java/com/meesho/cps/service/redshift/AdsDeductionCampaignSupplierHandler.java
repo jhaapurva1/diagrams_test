@@ -105,8 +105,6 @@ public class AdsDeductionCampaignSupplierHandler {
             payoutKafkaService.sendMessage(adsCostDeductionTopic,
                     deduction.getData().getTransactionId(),
                     objectMapper.writeValueAsString(deduction));
-            log.info("Ads deduction campaign supplier {} transaction id sent",deduction.getData().getTransactionId());
-
         }
 
     }

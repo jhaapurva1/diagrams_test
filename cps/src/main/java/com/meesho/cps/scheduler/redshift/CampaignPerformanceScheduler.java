@@ -4,15 +4,16 @@ import com.meesho.ads.lib.scheduler.PrestoFeedIngestionScheduler;
 import com.meesho.cps.constants.DBConstants;
 import com.meesho.cps.constants.SchedulerType;
 import com.meesho.cps.data.presto.CampaignPerformancePrestoData;
-import com.meesho.cps.data.redshift.CampaignPerformanceRedshift;
 import com.meesho.cps.service.redshift.CampaignPerformanceHandler;
 import com.meesho.instrumentation.annotation.DigestLogger;
 import com.meesho.instrumentation.enums.MetricType;
+import com.meesho.prism.beans.PrismSortOrder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Component;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 
 /**
@@ -41,7 +42,7 @@ public class CampaignPerformanceScheduler extends PrestoFeedIngestionScheduler<C
     }
 
     @Override
-    @DigestLogger(metricType = MetricType.METHOD, tagSet = "CampaignPerformanceScheduler")
+    @DigestLogger(metricType = MetricType.METHOD, tagSet = "className=campaignPerformanceScheduler")
     public void handle(List<CampaignPerformancePrestoData> campaignPerformancePrestoDataList) {
         campaignPerformanceHandler.handle(campaignPerformancePrestoDataList);
     }
@@ -54,5 +55,12 @@ public class CampaignPerformanceScheduler extends PrestoFeedIngestionScheduler<C
     @Override
     public Class<CampaignPerformancePrestoData> getClassType() {
         return CampaignPerformancePrestoData.class;
+    }
+
+    @Override
+    public void putUniqueKeySortOrder(LinkedHashMap<String, PrismSortOrder> sortOrderMap) {
+        sortOrderMap.put("date", PrismSortOrder.ASCENDING);
+        sortOrderMap.put("campaign_id", PrismSortOrder.ASCENDING);
+        sortOrderMap.put("catalog_id", PrismSortOrder.ASCENDING);
     }
 }
