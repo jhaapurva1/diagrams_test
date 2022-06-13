@@ -2,15 +2,18 @@ package com.meesho.cps.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
 import com.meesho.ads.lib.data.internal.PaginatedResult;
 import com.meesho.ads.lib.utils.DateTimeUtils;
 import com.meesho.ads.lib.utils.HbaseUtils;
 import com.meesho.cps.config.ApplicationProperties;
+import com.meesho.cps.constants.Constants;
 import com.meesho.cps.constants.ConsumerConstants;
 import com.meesho.cps.data.entity.hbase.CampaignCatalogDateMetrics;
 import com.meesho.cps.data.entity.hbase.CampaignCatalogMetrics;
 import com.meesho.cps.data.entity.hbase.CampaignDatewiseMetrics;
 import com.meesho.cps.data.entity.hbase.CampaignMetrics;
+import com.meesho.cps.data.entity.kafka.DayWisePerformancePrismEvent;
 import com.meesho.cps.data.entity.mysql.CampaignPerformance;
 import com.meesho.cps.data.internal.CampaignCatalogDate;
 import com.meesho.cps.data.request.CampaignCatalogDateMetricsSaveRequest;
@@ -22,13 +25,20 @@ import com.meesho.cps.db.hbase.repository.CampaignDatewiseMetricsRepository;
 import com.meesho.cps.db.hbase.repository.CampaignMetricsRepository;
 import com.meesho.cps.db.mysql.dao.CampaignPerformanceDao;
 import com.meesho.cps.db.redis.dao.UpdatedCampaignCatalogCacheDao;
+import com.meesho.cps.helper.BackfillCampaignHelper;
+import com.meesho.cps.service.external.PrismService;
 import com.meesho.cps.transformer.DebugTransformer;
+import com.meesho.cps.transformer.PrismEventTransformer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Period;
@@ -69,7 +79,13 @@ public class DebugService {
     ObjectMapper objectMapper;
 
     @Autowired
+    private PrismService prismService;
+
+    @Autowired
     private UpdatedCampaignCatalogCacheDao updatedCampaignCatalogCacheDao;
+
+    @Value(ConsumerConstants.DayWisePerformanceEventsConsumer.TOPIC)
+    String dayWisePerformanceEventsConsumerTopic;
 
     public CampaignCatalogDateMetrics saveCampaignCatalogMetrics(
             CampaignCatalogDateMetricsSaveRequest campaignCatalogMetricsSaveRequest) throws Exception {
@@ -157,7 +173,7 @@ public class DebugService {
                     .map(cm -> new CampaignCatalogDate(cm.getCampaignId(), cm.getCatalogId(), cm.getDate().toString()))
                     .collect(Collectors.toList());
             try {
-                kafkaService.sendMessage(ConsumerConstants.DayWisePerformanceEventsConsumer.TOPIC, null,
+                kafkaService.sendMessage(dayWisePerformanceEventsConsumerTopic, null,
                         objectMapper.writeValueAsString(campaignCatalogDates));
             } catch (JsonProcessingException e) {
                 log.error("failed to send kafka message for campaign catalog dates: {}", campaignCatalogDates);
@@ -166,4 +182,43 @@ public class DebugService {
             log.info("Processed rows {}", processedRows);
         } while (page.isHasNext());
     }
+
+    // Debug service
+    public void BackillCampaignCatalogDayPerformanceEventsToPrism(String filePath) {
+        log.info("Starting day performance events back fill script");
+        List<CampaignCatalogDate> campaignCatalogDates = new ArrayList<>();
+        try {
+            FileReader fileReader = new FileReader(filePath);
+            BufferedReader bufferedReader = new BufferedReader(fileReader);
+            campaignCatalogDates = BackfillCampaignHelper.getCampaignCatalogAndDateFromCSV(bufferedReader);
+        } catch (IOException e) {
+            log.error("Error reading file {}", filePath, e);
+            return;
+        }
+
+        List<CampaignCatalogDateMetrics> campaignCatalogDateMetricsList = new ArrayList<>();
+
+        campaignCatalogDates.forEach(ccd -> {
+            CampaignCatalogDateMetrics campaignCatalogDateMetrics = campaignCatalogDateMetricsRepository
+                    .get(ccd.getCampaignId(),ccd.getCatalogId(), LocalDate.parse(ccd.getDate()));
+            campaignCatalogDateMetricsList.add(campaignCatalogDateMetrics);
+        });
+        List<CampaignCatalogDateMetrics> filteredList = campaignCatalogDateMetricsList.stream()
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        Integer eventBatchSize = applicationProperties.getBackfillDateWiseMetricsBatchSize();
+
+        List<DayWisePerformancePrismEvent> dayWisePerformancePrismEvents = PrismEventTransformer
+                .getDayWisePerformancePrismEvent(filteredList);
+
+        List<List<DayWisePerformancePrismEvent>> batchEventLists = Lists.partition(dayWisePerformancePrismEvents,
+                eventBatchSize);
+
+        for (int i = 1; i <= batchEventLists.size(); i++) {
+            prismService.publishEvent(Constants.PrismEventNames.DAY_WISE_PERF_EVENTS, batchEventLists.get(i-1));
+            log.info("Backfill event batch processed "+ i);
+        }
+    }
+
 }

@@ -1,17 +1,13 @@
 package com.meesho.cps.constants;
 
-import java.time.LocalDate;
-
 /**
  * @author shubham.aggarwal
  * 03/08/21
  */
 public class Constants {
 
-    public static final String BUDGET_EXHAUSTED_TOPIC = "cps.budget_exhuasted";
-    public static final String INGESTION_VIEW_EVENTS_DEAD_QUEUE_TOPIC = "cps.ingestion-events.view.dead.queue";
-    public static final String INGESTION_INTERACTION_EVENTS_DEAD_QUEUE_TOPIC =
-            "cps.ingestion-events.interaction.dead.queue";
+    public static final String ADS_COST_DEDUCTION_EVENT_TYPE = "SUPPLIER";
+    public static final String[] CAMPAIGN_CATALOG_DATE_FORMAT = new String[]{"campaign_id", "catalog_id", "date"};
 
     public static class API {
         public static final String BASE_PATH = "/api/v1";
@@ -35,6 +31,7 @@ public class Constants {
             public static final String GET_CAMPAIGN_CATALOG_METRICS = "/campaign_catalog_metrics/get";
             public static final String CAMPAIGN_PERFORMANCE_MIGRATE = "/campaign_performance/migrate";
             public static final String GET_CAMPAIGN_DATEWISE_METRICS = "/campaign_datewise_metrics/get";
+            public static final String BACKFILL_CAMPAIGN_CATALOG_DAY_PERFORMANCE_EVENT = "/backfill/campaign_catalog_day_performance_events";
         }
 
         public static class PrismService {
@@ -64,6 +61,14 @@ public class Constants {
             public static final String ENABLE_SCHEDULER = "#{${scheduler.campaign_performance_es_indexing.enable}}";
             public static final String BATCH_SIZE = "#{${scheduler.campaign_performance_es_indexing.batch.size}}";
         }
+
+        public static class ADS_DEDUCTION_CAMPAIGN_SUPPLIER {
+            public static final String MONITOR_CODE = "#{${scheduler.ads.deduction.campaign.supplier.monitor.code}}";
+            public static final String CRON_EXPRESSION = "#{${scheduler.ads.deduction.campaign.supplier.cron.expression}}";
+            public static final String ENABLE_SCHEDULER = "#{${scheduler.ads.deduction.campaign.supplier.enable}}";
+            public static final String BATCH_SIZE = "#{${scheduler.ads.deduction.campaign.supplier.batch.size}}";
+            public static final String PROCESS_BATCH_SIZE = "#{${scheduler.ads.deduction.campaign.supplier.process.batch.size}}";
+        }
     }
 
     public static class PrismEventNames {
@@ -92,6 +97,12 @@ public class Constants {
         public static final String TOTAL_ORDERS = "total_orders";
         public static final String TOTAL_REVENUE = "total_revenues";
         public static final String TOTAL_BUDGET_UTILISED = "total_budget_utilised";
+    }
+
+    public static class Kafka {
+        public static final String BUDGET_EXHAUSTED_TOPIC = "${kafka.budget_exhausted.topic}";
+
+        public static final String ADS_COST_DEDUCTION_TOPIC = "${kafka.ads.cost.deduction.topic}";
     }
 
 }

@@ -17,12 +17,12 @@ import java.util.Set;
 public class InteractionBillHandlerImpl implements BillHandler {
 
     private final Set<String> VALID_EVENTS = new HashSet<>(
-            Arrays.asList(ConsumerConstants.IngestionInteractionEvents.AD_CLICK_TOPIC,
-                    ConsumerConstants.IngestionInteractionEvents.AD_SHARED_TOPIC,
-                    ConsumerConstants.IngestionInteractionEvents.AD_WISHLISTED_TOPIC,
-                    ConsumerConstants.IngestionInteractionEvents.ANONYMOUS_AD_CLICK_TOPIC,
-                    ConsumerConstants.IngestionInteractionEvents.ANONYMOUS_AD_SHARED_TOPIC,
-                    ConsumerConstants.IngestionInteractionEvents.ANONYMOUS_AD_WISHLISTED_TOPIC));
+            Arrays.asList(ConsumerConstants.IngestionInteractionEvents.AD_CLICK_EVENT_NAME,
+                    ConsumerConstants.IngestionInteractionEvents.AD_SHARED_EVENT_NAME,
+                    ConsumerConstants.IngestionInteractionEvents.AD_WISHLISTED_EVENT_NAME,
+                    ConsumerConstants.IngestionInteractionEvents.ANONYMOUS_AD_CLICK_EVENT_NAME,
+                    ConsumerConstants.IngestionInteractionEvents.ANONYMOUS_AD_SHARED_EVENT_NAME,
+                    ConsumerConstants.IngestionInteractionEvents.ANONYMOUS_AD_WISHLISTED_EVENT_NAME));
 
     @Override
     public Set<String> getValidEvents() {

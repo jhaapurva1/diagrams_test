@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
@@ -31,6 +32,15 @@ public class DayWisePerformanceMetricsListener extends BaseKafkaListener<List<Ca
 
     @Autowired
     private UpdatedCampaignCatalogCacheDao updatedCampaignCatalogCacheDao;
+
+    @Value(ConsumerConstants.DayWisePerformanceEventsConsumer.DEAD_QUEUE_TOPIC)
+    String dayWisePerformanceEventsConsumerDeadQueueTopic;
+
+    @Value(ConsumerConstants.DayWisePerformanceEventsConsumer.RETRY_TOPIC)
+    String dayWisePerformanceEventsConsumerRetryTopic;
+
+    @Value(ConsumerConstants.DelayedRetryConsumer.TOPIC)
+    String delayedRetryConsumerTopic;
 
     @KafkaListener(id = ConsumerConstants.DayWisePerformanceEventsConsumer.ID, containerFactory =
             ConsumerConstants.CommonKafka.CONTAINER_FACTORY, topics =
@@ -73,16 +83,16 @@ public class DayWisePerformanceMetricsListener extends BaseKafkaListener<List<Ca
 
     @Override
     public String getDeadTopic() {
-        return ConsumerConstants.DayWisePerformanceEventsConsumer.DEAD_QUEUE_TOPIC;
+        return dayWisePerformanceEventsConsumerDeadQueueTopic;
     }
 
     @Override
     public String getRetryTopic() {
-        return ConsumerConstants.DayWisePerformanceEventsConsumer.RETRY_TOPIC;
+        return dayWisePerformanceEventsConsumerRetryTopic;
     }
 
     @Override
-    public String getDelayedRetryTopic() {return ConsumerConstants.DelayedRetryConsumer.TOPIC; }
+    public String getDelayedRetryTopic() {return delayedRetryConsumerTopic; }
 
     @Override
     public TypeReference<List<CampaignCatalogDate>> getTypeReference() {

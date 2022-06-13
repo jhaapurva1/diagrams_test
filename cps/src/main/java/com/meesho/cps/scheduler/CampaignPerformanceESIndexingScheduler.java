@@ -8,6 +8,7 @@ import com.meesho.cps.data.internal.CampaignCatalogDate;
 import com.meesho.cps.db.redis.dao.UpdatedCampaignCatalogCacheDao;
 import com.meesho.cps.service.KafkaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.time.ZonedDateTime;
@@ -31,6 +32,9 @@ public class CampaignPerformanceESIndexingScheduler extends AbstractScheduler {
     @Autowired
     private UpdatedCampaignCatalogCacheDao updatedCampaignCatalogCacheDao;
 
+    @Value(ConsumerConstants.DayWisePerformanceEventsConsumer.TOPIC)
+    String dayWisePerformanceEventsConsumerTopic;
+
     @Override
     public String getType() {
         return SchedulerType.CAMPAIGN_PERFORMANCE_ES_INDEXING.name();
@@ -47,7 +51,7 @@ public class CampaignPerformanceESIndexingScheduler extends AbstractScheduler {
                         campaignCatalogDate.getDate().substring(0, campaignCatalogDate.getDate().length() - 3)));
 
         for (List<CampaignCatalogDate> campaignCatalogDateIdsOfAMonth : campaignCatalogDateGroupByMonth.values()) {
-            kafkaService.sendMessage(ConsumerConstants.DayWisePerformanceEventsConsumer.TOPIC, null,
+            kafkaService.sendMessage(dayWisePerformanceEventsConsumerTopic, null,
                     objectMapper.writeValueAsString(campaignCatalogDateIdsOfAMonth));
         }
         return (long) campaignCatalogDates.size();

@@ -27,6 +27,7 @@ import com.meesho.instrumentation.annotation.DigestLogger;
 import com.meesho.instrumentation.enums.MetricType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -86,6 +87,9 @@ public class CatalogInteractionEventService {
 
     @Autowired
     private UpdatedCampaignCatalogCacheDao updatedCampaignCatalogCacheDao;
+
+    @Value(Constants.Kafka.BUDGET_EXHAUSTED_TOPIC)
+    String budgetExhaustedTopic;
 
     @DigestLogger(metricType = MetricType.METHOD, tagSet = "class=CatalogInteractionEventService")
     public void handle(AdInteractionEvent adInteractionEvent) throws ExternalRequestFailedException {
@@ -168,7 +172,7 @@ public class CatalogInteractionEventService {
         if (budgetUtilised.compareTo(totalBudget) >= 0) {
             BudgetExhaustedEvent budgetExhaustedEvent = BudgetExhaustedEvent.builder().catalogId(catalogId).campaignId(campaignId).build();
             try {
-                kafkaService.sendMessage(Constants.BUDGET_EXHAUSTED_TOPIC, String.valueOf(campaignId),
+                kafkaService.sendMessage(budgetExhaustedTopic, String.valueOf(campaignId),
                         objectMapper.writeValueAsString(budgetExhaustedEvent));
             } catch (Exception e) {
                 log.error("Exception while sending budgetExhausted event {}", budgetExhaustedEvent, e);
@@ -208,16 +212,16 @@ public class CatalogInteractionEventService {
         log.info("campaignId {}, catalogId {}, date{}, eventName {}" , campaignId, catalogId, date, eventName);
         // CAUTION: Please do not change the order of cases here since action is the combination of multiple cases
         switch (eventName) {
-            case ConsumerConstants.IngestionInteractionEvents.ANONYMOUS_AD_SHARED_TOPIC:
-            case ConsumerConstants.IngestionInteractionEvents.AD_SHARED_TOPIC:
+            case ConsumerConstants.IngestionInteractionEvents.ANONYMOUS_AD_SHARED_EVENT_NAME:
+            case ConsumerConstants.IngestionInteractionEvents.AD_SHARED_EVENT_NAME:
                 campaignCatalogDateMetricsRepository.incrementSharesCount(campaignId, catalogId, date);
                 break;
-            case ConsumerConstants.IngestionInteractionEvents.ANONYMOUS_AD_WISHLISTED_TOPIC:
-            case ConsumerConstants.IngestionInteractionEvents.AD_WISHLISTED_TOPIC:
+            case ConsumerConstants.IngestionInteractionEvents.ANONYMOUS_AD_WISHLISTED_EVENT_NAME:
+            case ConsumerConstants.IngestionInteractionEvents.AD_WISHLISTED_EVENT_NAME:
                 campaignCatalogDateMetricsRepository.incrementWishlistCount(campaignId, catalogId, date);
                 break;
-            case ConsumerConstants.IngestionInteractionEvents.ANONYMOUS_AD_CLICK_TOPIC:
-            case ConsumerConstants.IngestionInteractionEvents.AD_CLICK_TOPIC:
+            case ConsumerConstants.IngestionInteractionEvents.ANONYMOUS_AD_CLICK_EVENT_NAME:
+            case ConsumerConstants.IngestionInteractionEvents.AD_CLICK_EVENT_NAME:
                 campaignCatalogDateMetricsRepository.incrementClickCount(campaignId, catalogId, date);
                 break;
         }
