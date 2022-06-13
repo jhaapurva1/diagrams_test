@@ -16,4 +16,8 @@ public class BudgetExhaustedEvent {
     @JsonProperty("campaign_id")
     private Long campaignId;
 
+    @JsonProperty("catalog_id")
+    private Long catalogId;
+
+
 }
