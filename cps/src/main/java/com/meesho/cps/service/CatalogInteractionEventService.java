@@ -170,7 +170,7 @@ public class CatalogInteractionEventService {
         BigDecimal budgetUtilised = modifyAndGetBudgetUtilised(cpc, campaignId, catalogId, eventDate, campaignType);
 
         if (budgetUtilised.compareTo(totalBudget) >= 0) {
-            BudgetExhaustedEvent budgetExhaustedEvent = BudgetExhaustedEvent.builder().campaignId(campaignId).build();
+            BudgetExhaustedEvent budgetExhaustedEvent = BudgetExhaustedEvent.builder().catalogId(catalogId).campaignId(campaignId).build();
             try {
                 kafkaService.sendMessage(budgetExhaustedTopic, String.valueOf(campaignId),
                         objectMapper.writeValueAsString(budgetExhaustedEvent));
