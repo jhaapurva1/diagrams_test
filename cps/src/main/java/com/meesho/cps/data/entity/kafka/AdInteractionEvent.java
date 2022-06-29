@@ -50,6 +50,9 @@ public class AdInteractionEvent {
         @JsonProperty("id")
         private Long id;
 
+        @JsonProperty("product_id")
+        private Long productId;
+
         @JsonProperty("type")
         private String type;
 

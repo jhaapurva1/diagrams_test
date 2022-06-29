@@ -96,6 +96,7 @@ public class CatalogInteractionEventService {
         Long interactionTime = adInteractionEvent.getEventTimestamp();
         String userId = adInteractionEvent.getUserId();
         Long catalogId = adInteractionEvent.getProperties().getId();
+        Long productId = adInteractionEvent.getProperties().getProductId();
 
         AdInteractionPrismEvent adInteractionPrismEvent =
                 PrismEventTransformer.getAdInteractionPrismEvent(adInteractionEvent, userId, catalogId);
@@ -108,6 +109,7 @@ public class CatalogInteractionEventService {
             log.error("No active ad on catalogId {}", catalogId);
             adInteractionPrismEvent.setStatus(AdInteractionStatus.INVALID);
             adInteractionPrismEvent.setReason(AdInteractionInvalidReason.CAMPAIGN_INACTIVE);
+            adInteractionPrismEvent.setProductId(productId);
             publishPrismEvent(adInteractionPrismEvent);
             telegrafMetricsHelper.increment(INTERACTION_EVENT_KEY, INTERACTION_EVENT_TAGS,
                     adInteractionEvent.getEventName(), adInteractionEvent.getProperties().getScreen(), adInteractionEvent.getProperties().getOrigin(),
@@ -135,6 +137,7 @@ public class CatalogInteractionEventService {
         if (!billHandler.getValidEvents().contains(adInteractionEvent.getEventName())) {
             adInteractionPrismEvent.setStatus(AdInteractionStatus.INVALID);
             adInteractionPrismEvent.setReason(AdInteractionInvalidReason.NON_BILLABLE_INTERACTION);
+            adInteractionPrismEvent.setProductId(productId);
             publishPrismEvent(adInteractionPrismEvent);
             telegrafMetricsHelper.increment(INTERACTION_EVENT_KEY, INTERACTION_EVENT_TAGS,
                     adInteractionEvent.getEventName(), adInteractionEvent.getProperties().getScreen(), adInteractionEvent.getProperties().getOrigin(),
@@ -149,19 +152,22 @@ public class CatalogInteractionEventService {
         String screen = adInteractionEvent.getProperties().getScreen();
         //Perform deduplication
         if (billHandler.performWindowDeDuplication()) {
-            Long previousInteractionTime = userCatalogInteractionCacheDao.get(userId, catalogId, origin, screen);
+            Long id = Objects.nonNull(productId)?productId:campaignId;
+            AdInteractionUserType type = Objects.nonNull(productId)?AdInteractionUserType.PRODUCT_ID:AdInteractionUserType.CATALOG_ID;
+            Long previousInteractionTime = userCatalogInteractionCacheDao.get(userId, id, origin, screen, type);
             if (!checkIfInteractionNeedsToBeConsidered(previousInteractionTime, interactionTime)) {
                 log.warn("Ignoring click event since window hasn't passed or wrong ordering," +
                         " event : {}, previousInteractionTime {}", adInteractionEvent, previousInteractionTime);
                 adInteractionPrismEvent.setStatus(AdInteractionStatus.INVALID);
                 adInteractionPrismEvent.setReason(AdInteractionInvalidReason.DUPLICATE);
+                adInteractionPrismEvent.setProductId(productId);
                 publishPrismEvent(adInteractionPrismEvent);
                 telegrafMetricsHelper.increment(INTERACTION_EVENT_KEY, INTERACTION_EVENT_TAGS,
                         adInteractionEvent.getEventName(), adInteractionEvent.getProperties().getScreen(), adInteractionEvent.getProperties().getOrigin(),
                         AdInteractionStatus.INVALID.name(), AdInteractionInvalidReason.DUPLICATE.name());
                 return;
             }
-            userCatalogInteractionCacheDao.set(userId, catalogId, origin, screen, interactionTime);
+            userCatalogInteractionCacheDao.set(userId, id, origin, screen, interactionTime, type);
         }
 
         //Update campaign catalog date metrics
@@ -179,6 +185,7 @@ public class CatalogInteractionEventService {
             }
         }
         adInteractionPrismEvent.setStatus(AdInteractionStatus.VALID);
+        adInteractionPrismEvent.setProductId(productId);
         publishPrismEvent(adInteractionPrismEvent);
 
         updatedCampaignCatalogCacheDao.add(Arrays.asList(new CampaignCatalogDate(campaignId, catalogId,

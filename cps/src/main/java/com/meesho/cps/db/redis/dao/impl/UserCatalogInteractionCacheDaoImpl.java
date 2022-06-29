@@ -1,6 +1,7 @@
 package com.meesho.cps.db.redis.dao.impl;
 
 import com.meesho.cps.config.ApplicationProperties;
+import com.meesho.cps.constants.AdInteractionUserType;
 import com.meesho.cps.constants.DBConstants;
 import com.meesho.cps.db.redis.dao.UserCatalogInteractionCacheDao;
 import com.meesho.instrumentation.annotation.DigestLogger;
@@ -29,13 +30,13 @@ public class UserCatalogInteractionCacheDaoImpl implements UserCatalogInteractio
     @Autowired
     private ApplicationProperties applicationProperties;
 
-    private String appendPrefix(String userId, Long catalogId, String origin, String screen) {
-        return String.format(DBConstants.Redis.USER_CATALOG_INTERACTIONS_PREFIX, userId, catalogId, origin, screen);
+    private String appendPrefix(String userId, Long id, String origin, String screen, AdInteractionUserType type) {
+        return String.format(DBConstants.Redis.USER_CATALOG_INTERACTIONS_PREFIX, userId, id, origin, screen, type.toString());
     }
 
     @Override
-    public Long get(String userId, Long catalogId, String origin, String screen) {
-        String key = appendPrefix(userId, catalogId, origin, screen);
+    public Long get(String userId, Long id, String origin, String screen, AdInteractionUserType type) {
+        String key = appendPrefix(userId, id, origin, screen, type);
         try {
             return redisTemplate.opsForValue().get(key);
         } catch (Exception e) {
@@ -45,8 +46,8 @@ public class UserCatalogInteractionCacheDaoImpl implements UserCatalogInteractio
     }
 
     @Override
-    public void set(String userId, Long catalogId, String origin, String screen, Long timestamp) {
-        String key = appendPrefix(userId, catalogId, origin, screen);
+    public void set(String userId, Long id, String origin, String screen, Long timestamp, AdInteractionUserType type) {
+        String key = appendPrefix(userId, id, origin, screen, type);
         try {
             redisTemplate.opsForValue()
                     .set(key, timestamp, applicationProperties.getUserCatalogInteractionTTLSeconds(), TimeUnit.SECONDS);

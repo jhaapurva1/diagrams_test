@@ -57,7 +57,7 @@ public class DBConstants {
 
         public static final String USER_CATALOG_INTERACTIONS_PREFIX =
                 NAMESPACE + REDIS_KEY_DELIMITER + "ucin" + REDIS_KEY_DELIMITER + "%s" + REDIS_KEY_DELIMITER + "%s" +
-                        REDIS_KEY_DELIMITER + "%s" + REDIS_KEY_DELIMITER + "%s";
+                        REDIS_KEY_DELIMITER + "%s" + REDIS_KEY_DELIMITER + "%s" + REDIS_KEY_DELIMITER + "%s";
 
         public static final String UPDATED_CAMPAIGN_CATALOGS = "ucc" + "_{%s}";
     }
