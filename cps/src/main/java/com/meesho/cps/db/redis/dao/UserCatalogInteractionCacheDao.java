@@ -1,6 +1,6 @@
 package com.meesho.cps.db.redis.dao;
 
-import com.meesho.cps.constants.AdInteractionUserType;
+import com.meesho.cps.constants.AdUserInteractionType;
 
 /**
  * @author shubham.aggarwal
@@ -8,8 +8,8 @@ import com.meesho.cps.constants.AdInteractionUserType;
  */
 public interface UserCatalogInteractionCacheDao {
 
-    Long get(String userId, Long id, String origin, String screen, AdInteractionUserType type);
+    Long get(String userId, Long id, String origin, String screen, AdUserInteractionType type);
 
-    void set(String userId, Long id, String origin, String screen, Long timestamp, AdInteractionUserType type);
+    void set(String userId, Long id, String origin, String screen, Long timestamp, AdUserInteractionType type);
 
 }

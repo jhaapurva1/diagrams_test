@@ -153,7 +153,7 @@ public class CatalogInteractionEventService {
         //Perform deduplication
         if (billHandler.performWindowDeDuplication()) {
             Long id = Objects.nonNull(productId)?productId:campaignId;
-            AdInteractionUserType type = Objects.nonNull(productId)?AdInteractionUserType.PRODUCT_ID:AdInteractionUserType.CATALOG_ID;
+            AdUserInteractionType type = Objects.nonNull(productId)? AdUserInteractionType.PRODUCT_ID: AdUserInteractionType.CATALOG_ID;
             Long previousInteractionTime = userCatalogInteractionCacheDao.get(userId, id, origin, screen, type);
             if (!checkIfInteractionNeedsToBeConsidered(previousInteractionTime, interactionTime)) {
                 log.warn("Ignoring click event since window hasn't passed or wrong ordering," +
