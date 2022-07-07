@@ -99,7 +99,7 @@ public class CatalogInteractionEventService {
         Long productId = adInteractionEvent.getProperties().getProductId();
 
         AdInteractionPrismEvent adInteractionPrismEvent =
-                PrismEventTransformer.getAdInteractionPrismEvent(adInteractionEvent, userId, catalogId);
+                PrismEventTransformer.getAdInteractionPrismEvent(adInteractionEvent, userId, catalogId, productId);
 
         List<CampaignCatalogMetadataResponse.CatalogMetadata> catalogMetadataList =
                 adService.getCampaignCatalogMetadata(Lists.newArrayList(catalogId));
@@ -109,7 +109,6 @@ public class CatalogInteractionEventService {
             log.error("No active ad on catalogId {}", catalogId);
             adInteractionPrismEvent.setStatus(AdInteractionStatus.INVALID);
             adInteractionPrismEvent.setReason(AdInteractionInvalidReason.CAMPAIGN_INACTIVE);
-            adInteractionPrismEvent.setProductId(productId);
             publishPrismEvent(adInteractionPrismEvent);
             telegrafMetricsHelper.increment(INTERACTION_EVENT_KEY, INTERACTION_EVENT_TAGS,
                     adInteractionEvent.getEventName(), adInteractionEvent.getProperties().getScreen(), adInteractionEvent.getProperties().getOrigin(),
@@ -137,7 +136,6 @@ public class CatalogInteractionEventService {
         if (!billHandler.getValidEvents().contains(adInteractionEvent.getEventName())) {
             adInteractionPrismEvent.setStatus(AdInteractionStatus.INVALID);
             adInteractionPrismEvent.setReason(AdInteractionInvalidReason.NON_BILLABLE_INTERACTION);
-            adInteractionPrismEvent.setProductId(productId);
             publishPrismEvent(adInteractionPrismEvent);
             telegrafMetricsHelper.increment(INTERACTION_EVENT_KEY, INTERACTION_EVENT_TAGS,
                     adInteractionEvent.getEventName(), adInteractionEvent.getProperties().getScreen(), adInteractionEvent.getProperties().getOrigin(),
@@ -160,7 +158,6 @@ public class CatalogInteractionEventService {
                         " event : {}, previousInteractionTime {}", adInteractionEvent, previousInteractionTime);
                 adInteractionPrismEvent.setStatus(AdInteractionStatus.INVALID);
                 adInteractionPrismEvent.setReason(AdInteractionInvalidReason.DUPLICATE);
-                adInteractionPrismEvent.setProductId(productId);
                 publishPrismEvent(adInteractionPrismEvent);
                 telegrafMetricsHelper.increment(INTERACTION_EVENT_KEY, INTERACTION_EVENT_TAGS,
                         adInteractionEvent.getEventName(), adInteractionEvent.getProperties().getScreen(), adInteractionEvent.getProperties().getOrigin(),
@@ -185,7 +182,6 @@ public class CatalogInteractionEventService {
             }
         }
         adInteractionPrismEvent.setStatus(AdInteractionStatus.VALID);
-        adInteractionPrismEvent.setProductId(productId);
         publishPrismEvent(adInteractionPrismEvent);
 
         updatedCampaignCatalogCacheDao.add(Arrays.asList(new CampaignCatalogDate(campaignId, catalogId,
