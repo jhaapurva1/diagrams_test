@@ -152,7 +152,7 @@ public class CatalogInteractionEventService {
         String screen = adInteractionEvent.getProperties().getScreen();
         //Perform deduplication
         if (billHandler.performWindowDeDuplication()) {
-            Long id = Objects.nonNull(productId)?productId:campaignId;
+            Long id = Objects.nonNull(productId)?productId:catalogId;
             AdUserInteractionType type = Objects.nonNull(productId)? AdUserInteractionType.PRODUCT_ID: AdUserInteractionType.CATALOG_ID;
             Long previousInteractionTime = userCatalogInteractionCacheDao.get(userId, id, origin, screen, type);
             if (!checkIfInteractionNeedsToBeConsidered(previousInteractionTime, interactionTime)) {
