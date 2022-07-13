@@ -56,6 +56,21 @@ public class DayWisePerformanceMetricsListener extends BaseKafkaListener<List<Ca
         super.listen(consumerRecord);
     }
 
+    @KafkaListener(id = "DayWisePerformanceEventsConsumer.ID",
+            groupId = ConsumerConstants.DayWisePerformanceEventsConsumer.ID, containerFactory =
+            ConsumerConstants.AdServiceKafka.CONTAINER_FACTORY, topics =
+            {ConsumerConstants.DayWisePerformanceEventsConsumer.TOPIC,
+                    ConsumerConstants.DayWisePerformanceEventsConsumer.RETRY_TOPIC}, autoStartup =
+            ConsumerConstants.DayWisePerformanceEventsConsumer.AUTO_START, concurrency =
+            ConsumerConstants.DayWisePerformanceEventsConsumer.CONCURRENCY, properties = {
+            ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG + "=" +
+                    ConsumerConstants.DayWisePerformanceEventsConsumer.MAX_POLL_INTERVAL_MS,
+            ConsumerConfig.MAX_POLL_RECORDS_CONFIG + "=" + ConsumerConstants.DayWisePerformanceEventsConsumer.BATCH_SIZE})
+    @DigestLogger(metricType = MetricType.METHOD, tagSet = "consumer=DayWisePerformanceEventListener")
+    public void listen_adServiceKafka(ConsumerRecord<String, String> consumerRecord) {
+        super.listen(consumerRecord);
+    }
+
     @Override
     public void consume(List<CampaignCatalogDate> message) throws RuntimeException {
         try {
