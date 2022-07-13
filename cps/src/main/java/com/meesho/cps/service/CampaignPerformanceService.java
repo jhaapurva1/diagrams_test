@@ -169,14 +169,14 @@ public class CampaignPerformanceService {
         LocalDate dailyBudgetTrackingDate = campaignPerformanceHelper.getLocalDateForDailyCampaignFromLocalDateTime(DateTimeUtils.getCurrentLocalDateTimeInIST());
         LocalDate weekStartDate = campaignPerformanceHelper.getWeekStartDate(DateTimeUtils.getCurrentLocalDateTimeInIST());
 
-        List<CampaignDatewiseMetrics> campaignDatewiseMetrics =
+        List<CampaignDatewiseMetrics> campaignDateWiseMetrics =
                 campaignDatewiseMetricsRepository.getAll(dailyBudgetCampaignIds,
                         dailyBudgetTrackingDate);
         List<CampaignMetrics> campaignMetrics = campaignMetricsRepository.getAll(totalBudgetCampaignIds);
 
         List<SupplierWeekWiseMetrics> supplierWeekWiseMetrics = supplierWeekWiseMetricsRepository.getAll(supplierIds, weekStartDate);
 
-        return campaignPerformanceTransformer.getBudgetUtilisedResponse(campaignMetrics, campaignDatewiseMetrics, supplierWeekWiseMetrics);
+        return campaignPerformanceTransformer.getBudgetUtilisedResponse(campaignMetrics, campaignDateWiseMetrics, supplierWeekWiseMetrics);
     }
 
 }
