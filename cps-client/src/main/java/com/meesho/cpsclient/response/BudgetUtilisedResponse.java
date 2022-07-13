@@ -27,6 +27,9 @@ public class BudgetUtilisedResponse {
     @JsonProperty("campaigns")
     private List<BudgetUtilisedDetails> budgetUtilisedDetails;
 
+    @JsonProperty("suppliers")
+    private List<SupplierBudgetUtilisedDetails> suppliersBudgetUtilisedDetails;
+
     @Data
     @Builder
     @NoArgsConstructor
@@ -43,4 +46,19 @@ public class BudgetUtilisedResponse {
 
     }
 
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class SupplierBudgetUtilisedDetails {
+
+        @JsonProperty("supplier_id")
+        private Long supplierId;
+
+        @JsonProperty("budget_utilised")
+        private BigDecimal budgetUtilised;
+
+    }
 }

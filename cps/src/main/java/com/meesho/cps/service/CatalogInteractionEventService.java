@@ -11,10 +11,13 @@ import com.meesho.cps.constants.*;
 import com.meesho.cps.data.entity.kafka.AdInteractionEvent;
 import com.meesho.cps.data.entity.kafka.AdInteractionPrismEvent;
 import com.meesho.cps.data.entity.kafka.BudgetExhaustedEvent;
+import com.meesho.cps.data.entity.kafka.SupplierWeeklyBudgetExhaustedEvent;
 import com.meesho.cps.data.internal.CampaignCatalogDate;
 import com.meesho.cps.db.hbase.repository.CampaignCatalogDateMetricsRepository;
 import com.meesho.cps.db.hbase.repository.CampaignDatewiseMetricsRepository;
 import com.meesho.cps.db.hbase.repository.CampaignMetricsRepository;
+import com.meesho.cps.db.hbase.repository.SupplierWeekWiseMetricsRepository;
+import com.meesho.cps.db.redis.dao.SuppliersWeeklyBudgetExhaustEventStateDao;
 import com.meesho.cps.db.redis.dao.UpdatedCampaignCatalogCacheDao;
 import com.meesho.cps.db.redis.dao.UserCatalogInteractionCacheDao;
 import com.meesho.cps.exception.ExternalRequestFailedException;
@@ -88,8 +91,17 @@ public class CatalogInteractionEventService {
     @Autowired
     private UpdatedCampaignCatalogCacheDao updatedCampaignCatalogCacheDao;
 
+    @Autowired
+    private SupplierWeekWiseMetricsRepository supplierWeekWiseMetricsRepository;
+
+    @Autowired
+    private SuppliersWeeklyBudgetExhaustEventStateDao suppliersWeeklyBudgetExhaustEventStateDao;
+
     @Value(Constants.Kafka.BUDGET_EXHAUSTED_TOPIC)
     String budgetExhaustedTopic;
+
+    @Value(Constants.Kafka.SUPPLIER_WEEKLY_BUDGET_EXHAUSTED_TOPIC)
+    private String suppliersWeeklyBudgetExhaustedTopic;
 
     @DigestLogger(metricType = MetricType.METHOD, tagSet = "class=CatalogInteractionEventService")
     public void handle(AdInteractionEvent adInteractionEvent) throws ExternalRequestFailedException {
@@ -117,13 +129,16 @@ public class CatalogInteractionEventService {
 
         CampaignDetails catalogMetadata = catalogMetadataList.get(0).getCampaignDetails();
         Long campaignId = catalogMetadata.getCampaignId();
+        Long supplierId = catalogMetadata.getSupplierId();
         BigDecimal totalBudget = catalogMetadata.getBudget();
+        BigDecimal weeklyBudgetUtilisationLimit = BigDecimal.ZERO; //ToDo - implementation pending from the Ad-Server side
         Integer billVersion = catalogMetadata.getBillVersion();
         BigDecimal cpc = catalogMetadata.getCpc();
         CampaignType campaignType = CampaignType.fromValue(catalogMetadata.getCampaignType());
         adInteractionPrismEvent.setCampaignId(campaignId);
         LocalDate eventDate = campaignHelper.getLocalDateForDailyCampaignFromLocalDateTime(
                 DateTimeUtils.getCurrentLocalDateTimeInIST());
+        LocalDate weekStartDate = campaignHelper.getWeekStartDate(DateTimeUtils.getCurrentLocalDateTimeInIST());
 
         log.info("CPC for event_id {} catalog id {} in campaign {} is {}", adInteractionEvent.getEventId(), catalogId,
                 campaignId, cpc);
@@ -178,6 +193,22 @@ public class CatalogInteractionEventService {
                 log.error("Exception while sending budgetExhausted event {}", budgetExhaustedEvent, e);
             }
         }
+
+        //update supplier weekly budget utilised
+        BigDecimal supplierWeeklyBudgetUtilised = modifyAndGetSupplierWeeklyBudgetUtilised(supplierId, weekStartDate, cpc);
+        if (supplierWeeklyBudgetUtilised.compareTo(weeklyBudgetUtilisationLimit) >= 0 &&
+                !suppliersWeeklyBudgetExhaustEventStateDao.isEventAlreadyFired(supplierId)) {
+            SupplierWeeklyBudgetExhaustedEvent supplierWeeklyBudgetExhaustedEvent =
+                    SupplierWeeklyBudgetExhaustedEvent.builder().supplierId(supplierId).catalogId(catalogId).build();
+            try {
+                kafkaService.sendMessage(suppliersWeeklyBudgetExhaustedTopic, String.valueOf(supplierId),
+                        objectMapper.writeValueAsString(supplierWeeklyBudgetExhaustedEvent));
+                suppliersWeeklyBudgetExhaustEventStateDao.setEventAsFired(supplierId);
+            } catch (Exception e) {
+                log.error("Exception while sending supplierWeeklyBudgetExhausted event {}", supplierWeeklyBudgetExhaustedEvent, e);
+            }
+        }
+
         adInteractionPrismEvent.setStatus(AdInteractionStatus.VALID);
         publishPrismEvent(adInteractionPrismEvent);
 
@@ -234,6 +265,10 @@ public class CatalogInteractionEventService {
             return campaignDatewiseMetricsRepository.incrementBudgetUtilised(campaignId, date, cpc);
         }
         return campaignMetricsRepository.incrementBudgetUtilised(campaignId, cpc);
+    }
+
+    public BigDecimal modifyAndGetSupplierWeeklyBudgetUtilised(Long supplierId, LocalDate weekStartDate, BigDecimal cpc) {
+        return supplierWeekWiseMetricsRepository.incrementBudgetUtilised(supplierId, weekStartDate, cpc);
     }
 
 }

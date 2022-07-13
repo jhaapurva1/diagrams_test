@@ -28,6 +28,10 @@ public class BudgetUtilisedRequest {
     @JsonProperty("campaigns")
     List<CampaignData> campaignDataList;
 
+    @Valid
+    @JsonProperty("suppliers")
+    List<Long> suppliersIdList;
+
     @Data
     @Builder
     @NoArgsConstructor

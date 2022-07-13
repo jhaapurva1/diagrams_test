@@ -103,6 +103,8 @@ public class Constants {
         public static final String BUDGET_EXHAUSTED_TOPIC = "${kafka.budget_exhausted.topic}";
 
         public static final String ADS_COST_DEDUCTION_TOPIC = "${kafka.ads.cost.deduction.topic}";
+
+        public static final String SUPPLIER_WEEKLY_BUDGET_EXHAUSTED_TOPIC = "${kafka.supplier.weekly.budget.exhausted.topic}";
     }
 
 }
