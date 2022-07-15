@@ -126,9 +126,6 @@ public class ApplicationProperties {
     @Value("#{T(java.time.LocalDate).parse('${campaign.date-wise.metrics.reference-date}')}")
     private LocalDate campaignDatewiseMetricsReferenceDate;
 
-    @Value("${redis.supplier_weekly_budget_exhaust_event.ttl.seconds}")
-    private Integer suppliersWeeklyBudgetExhaustEventTtlSeconds;
-
     @PostConstruct
     public void init() {
         SchedulerProperty.SchedulerPropertyBuilder schedulerPropertyBuilder = SchedulerProperty.builder();

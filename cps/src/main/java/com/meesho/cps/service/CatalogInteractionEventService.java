@@ -17,7 +17,6 @@ import com.meesho.cps.db.hbase.repository.CampaignCatalogDateMetricsRepository;
 import com.meesho.cps.db.hbase.repository.CampaignDatewiseMetricsRepository;
 import com.meesho.cps.db.hbase.repository.CampaignMetricsRepository;
 import com.meesho.cps.db.hbase.repository.SupplierWeekWiseMetricsRepository;
-import com.meesho.cps.db.redis.dao.SuppliersWeeklyBudgetExhaustEventStateDao;
 import com.meesho.cps.db.redis.dao.UpdatedCampaignCatalogCacheDao;
 import com.meesho.cps.db.redis.dao.UserCatalogInteractionCacheDao;
 import com.meesho.cps.exception.ExternalRequestFailedException;
@@ -93,9 +92,6 @@ public class CatalogInteractionEventService {
 
     @Autowired
     private SupplierWeekWiseMetricsRepository supplierWeekWiseMetricsRepository;
-
-    @Autowired
-    private SuppliersWeeklyBudgetExhaustEventStateDao suppliersWeeklyBudgetExhaustEventStateDao;
 
     @Value(Constants.Kafka.BUDGET_EXHAUSTED_TOPIC)
     String budgetExhaustedTopic;
@@ -196,14 +192,12 @@ public class CatalogInteractionEventService {
 
         //update supplier weekly budget utilised
         BigDecimal supplierWeeklyBudgetUtilised = modifyAndGetSupplierWeeklyBudgetUtilised(supplierId, weekStartDate, cpc);
-        if (supplierWeeklyBudgetUtilised.compareTo(weeklyBudgetUtilisationLimit) >= 0 &&
-                !suppliersWeeklyBudgetExhaustEventStateDao.isEventAlreadyFired(supplierId)) {
+        if (supplierWeeklyBudgetUtilised.compareTo(weeklyBudgetUtilisationLimit) >= 0) {
             SupplierWeeklyBudgetExhaustedEvent supplierWeeklyBudgetExhaustedEvent =
                     SupplierWeeklyBudgetExhaustedEvent.builder().supplierId(supplierId).catalogId(catalogId).build();
             try {
                 kafkaService.sendMessage(suppliersWeeklyBudgetExhaustedTopic, String.valueOf(supplierId),
                         objectMapper.writeValueAsString(supplierWeeklyBudgetExhaustedEvent));
-                suppliersWeeklyBudgetExhaustEventStateDao.setEventAsFired(supplierId);
             } catch (Exception e) {
                 log.error("Exception while sending supplierWeeklyBudgetExhausted event {}", supplierWeeklyBudgetExhaustedEvent, e);
             }
