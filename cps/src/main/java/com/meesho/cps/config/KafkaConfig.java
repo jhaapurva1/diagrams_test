@@ -38,6 +38,10 @@ public class KafkaConfig {
     @Value(ConsumerConstants.CommonKafka.BOOTSTRAP_SERVERS)
     private String commonBootstrapServers;
 
+
+    @Value(ConsumerConstants.AdServiceKafka.BOOTSTRAP_SERVERS)
+    private String adServiceBootstrapServers;
+
     @Value(ConsumerConstants.IngestionServiceConfluentKafka.BOOTSTRAP_SERVERS)
     private String ingestionConfluentKafkaBootstrapServers;
 
@@ -153,6 +157,16 @@ public class KafkaConfig {
         return new DefaultKafkaConsumerFactory<>(configs);
     }
 
+    private ConsumerFactory<String, String> adServiceKafkaConsumerFactory() {
+        Map<String, Object> configs = new HashMap<>();
+        configs.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, adServiceBootstrapServers);
+        configs.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
+        configs.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
+        configs.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        configs.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        return new DefaultKafkaConsumerFactory<>(configs);
+    }
+
     @Bean(name = ConsumerConstants.CommonKafka.CONTAINER_FACTORY)
     public ConcurrentKafkaListenerContainerFactory<String, String> commonKafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, String> concurrentKafkaListenerContainerFactory =
@@ -162,6 +176,19 @@ public class KafkaConfig {
         concurrentKafkaListenerContainerFactory.getContainerProperties().setAckMode(ContainerProperties.AckMode.BATCH);
 
         log.info("Common kafka consumer created with configs {}",
+                concurrentKafkaListenerContainerFactory.getConsumerFactory().getConfigurationProperties());
+        return concurrentKafkaListenerContainerFactory;
+    }
+
+    @Bean(name = ConsumerConstants.AdServiceKafka.CONTAINER_FACTORY)
+    public ConcurrentKafkaListenerContainerFactory<String, String> adServiceKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, String> concurrentKafkaListenerContainerFactory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        concurrentKafkaListenerContainerFactory.setConsumerFactory(adServiceKafkaConsumerFactory());
+        concurrentKafkaListenerContainerFactory.setBatchListener(false);
+        concurrentKafkaListenerContainerFactory.getContainerProperties().setAckMode(ContainerProperties.AckMode.BATCH);
+
+        log.info("Ad Service kafka consumer created with configs {}",
                 concurrentKafkaListenerContainerFactory.getConsumerFactory().getConfigurationProperties());
         return concurrentKafkaListenerContainerFactory;
     }
