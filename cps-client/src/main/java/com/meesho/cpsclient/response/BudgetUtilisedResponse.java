@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
@@ -25,10 +26,20 @@ import lombok.NoArgsConstructor;
 public class BudgetUtilisedResponse {
 
     @JsonProperty("campaigns")
-    private List<BudgetUtilisedDetails> budgetUtilisedDetails;
+    private List<BudgetUtilisedDetails> budgetUtilisedDetails = new ArrayList<>();
 
     @JsonProperty("suppliers")
-    private List<SupplierBudgetUtilisedDetails> suppliersBudgetUtilisedDetails;
+    private List<SupplierBudgetUtilisedDetails> suppliersBudgetUtilisedDetails = new ArrayList<>();
+
+    public BigDecimal getCampaignBudgetUtilized(Long campaignId) {
+        return budgetUtilisedDetails.stream().filter(x -> x.getCampaignId().equals(campaignId))
+                .map(BudgetUtilisedDetails::getBudgetUtilised).findAny().orElse(BigDecimal.ZERO);
+    }
+
+    public BigDecimal getSupplierBudgetUtilized(Long supplierId) {
+        return suppliersBudgetUtilisedDetails.stream().filter(x -> x.getSupplierId().equals(supplierId))
+                .map(SupplierBudgetUtilisedDetails::getBudgetUtilised).findAny().orElse(BigDecimal.ZERO);
+    }
 
     @Data
     @Builder

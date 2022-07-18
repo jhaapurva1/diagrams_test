@@ -2,6 +2,7 @@ package com.meesho.cps.data.entity.hbase;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.meesho.ads.lib.utils.DateTimeUtils;
 import com.meesho.ads.lib.utils.HashingUtils;
 import com.meesho.ads.lib.utils.HbaseUtils;
@@ -18,6 +19,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class SupplierWeekWiseMetrics {
 
     private Long supplierId;
