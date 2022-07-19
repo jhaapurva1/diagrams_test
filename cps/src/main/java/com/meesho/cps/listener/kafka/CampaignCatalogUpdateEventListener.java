@@ -57,21 +57,6 @@ public class CampaignCatalogUpdateEventListener extends BaseKafkaListener<Campai
         super.listen(consumerRecord);
     }
 
-    @KafkaListener(id = "CampaignUpdateConsumer.ID",
-            groupId = ConsumerConstants.CampaignUpdateConsumer.ID, containerFactory =
-            ConsumerConstants.AdServiceKafka.CONTAINER_FACTORY, topics = {
-            ConsumerConstants.CampaignUpdateConsumer.TOPIC,
-            ConsumerConstants.CampaignUpdateConsumer.RETRY_TOPIC}, autoStartup =
-            ConsumerConstants.CampaignUpdateConsumer.AUTO_START, concurrency =
-            ConsumerConstants.CampaignUpdateConsumer.CONCURRENCY, properties = {
-            ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG + "=" +
-                    ConsumerConstants.CampaignUpdateConsumer.MAX_POLL_INTERVAL_MS,
-            ConsumerConfig.MAX_POLL_RECORDS_CONFIG + "=" + ConsumerConstants.CampaignUpdateConsumer.BATCH_SIZE})
-    @DigestLogger(metricType = MetricType.METHOD, tagSet = "consumer=CampaignCatalogUpdateEventListener")
-    public void listen_adServiceKafka(ConsumerRecord<String, String> consumerRecord) {
-        super.listen(consumerRecord);
-    }
-
     @Override
     @DigestLogger(metricType = MetricType.METHOD, tagSet = "consumer=CampaignCatalogUpdateEventListener")
     public void consume(CampaignCatalogUpdateEvent campaignCatalogUpdateEvent) {
