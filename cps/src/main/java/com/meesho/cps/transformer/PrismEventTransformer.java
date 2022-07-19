@@ -21,7 +21,7 @@ import java.util.List;
 public class PrismEventTransformer {
 
     public static AdInteractionPrismEvent getAdInteractionPrismEvent(AdInteractionEvent adInteractionEvent,
-                                                                     String userId, Long catalogId) {
+                                                                     String userId, Long catalogId, Long productId) {
         return AdInteractionPrismEvent.builder()
                 .eventId(adInteractionEvent.getEventId())
                 .eventName(adInteractionEvent.getEventName())
@@ -34,6 +34,7 @@ public class PrismEventTransformer {
                 .origin(adInteractionEvent.getProperties().getOrigin())
                 .screen(adInteractionEvent.getProperties().getScreen())
                 .currentTimestamp(DateUtils.toIsoString(ZonedDateTime.now(), Utils.getCountry()))
+                .productId(productId)
                 .build();
     }
 
