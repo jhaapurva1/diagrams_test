@@ -108,8 +108,9 @@ public class CatalogInteractionEventService {
         AdInteractionPrismEvent adInteractionPrismEvent =
                 PrismEventTransformer.getAdInteractionPrismEvent(adInteractionEvent, userId, catalogId);
 
-        List<CampaignCatalogMetadataResponse.CatalogMetadata> catalogMetadataList =
-                adService.getCampaignCatalogMetadata(Lists.newArrayList(catalogId));
+        CampaignCatalogMetadataResponse campaignCatalogMetadataResponse = adService.getCampaignCatalogMetadata(Lists.newArrayList(catalogId));
+        List<CampaignCatalogMetadataResponse.CatalogMetadata> catalogMetadataList = campaignCatalogMetadataResponse.getCampaignDetailsList();
+        List<CampaignCatalogMetadataResponse.SupplierMetadata> supplierMetadataList = campaignCatalogMetadataResponse.getSupplierDetailsList();
 
         if (CollectionUtils.isEmpty(catalogMetadataList) ||
                 Objects.isNull(catalogMetadataList.get(0).getCampaignDetails())) {
@@ -124,10 +125,11 @@ public class CatalogInteractionEventService {
         }
 
         CampaignDetails catalogMetadata = catalogMetadataList.get(0).getCampaignDetails();
+        CampaignCatalogMetadataResponse.SupplierMetadata supplierMetadata = supplierMetadataList.get(0);
         Long campaignId = catalogMetadata.getCampaignId();
-        Long supplierId = catalogMetadata.getSupplierId();
+        Long supplierId = supplierMetadata.getSupplierId();
         BigDecimal totalBudget = catalogMetadata.getBudget();
-        BigDecimal weeklyBudgetUtilisationLimit = BigDecimal.ZERO; //ToDo - implementation pending from the Ad-Server side
+        BigDecimal weeklyBudgetUtilisationLimit = supplierMetadata.getUtilizationBudget();
         Integer billVersion = catalogMetadata.getBillVersion();
         BigDecimal cpc = catalogMetadata.getCpc();
         CampaignType campaignType = CampaignType.fromValue(catalogMetadata.getCampaignType());
