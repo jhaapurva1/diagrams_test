@@ -58,6 +58,20 @@ public class AdInteractionEventListener extends BaseKafkaListener<AdInteractionE
         super.listen(consumerRecord);
     }
 
+    @KafkaListener(id = "InteractionEventsConsumer.ID",
+            groupId = ConsumerConstants.InteractionEventsConsumer.ID, containerFactory =
+            ConsumerConstants.AdServiceKafka.CONTAINER_FACTORY, topics =
+            ConsumerConstants.InteractionEventsConsumer.TOPIC, autoStartup =
+            ConsumerConstants.InteractionEventsConsumer.AUTO_START, concurrency =
+            ConsumerConstants.InteractionEventsConsumer.CONCURRENCY, properties = {
+            ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG + "=" +
+                    ConsumerConstants.InteractionEventsConsumer.MAX_POLL_INTERVAL_MS,
+            ConsumerConfig.MAX_POLL_RECORDS_CONFIG + "=" + ConsumerConstants.InteractionEventsConsumer.BATCH_SIZE})
+    @DigestLogger(metricType = MetricType.METHOD, tagSet = "consumer=AdInteractionEventListener")
+    public void listen_adServiceKafka(ConsumerRecord<String, String> consumerRecord) {
+        super.listen(consumerRecord);
+    }
+
     @Override
     @DigestLogger(metricType = MetricType.METHOD, tagSet = "consumer=AdInteractionEventListener")
     public void consume(AdInteractionEvent adInteractionEvent) throws DataValidationException {

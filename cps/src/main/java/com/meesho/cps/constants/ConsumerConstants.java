@@ -13,10 +13,17 @@ public class ConsumerConstants {
         public static final String CONTAINER_FACTORY = "commonKafkaListenerContainerFactory";
     }
 
+    public static class AdServiceKafka {
+        public static final String BOOTSTRAP_SERVERS = "${kafka.ad.service.bootstrap.servers}";
+        public static final String AVRO_SCHEMA_REGISTRY_URL = "${kafka.ingestion.consumer.avro.schema.registry.url}";
+        public static final String CONTAINER_FACTORY = "adServiceKafkaListenerContainerFactory";
+    }
+
     public static class IngestionServiceKafka {
         public static final String BOOTSTRAP_SERVERS = "${kafka.ingestion.bootstrap.servers}";
         public static final String CONTAINER_FACTORY = "ingestionKafkaListenerContainerFactory";
         public static final String BATCH_CONTAINER_FACTORY = "ingestionBatchKafkaListenerContainerFactory";
+        public static final String OFFSET_COMMIT_TIME = "${kafka.consumer.offset.commit.time}";
     }
 
     public static class IngestionServiceConfluentKafka {
