@@ -16,7 +16,7 @@
 
     <groupId>com.meesho</groupId>
     <artifactId>campaign-performance-service</artifactId>
-    <version>0.0.39-RELEASE</version>
+    <version>0.0.40-RELEASE</version>
     <name>campaign-performance-service</name>
     <description>Campaign Performance Service</description>
     <packaging>pom</packaging>
