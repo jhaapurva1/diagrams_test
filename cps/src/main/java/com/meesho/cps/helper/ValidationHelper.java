@@ -14,7 +14,6 @@ public class ValidationHelper {
     public static Boolean isValidAdInteractionEvent(AdInteractionEvent adInteractionEvent) {
         return Objects.nonNull(adInteractionEvent.getUserId()) && Objects.nonNull(adInteractionEvent.getProperties()) &&
                 Objects.nonNull(adInteractionEvent.getProperties().getId()) &&
-                Objects.nonNull(adInteractionEvent.getProperties().getOrigin()) &&
                 Objects.nonNull(adInteractionEvent.getEventTimestamp()) &&
                 Objects.nonNull(adInteractionEvent.getProperties().getType());
     }

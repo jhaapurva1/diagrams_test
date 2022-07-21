@@ -146,6 +146,9 @@ public class CatalogInteractionEventService {
         if (StringUtils.isEmpty(adInteractionEvent.getProperties().getScreen())) {
             adInteractionEvent.getProperties().setScreen(Constants.DefaultRealEstateMetaData.SCREEN);
         }
+        if (StringUtils.isEmpty(adInteractionEvent.getProperties().getOrigin())) {
+            adInteractionEvent.getProperties().setOrigin(Constants.DefaultRealEstateMetaData.ORIGIN);
+        }
         String origin = adInteractionEvent.getProperties().getOrigin();
         String screen = adInteractionEvent.getProperties().getScreen();
         //Perform deduplication
