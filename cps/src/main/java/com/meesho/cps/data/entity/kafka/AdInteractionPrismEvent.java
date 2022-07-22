@@ -37,6 +37,9 @@ public class AdInteractionPrismEvent {
     @JsonProperty("catalog_id")
     private Long catalogId;
 
+    @JsonProperty("product_id")
+    private Long productId;
+
     @JsonProperty("user_id")
     private String userId;
 

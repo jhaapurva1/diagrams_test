@@ -104,9 +104,10 @@ public class CatalogInteractionEventService {
         Long interactionTime = adInteractionEvent.getEventTimestamp();
         String userId = adInteractionEvent.getUserId();
         Long catalogId = adInteractionEvent.getProperties().getId();
+        Long productId = adInteractionEvent.getProperties().getProductId();
 
         AdInteractionPrismEvent adInteractionPrismEvent =
-                PrismEventTransformer.getAdInteractionPrismEvent(adInteractionEvent, userId, catalogId);
+                PrismEventTransformer.getAdInteractionPrismEvent(adInteractionEvent, userId, catalogId, productId);
 
         CampaignCatalogMetadataResponse campaignCatalogMetadataResponse = adService.getCampaignCatalogMetadata(Lists.newArrayList(catalogId));
         List<CampaignCatalogMetadataResponse.CatalogMetadata> catalogMetadataList = campaignCatalogMetadataResponse.getCampaignDetailsList();
@@ -158,11 +159,16 @@ public class CatalogInteractionEventService {
         if (StringUtils.isEmpty(adInteractionEvent.getProperties().getScreen())) {
             adInteractionEvent.getProperties().setScreen(Constants.DefaultRealEstateMetaData.SCREEN);
         }
+        if (StringUtils.isEmpty(adInteractionEvent.getProperties().getOrigin())) {
+            adInteractionEvent.getProperties().setOrigin(Constants.DefaultRealEstateMetaData.ORIGIN);
+        }
         String origin = adInteractionEvent.getProperties().getOrigin();
         String screen = adInteractionEvent.getProperties().getScreen();
         //Perform deduplication
         if (billHandler.performWindowDeDuplication()) {
-            Long previousInteractionTime = userCatalogInteractionCacheDao.get(userId, catalogId, origin, screen);
+            Long id = Objects.nonNull(productId)?productId:catalogId;
+            AdUserInteractionType type = Objects.nonNull(productId)? AdUserInteractionType.PRODUCT_ID: AdUserInteractionType.CATALOG_ID;
+            Long previousInteractionTime = userCatalogInteractionCacheDao.get(userId, id, origin, screen, type);
             if (!checkIfInteractionNeedsToBeConsidered(previousInteractionTime, interactionTime)) {
                 log.warn("Ignoring click event since window hasn't passed or wrong ordering," +
                         " event : {}, previousInteractionTime {}", adInteractionEvent, previousInteractionTime);
@@ -174,7 +180,7 @@ public class CatalogInteractionEventService {
                         AdInteractionStatus.INVALID.name(), AdInteractionInvalidReason.DUPLICATE.name());
                 return;
             }
-            userCatalogInteractionCacheDao.set(userId, catalogId, origin, screen, interactionTime);
+            userCatalogInteractionCacheDao.set(userId, id, origin, screen, interactionTime, type);
         }
 
         //Update campaign catalog date metrics

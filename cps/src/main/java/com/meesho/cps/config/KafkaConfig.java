@@ -63,6 +63,9 @@ public class KafkaConfig {
     @Value(ConsumerConstants.IngestionServiceKafka.BOOTSTRAP_SERVERS)
     private String ingestionBootstrapServers;
 
+    @Value(ConsumerConstants.IngestionServiceKafka.OFFSET_COMMIT_TIME)
+    private String offsetCommitTime;
+
     private ConsumerFactory<String, String> ingestionKafkaConsumerFactory() {
         Map<String, Object> configs = new HashMap<>();
         configs.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, ingestionBootstrapServers);
@@ -127,7 +130,8 @@ public class KafkaConfig {
                 new ConcurrentKafkaListenerContainerFactory<>();
         concurrentKafkaListenerContainerFactory.setConsumerFactory(ingestionKafkaConsumerFactory());
         concurrentKafkaListenerContainerFactory.setBatchListener(true);
-        concurrentKafkaListenerContainerFactory.getContainerProperties().setAckMode(ContainerProperties.AckMode.BATCH);
+        concurrentKafkaListenerContainerFactory.getContainerProperties().setAckMode(ContainerProperties.AckMode.TIME);
+        concurrentKafkaListenerContainerFactory.getContainerProperties().setAckTime(Long.valueOf(offsetCommitTime));
 
         log.info("ingestion kafka consumer created with configs {}",
                 concurrentKafkaListenerContainerFactory.getConsumerFactory().getConfigurationProperties());
