@@ -144,7 +144,9 @@ public class KafkaConfig {
                 new ConcurrentKafkaListenerContainerFactory<>();
         concurrentKafkaListenerContainerFactory.setConsumerFactory(ingestionConfluentKafkaConsumerFactory());
         concurrentKafkaListenerContainerFactory.setBatchListener(true);
-        concurrentKafkaListenerContainerFactory.getContainerProperties().setAckMode(ContainerProperties.AckMode.BATCH);
+        concurrentKafkaListenerContainerFactory.getContainerProperties().setAckMode(ContainerProperties.AckMode.TIME);
+        concurrentKafkaListenerContainerFactory.getContainerProperties().setAckTime(Long.valueOf(offsetCommitTime));
+
 
         log.info("ingestion kafka consumer created with configs {}",
                 concurrentKafkaListenerContainerFactory.getConsumerFactory().getConfigurationProperties());
