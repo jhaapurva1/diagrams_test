@@ -59,7 +59,7 @@ public class SupplierWeekWiseMetricsRepository {
 
 
     public SupplierWeekWiseMetrics get(Long supplierId, LocalDate weekStartDate) {
-        if (supplierId == null || weekStartDate == null)
+        if (Objects.isNull(supplierId) || Objects.isNull(weekStartDate))
             return null;
         Get get = new Get(Bytes.toBytes(SupplierWeekWiseMetrics.generateRowKey(supplierId, weekStartDate)));
         try (Table table = getTable()) {
@@ -76,14 +76,14 @@ public class SupplierWeekWiseMetricsRepository {
     }
 
     public List<SupplierWeekWiseMetrics> getAll(List<Long> supplierIds, LocalDate weekStartDate) {
-        if (supplierIds == null || weekStartDate == null)
+        if (Objects.isNull(supplierIds) || Objects.isNull(weekStartDate))
             return null;
         if (supplierIds.isEmpty())
             return new ArrayList<>();
         List<SupplierWeekWiseMetrics> supplierWeekWiseMetrics = new ArrayList<>();
         List<Get> gets = new ArrayList<>();
         for (Long supplierId : supplierIds) {
-            if (supplierId != null) {
+            if (Objects.nonNull(supplierId)) {
                 Get get = new Get(Bytes.toBytes(SupplierWeekWiseMetrics.generateRowKey(supplierId, weekStartDate)));
                 gets.add(get);
             }
@@ -103,9 +103,9 @@ public class SupplierWeekWiseMetricsRepository {
 
 
     public void put(SupplierWeekWiseMetrics supplierWeekWiseMetrics) {
-        if (supplierWeekWiseMetrics == null || supplierWeekWiseMetrics.getSupplierId() == null ||
-                supplierWeekWiseMetrics.getWeekStartDate() == null ||
-                supplierWeekWiseMetrics.getBudgetUtilised() == null) {
+        if (Objects.isNull(supplierWeekWiseMetrics) || Objects.isNull(supplierWeekWiseMetrics.getSupplierId()) ||
+                Objects.isNull(supplierWeekWiseMetrics.getWeekStartDate()) ||
+                Objects.isNull(supplierWeekWiseMetrics.getBudgetUtilised())) {
             log.error("Invalid data!! Failed to put {} in Hbase", supplierWeekWiseMetrics);
             return;
         }

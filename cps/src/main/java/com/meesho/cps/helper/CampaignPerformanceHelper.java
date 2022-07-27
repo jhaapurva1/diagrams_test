@@ -38,7 +38,7 @@ public class CampaignPerformanceHelper {
     }
 
     public LocalDate getWeekStartDate(LocalDateTime eventTime) {
-        if (eventTime == null) {
+        if (Objects.isNull(eventTime)) {
             log.warn("Trying to compute start date of the week for null values. Replacing with current week");
             eventTime = DateTimeUtils.getCurrentLocalDateTimeInIST();
         }
