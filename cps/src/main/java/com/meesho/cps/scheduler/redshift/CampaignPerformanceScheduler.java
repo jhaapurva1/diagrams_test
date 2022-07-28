@@ -59,7 +59,7 @@ public class CampaignPerformanceScheduler extends PrestoFeedIngestionScheduler<C
 
     @Override
     public void putUniqueKeySortOrder(LinkedHashMap<String, PrismSortOrder> sortOrderMap) {
-        sortOrderMap.put("date", PrismSortOrder.ASCENDING);
+        sortOrderMap.put("dt", PrismSortOrder.ASCENDING);
         sortOrderMap.put("campaign_id", PrismSortOrder.ASCENDING);
         sortOrderMap.put("catalog_id", PrismSortOrder.ASCENDING);
     }
