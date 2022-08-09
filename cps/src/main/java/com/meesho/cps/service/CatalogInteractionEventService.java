@@ -126,6 +126,7 @@ public class CatalogInteractionEventService {
         }
 
         CampaignDetails catalogMetadata = catalogMetadataList.get(0).getCampaignDetails();
+        CampaignCatalogMetadataResponse.SupplierMetadata supplierMetadata = supplierMetadataList.get(0);
         Long campaignId = catalogMetadata.getCampaignId();
         BigDecimal totalBudget = catalogMetadata.getBudget();
         Integer billVersion = catalogMetadata.getBillVersion();
@@ -134,6 +135,9 @@ public class CatalogInteractionEventService {
         adInteractionPrismEvent.setCampaignId(campaignId);
         LocalDate eventDate = campaignHelper.getLocalDateForDailyCampaignFromLocalDateTime(
                 DateTimeUtils.getCurrentLocalDateTimeInIST());
+        Long supplierId = supplierMetadata.getSupplierId();
+        BigDecimal weeklyBudgetUtilisationLimit = supplierMetadata.getUtilizationBudget();
+        LocalDate weekStartDate = DateTimeUtils.getFirstDayOfWeek().toLocalDate();
 
         log.info("CPC for event_id {} catalog id {} in campaign {} is {}", adInteractionEvent.getEventId(), catalogId,
                 campaignId, cpc);
@@ -195,21 +199,15 @@ public class CatalogInteractionEventService {
         }
 
         //update supplier weekly budget utilised
-        if (!CollectionUtils.isEmpty(supplierMetadataList)) {
-            CampaignCatalogMetadataResponse.SupplierMetadata supplierMetadata = supplierMetadataList.get(0);
-            Long supplierId = supplierMetadata.getSupplierId();
-            BigDecimal weeklyBudgetUtilisationLimit = supplierMetadata.getUtilizationBudget();
-            LocalDate weekStartDate = DateTimeUtils.getFirstDayOfWeek().toLocalDate();
-            BigDecimal supplierWeeklyBudgetUtilised = modifyAndGetSupplierWeeklyBudgetUtilised(supplierId, weekStartDate, cpc);
-            if (supplierWeeklyBudgetUtilised.compareTo(weeklyBudgetUtilisationLimit) >= 0) {
-                SupplierWeeklyBudgetExhaustedEvent supplierWeeklyBudgetExhaustedEvent =
-                        SupplierWeeklyBudgetExhaustedEvent.builder().supplierId(supplierId).catalogId(catalogId).build();
-                try {
-                    kafkaService.sendMessage(suppliersWeeklyBudgetExhaustedTopic, String.valueOf(supplierId),
-                            objectMapper.writeValueAsString(supplierWeeklyBudgetExhaustedEvent));
-                } catch (Exception e) {
-                    log.error("Exception while sending supplierWeeklyBudgetExhausted event {}", supplierWeeklyBudgetExhaustedEvent, e);
-                }
+        BigDecimal supplierWeeklyBudgetUtilised = modifyAndGetSupplierWeeklyBudgetUtilised(supplierId, weekStartDate, cpc);
+        if (Objects.nonNull(weeklyBudgetUtilisationLimit) && supplierWeeklyBudgetUtilised.compareTo(weeklyBudgetUtilisationLimit) >= 0) {
+            SupplierWeeklyBudgetExhaustedEvent supplierWeeklyBudgetExhaustedEvent =
+                    SupplierWeeklyBudgetExhaustedEvent.builder().supplierId(supplierId).catalogId(catalogId).build();
+            try {
+                kafkaService.sendMessage(suppliersWeeklyBudgetExhaustedTopic, String.valueOf(supplierId),
+                        objectMapper.writeValueAsString(supplierWeeklyBudgetExhaustedEvent));
+            } catch (Exception e) {
+                log.error("Exception while sending supplierWeeklyBudgetExhausted event {}", supplierWeeklyBudgetExhaustedEvent, e);
             }
         }
 
