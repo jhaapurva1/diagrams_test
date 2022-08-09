@@ -167,7 +167,7 @@ public class CampaignPerformanceService {
         List<Long> supplierIds = request.getSuppliersIdList();
 
         LocalDate dailyBudgetTrackingDate = campaignPerformanceHelper.getLocalDateForDailyCampaignFromLocalDateTime(DateTimeUtils.getCurrentLocalDateTimeInIST());
-        LocalDate weekStartDate = campaignPerformanceHelper.getWeekStartDate(DateTimeUtils.getCurrentLocalDateTimeInIST());
+        LocalDate weekStartDate = DateTimeUtils.getFirstDayOfWeek().toLocalDate();
 
         List<CampaignDatewiseMetrics> campaignDateWiseMetrics =
                 campaignDatewiseMetricsRepository.getAll(dailyBudgetCampaignIds,

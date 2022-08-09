@@ -137,7 +137,7 @@ public class CatalogInteractionEventService {
         adInteractionPrismEvent.setCampaignId(campaignId);
         LocalDate eventDate = campaignHelper.getLocalDateForDailyCampaignFromLocalDateTime(
                 DateTimeUtils.getCurrentLocalDateTimeInIST());
-        LocalDate weekStartDate = campaignHelper.getWeekStartDate(DateTimeUtils.getCurrentLocalDateTimeInIST());
+        LocalDate weekStartDate = DateTimeUtils.getFirstDayOfWeek().toLocalDate();
 
         log.info("CPC for event_id {} catalog id {} in campaign {} is {}", adInteractionEvent.getEventId(), catalogId,
                 campaignId, cpc);

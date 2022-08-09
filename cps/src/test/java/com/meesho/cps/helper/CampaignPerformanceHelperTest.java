@@ -85,17 +85,4 @@ public class CampaignPerformanceHelperTest {
         Assert.assertFalse(campaignPerformanceHelper.beforeResetTimeOfDailyBudgetForCampaign(dateTime));
     }
 
-    @Test
-    public void testGetWeekStartDate() {
-        LocalDate expectedWeekStartDate = LocalDate.of(2022, 7, 11); //Monday
-
-        LocalDateTime eventTimeWednesday =  LocalDateTime.of(2022, 7, 13, 0, 0, 0);
-        LocalDateTime eventTimeMonday =  LocalDateTime.of(2022, 7, 11, 0, 0, 0);
-        LocalDate actualWeekStartDateForWednesday = campaignPerformanceHelper.getWeekStartDate(eventTimeWednesday);
-        LocalDate actualWeekStartDateForMonday = campaignPerformanceHelper.getWeekStartDate(eventTimeMonday);
-
-        Assert.assertEquals(expectedWeekStartDate, actualWeekStartDateForMonday);
-        Assert.assertEquals(expectedWeekStartDate, actualWeekStartDateForWednesday);
-    }
-
 }

@@ -53,7 +53,6 @@ public class CampaignPerformanceServiceTest {
         Mockito.doReturn(new ArrayList<>()).when(campaignDatewiseMetricsRepository).getAll(any(), any());
         Mockito.doReturn(getSampleSupplierWeekWiseMetrics()).when(supplierWeekWiseMetricsRepository).getAll(any(), any());
         Mockito.doReturn(null).when(campaignPerformanceHelper).getLocalDateForDailyCampaignFromLocalDateTime(any());
-        Mockito.doReturn(null).when(campaignPerformanceHelper).getWeekStartDate(any());
 
         BudgetUtilisedResponse actualResponse = campaignPerformanceService.getBudgetUtilised(getSampleBudgetUtilisedRequest());
         Assert.assertEquals(getExpectedBudgetUtilisedResponse(), actualResponse);

@@ -14,6 +14,7 @@ import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -76,9 +77,7 @@ public class SupplierWeekWiseMetricsRepository {
     }
 
     public List<SupplierWeekWiseMetrics> getAll(List<Long> supplierIds, LocalDate weekStartDate) {
-        if (Objects.isNull(supplierIds) || Objects.isNull(weekStartDate))
-            return null;
-        if (supplierIds.isEmpty())
+        if (CollectionUtils.isEmpty(supplierIds) || Objects.isNull(weekStartDate))
             return new ArrayList<>();
         List<SupplierWeekWiseMetrics> supplierWeekWiseMetrics = new ArrayList<>();
         List<Get> gets = new ArrayList<>();
@@ -91,7 +90,7 @@ public class SupplierWeekWiseMetricsRepository {
         try (Table table = getTable()) {
             Result[] results = table.get(gets);
             if (results.length == 0)
-                return null;
+                return new ArrayList<>();
             for (Result result : results) {
                 supplierWeekWiseMetrics.add(mapper(result));
             }
@@ -103,12 +102,6 @@ public class SupplierWeekWiseMetricsRepository {
 
 
     public void put(SupplierWeekWiseMetrics supplierWeekWiseMetrics) {
-        if (Objects.isNull(supplierWeekWiseMetrics) || Objects.isNull(supplierWeekWiseMetrics.getSupplierId()) ||
-                Objects.isNull(supplierWeekWiseMetrics.getWeekStartDate()) ||
-                Objects.isNull(supplierWeekWiseMetrics.getBudgetUtilised())) {
-            log.error("Invalid data!! Failed to put {} in Hbase", supplierWeekWiseMetrics);
-            return;
-        }
         Put put = new Put(Bytes.toBytes(supplierWeekWiseMetrics.getRowKey()));
         HbaseUtils.addLongColumn(COLUMN_FAMILY, COLUMN_SUPPLIER_ID, supplierWeekWiseMetrics.getSupplierId(), put);
         HbaseUtils.addBigDecimalAsLongColumn(COLUMN_FAMILY, COLUMN_BUDGET_UTILISED,
