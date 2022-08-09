@@ -37,15 +37,6 @@ public class CampaignPerformanceHelper {
         return eventTime.toLocalDate();
     }
 
-    public LocalDate getWeekStartDate(LocalDateTime eventTime) {
-        if (Objects.isNull(eventTime)) {
-            log.warn("Trying to compute start date of the week for null values. Replacing with current week");
-            eventTime = DateTimeUtils.getCurrentLocalDateTimeInIST();
-        }
-        int dayOfWeek = eventTime.getDayOfWeek().getValue();
-        return eventTime.minusDays(dayOfWeek - 1).toLocalDate();
-    }
-
     public boolean beforeResetTimeOfDailyBudgetForCampaign(LocalDateTime eventTime) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(Constants.DailyBudgetConstants.TIME_FORMAT);
         LocalTime resetTime;
