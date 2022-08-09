@@ -37,6 +37,9 @@ public class RedisConfig {
     @Value(DBConstants.Redis.PORT)
     private Integer port;
 
+    @Value(DBConstants.Redis.PASSWORD)
+    private String password;
+
     @Value(DBConstants.Redis.COMMAND_TIMEOUT)
     private Long commandTimeout;
 
@@ -63,7 +66,9 @@ public class RedisConfig {
 
     @Bean
     public RedisClusterConfiguration redisConfiguration() {
-        return new RedisClusterConfiguration(Collections.singletonList(host + ":" + port));
+        RedisClusterConfiguration configuration = new RedisClusterConfiguration(Collections.singletonList(host + ":" + port));
+        configuration.setPassword(password);
+        return configuration;
     }
 
     @Bean
