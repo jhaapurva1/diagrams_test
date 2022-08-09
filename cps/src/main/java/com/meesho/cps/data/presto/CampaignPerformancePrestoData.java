@@ -24,7 +24,7 @@ public class CampaignPerformancePrestoData {
     @DataLakeColumn(name = "campaign_id")
     private Long campaignId;
 
-    @DataLakeColumn(name = "date")
+    @DataLakeColumn(name = "dt")
     private String date;
 
     @DataLakeColumn(name = "order_count")
