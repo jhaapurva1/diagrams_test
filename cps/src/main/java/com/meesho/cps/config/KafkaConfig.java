@@ -203,7 +203,7 @@ public class KafkaConfig {
     @Primary
     public Map<String, Object> producerConfigs() {
         Map<String, Object> configs = new HashMap<>();
-        configs.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, commonBootstrapServers);
+        configs.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, adServiceBootstrapServers);
         configs.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         configs.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         return configs;

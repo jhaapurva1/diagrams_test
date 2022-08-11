@@ -49,6 +49,7 @@ public class DBConstants {
     public static class Redis {
         public static final String HOST = "${redis.host}";
         public static final String PORT = "${redis.port}";
+        public static final String PASSWORD = "${redis.password}";
         public static final String COMMAND_TIMEOUT = "${redis.command.timeout}";
         public static final String SHUTDOWN_TIMEOUT = "${redis.shutdown.timeout}";
         public static final String CLIENT_NAME = "${redis.client.name}";
