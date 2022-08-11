@@ -7,11 +7,13 @@ import com.meesho.cps.constants.DBConstants;
 import com.meesho.cps.data.entity.elasticsearch.EsCampaignCatalogAggregateResponse;
 import com.meesho.cps.data.entity.hbase.CampaignDatewiseMetrics;
 import com.meesho.cps.data.entity.hbase.CampaignMetrics;
+import com.meesho.cps.data.entity.hbase.SupplierWeekWiseMetrics;
 import com.meesho.cps.data.internal.ElasticFiltersRequest;
 import com.meesho.cps.db.elasticsearch.ElasticSearchRepository;
 import com.meesho.cps.db.hbase.repository.CampaignCatalogDateMetricsRepository;
 import com.meesho.cps.db.hbase.repository.CampaignDatewiseMetricsRepository;
 import com.meesho.cps.db.hbase.repository.CampaignMetricsRepository;
+import com.meesho.cps.db.hbase.repository.SupplierWeekWiseMetricsRepository;
 import com.meesho.cps.db.mysql.dao.CampaignPerformanceDao;
 import com.meesho.cps.helper.CampaignPerformanceHelper;
 import com.meesho.cps.transformer.CampaignPerformanceTransformer;
@@ -64,6 +66,9 @@ public class CampaignPerformanceService {
 
     @Autowired
     private CampaignPerformanceHelper campaignPerformanceHelper;
+
+    @Autowired
+    private SupplierWeekWiseMetricsRepository supplierWeekWiseMetricsRepository;
 
     public SupplierPerformanceResponse getSupplierPerformanceMetrics(SupplierPerformanceRequest request) throws IOException {
         ElasticFiltersRequest elasticFiltersRequestMonthWise = ElasticFiltersRequest.builder()
@@ -159,14 +164,19 @@ public class CampaignPerformanceService {
                         .map(BudgetUtilisedRequest.CampaignData::getCampaignId)
                         .collect(Collectors.toList());
 
-        LocalDate dailyBudgetTrackingDate = campaignPerformanceHelper.getLocalDateForDailyCampaignFromLocalDateTime(DateTimeUtils.getCurrentLocalDateTimeInIST());
+        List<Long> supplierIds = request.getSuppliersIdList();
 
-        List<CampaignDatewiseMetrics> campaignDatewiseMetrics =
+        LocalDate dailyBudgetTrackingDate = campaignPerformanceHelper.getLocalDateForDailyCampaignFromLocalDateTime(DateTimeUtils.getCurrentLocalDateTimeInIST());
+        LocalDate weekStartDate = DateTimeUtils.getFirstDayOfWeek().toLocalDate();
+
+        List<CampaignDatewiseMetrics> campaignDateWiseMetrics =
                 campaignDatewiseMetricsRepository.getAll(dailyBudgetCampaignIds,
                         dailyBudgetTrackingDate);
         List<CampaignMetrics> campaignMetrics = campaignMetricsRepository.getAll(totalBudgetCampaignIds);
 
-        return campaignPerformanceTransformer.getBudgetUtilisedResponse(campaignMetrics, campaignDatewiseMetrics);
+        List<SupplierWeekWiseMetrics> supplierWeekWiseMetrics = supplierWeekWiseMetricsRepository.getAll(supplierIds, weekStartDate);
+
+        return campaignPerformanceTransformer.getBudgetUtilisedResponse(campaignMetrics, campaignDateWiseMetrics, supplierWeekWiseMetrics);
     }
 
 }

@@ -83,7 +83,8 @@ public class AdService {
         List<List<Long>> partitionedCatalogIds = Lists.partition(missedCatalogIds, applicationProperties.getAdServiceFetchCCMBatchSize());
 
         for (List<Long> toProcessCatIds : partitionedCatalogIds) {
-            List<CampaignCatalogMetadataResponse.CatalogMetadata> missedCampaignCatalogs = getCampaignCatalogMetadata(toProcessCatIds);
+            CampaignCatalogMetadataResponse campaignCatalogMetadataResponse = getCampaignCatalogMetadata(toProcessCatIds);
+            List<CampaignCatalogMetadataResponse.CatalogMetadata> missedCampaignCatalogs = campaignCatalogMetadataResponse.getCampaignDetailsList();
             Map<Long, CampaignCatalogMetadataResponse.CatalogMetadata> missedCampaignCatalogMap = missedCampaignCatalogs.stream()
                     .collect(Collectors.toMap(CampaignCatalogMetadataResponse.CatalogMetadata::getCatalogId, Function.identity()));
             putAllCampaignCatalogMetadata(missedCampaignCatalogMap);
@@ -101,7 +102,7 @@ public class AdService {
      * @return
      * @throws ExternalRequestFailedException
      */
-    public List<CampaignCatalogMetadataResponse.CatalogMetadata> getCampaignCatalogMetadata(List<Long> catalogIds) throws ExternalRequestFailedException {
+    public CampaignCatalogMetadataResponse getCampaignCatalogMetadata(List<Long> catalogIds) throws ExternalRequestFailedException {
         log.info("getCampaignCatalogMetadata request, catalogIds {}", catalogIds);
         CampaignCatalogMetadataRequest request =
                 CampaignCatalogMetadataRequest.builder().catalogIds(catalogIds).build();
@@ -128,7 +129,7 @@ public class AdService {
             throw new ExternalRequestFailedException("empty response");
         }
 
-        return response.getResponse().getCampaignDetailsList();
+        return response.getResponse();
     }
 
     public List<CampaignDetails> getCampaignMetadata(List<Long> campaignIds) {

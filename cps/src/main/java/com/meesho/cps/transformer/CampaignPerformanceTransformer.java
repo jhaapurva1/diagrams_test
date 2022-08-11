@@ -5,9 +5,9 @@ import com.meesho.cps.data.entity.elasticsearch.EsCampaignCatalogAggregateRespon
 import com.meesho.cps.data.entity.hbase.CampaignCatalogDateMetrics;
 import com.meesho.cps.data.entity.hbase.CampaignDatewiseMetrics;
 import com.meesho.cps.data.entity.hbase.CampaignMetrics;
+import com.meesho.cps.data.entity.hbase.SupplierWeekWiseMetrics;
 import com.meesho.cps.data.internal.PerformancePojo;
 import com.meesho.cps.data.presto.CampaignPerformancePrestoData;
-import com.meesho.cps.data.redshift.CampaignPerformanceRedshift;
 import com.meesho.cps.utils.CalculationUtils;
 import com.meesho.cpsclient.response.BudgetUtilisedResponse;
 import com.meesho.cpsclient.response.CampaignCatalogPerformanceResponse;
@@ -35,7 +35,8 @@ import java.util.Optional;
 public class CampaignPerformanceTransformer {
 
     public BudgetUtilisedResponse getBudgetUtilisedResponse(List<CampaignMetrics> campaignMetrics,
-                                                            List<CampaignDatewiseMetrics> campaignDatewiseMetrics) {
+                                                            List<CampaignDatewiseMetrics> campaignDatewiseMetrics,
+                                                            List<SupplierWeekWiseMetrics> supplierWeekWiseMetrics) {
         List<com.meesho.cpsclient.response.BudgetUtilisedResponse.BudgetUtilisedDetails> budgetUtilisedDetails = new ArrayList<>();
         for (CampaignMetrics campaignMetric : campaignMetrics) {
             budgetUtilisedDetails.add(com.meesho.cpsclient.response.BudgetUtilisedResponse.BudgetUtilisedDetails.builder()
@@ -51,7 +52,18 @@ public class CampaignPerformanceTransformer {
                     .build());
         }
 
-        return BudgetUtilisedResponse.builder().budgetUtilisedDetails(budgetUtilisedDetails).build();
+        List<BudgetUtilisedResponse.SupplierBudgetUtilisedDetails> supplierBudgetUtilisedDetails = null;
+        if (supplierWeekWiseMetrics != null) {
+            supplierBudgetUtilisedDetails = new ArrayList<>();
+            for (SupplierWeekWiseMetrics supplierWeekWiseMetric : supplierWeekWiseMetrics) {
+                supplierBudgetUtilisedDetails.add(BudgetUtilisedResponse.SupplierBudgetUtilisedDetails.builder()
+                        .supplierId(supplierWeekWiseMetric.getSupplierId())
+                        .budgetUtilised(supplierWeekWiseMetric.getBudgetUtilised()).build());
+            }
+        }
+
+        return BudgetUtilisedResponse.builder().budgetUtilisedDetails(budgetUtilisedDetails)
+                .suppliersBudgetUtilisedDetails(supplierBudgetUtilisedDetails).build();
     }
 
     public static CampaignCatalogDateMetrics transform(CampaignPerformancePrestoData campaignPerformancePrestoData) {
