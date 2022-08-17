@@ -92,7 +92,9 @@ public class SupplierWeekWiseMetricsRepository {
             if (results.length == 0)
                 return new ArrayList<>();
             for (Result result : results) {
-                supplierWeekWiseMetrics.add(mapper(result));
+                if (!result.isEmpty()) {
+                    supplierWeekWiseMetrics.add(mapper(result));
+                }
             }
             return supplierWeekWiseMetrics;
         } catch (IOException e) {
