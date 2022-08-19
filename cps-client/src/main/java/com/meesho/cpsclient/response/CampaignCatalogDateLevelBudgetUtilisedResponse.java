@@ -20,7 +20,7 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CampaignCatalogDateLevelBudgetUtilisedResponse {
 
-    @JsonProperty("budget_utilised")
+    @JsonProperty("campaigns")
     private List<CampaignDetails> campaignDetails;
 
     @Data
@@ -45,7 +45,7 @@ public class CampaignCatalogDateLevelBudgetUtilisedResponse {
         @JsonInclude(JsonInclude.Include.NON_NULL)
         @JsonIgnoreProperties(ignoreUnknown = true)
         public static class CatalogDetails {
-            @JsonProperty("id")
+            @JsonProperty("catalog_id")
             private Long catalogId;
             @JsonProperty("budget_utilised")
             private BigDecimal budgetUtilised;
