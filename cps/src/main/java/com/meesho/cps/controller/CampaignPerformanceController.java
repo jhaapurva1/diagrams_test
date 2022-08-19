@@ -63,4 +63,14 @@ public class CampaignPerformanceController {
         return performanceService.getBudgetUtilised(budgetUtilisedRequest);
     }
 
+    @ApiOperation(value = Constants.API.CAMPAIGN_CATALOG_DATE_LEVEL_BUDGET_UTILISED, notes = "API to get " +
+            "campaign-catalog-date level budget utilised", consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE )
+    @RequestMapping(path = Constants.API.CAMPAIGN_CATALOG_DATE_LEVEL_BUDGET_UTILISED, method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public CampaignCatalogDateLevelBudgetUtilisedResponse getCampaignCatalogDateLevelBudgetUtilised(
+            @Valid @RequestBody CampaignCatalogDateLevelBudgetUtilisedRequest request) {
+        return performanceService.getDateLevelBudgetUtilised(request);
+    }
+
 }
