@@ -199,14 +199,14 @@ public class CampaignPerformanceService {
             for (CampaignCatalogDateLevelBudgetUtilisedRequest.CampaignDetails.CatalogDetails catalogDetails : campaignDetails.getCatalogDetails()) {
                 Long catalogId = catalogDetails.getCatalogId();
                 CampaignCatalogDateMetrics metrics = campaignCatalogMetricsRepository.get(campaignId, catalogId, date);
-                if (Objects.nonNull(metrics) && Objects.nonNull(metrics.getBudgetUtilised())) {
+                if (Objects.nonNull(metrics) && Objects.nonNull(metrics.getBudgetUtilised()) && Objects.nonNull(metrics.getCatalogId())) {
                     CampaignCatalogDateLevelBudgetUtilisedResponse.CampaignDetails.CatalogDetails catalogDetailsResponse =
                             CampaignCatalogDateLevelBudgetUtilisedResponse.CampaignDetails.CatalogDetails.builder()
-                                    .catalogId(catalogId).budgetUtilised(metrics.getBudgetUtilised()).build();
+                                    .catalogId(metrics.getCatalogId()).budgetUtilised(metrics.getBudgetUtilised()).build();
                     catalogDetailsResponseList.add(catalogDetailsResponse);
                 }
                 else {
-                    log.error("Unable to get budget utilised for campaignId - {}, catalogId - {}, date - {}", campaignId, catalogId, date);
+                    log.error("Error in getting budget utilised for campaignId - {}, catalogId - {}, date - {}", campaignId, catalogId, date);
                 }
             }
             campaignDetailsResponse.setCatalogDetails(catalogDetailsResponseList);
