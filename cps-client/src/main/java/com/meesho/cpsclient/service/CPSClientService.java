@@ -22,6 +22,7 @@ public class CPSClientService extends BaseHTTPHandler {
     private static final String GET_CAMPAIGN_PERFORMANCE = "/api/v1/campaign/performance";
     private static final String GET_CAMPAIGN_CATALOG_PERFORMANCE = "/api/v1/campaign-catalog/performance";
     private static final String GET_BUDGET_UTILISED = "/api/v1/campaign/budget-utilised";
+    private static final String GET_CAMPAIGN_CATALOG_DATE_LEVEL_BUDGET_UTILISED = "/api/v1/campaign-catalog-date/budget-utilised";
 
     private final ServiceRestConfig serviceRestConfig;
     private final RestTemplate restTemplate;
@@ -68,6 +69,15 @@ public class CPSClientService extends BaseHTTPHandler {
                 serviceRestConfig.getURL(GET_BUDGET_UTILISED),
                 new HttpEntity<>(budgetUtilisedRequest.getRequest(), getHeaders(budgetUtilisedRequest)),
                 BudgetUtilisedResponse.class);
+        return ServiceResponse.ofSuccess(response);
+    }
+
+    public ServiceResponse<CampaignCatalogDateLevelBudgetUtilisedResponse> getCampaignCatalogDateLevelBudgetUtilised(
+            ServiceRequest<CampaignCatalogDateLevelBudgetUtilisedRequest> request) {
+        CampaignCatalogDateLevelBudgetUtilisedResponse response = restTemplate.postForObject(
+                serviceRestConfig.getURL(GET_CAMPAIGN_CATALOG_DATE_LEVEL_BUDGET_UTILISED),
+                new HttpEntity<>(request.getRequest(), getHeaders(request)),
+                CampaignCatalogDateLevelBudgetUtilisedResponse.class);
         return ServiceResponse.ofSuccess(response);
     }
 
