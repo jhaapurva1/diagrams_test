@@ -124,28 +124,26 @@ public class KafkaConfig {
         return concurrentKafkaListenerContainerFactory;
     }
 
-    @Bean(name = ConsumerConstants.IngestionServiceKafka.BATCH_CONTAINER_FACTORY)
-    public ConcurrentKafkaListenerContainerFactory<String, String> ingestionBatchKafkaListenerContainerFactory() {
+    @Bean(name = ConsumerConstants.IngestionServiceKafka.BATCH_INTERVAL_CONTAINER_FACTORY)
+    public ConcurrentKafkaListenerContainerFactory<String, String> ingestionBatchIntervalKafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, String> concurrentKafkaListenerContainerFactory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         concurrentKafkaListenerContainerFactory.setConsumerFactory(ingestionKafkaConsumerFactory());
-        concurrentKafkaListenerContainerFactory.setBatchListener(true);
-        concurrentKafkaListenerContainerFactory.getContainerProperties().setAckMode(ContainerProperties.AckMode.TIME);
-        concurrentKafkaListenerContainerFactory.getContainerProperties().setAckTime(Long.valueOf(offsetCommitTime));
+        concurrentKafkaListenerContainerFactory.setBatchListener(false);
+        concurrentKafkaListenerContainerFactory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
 
         log.info("ingestion kafka consumer created with configs {}",
                 concurrentKafkaListenerContainerFactory.getConsumerFactory().getConfigurationProperties());
         return concurrentKafkaListenerContainerFactory;
     }
 
-    @Bean(name = ConsumerConstants.IngestionServiceConfluentKafka.BATCH_CONTAINER_FACTORY)
-    public ConcurrentKafkaListenerContainerFactory<String, String> ingestionBatchConfluentKafkaListenerContainerFactory() {
+    @Bean(name = ConsumerConstants.IngestionServiceConfluentKafka.BATCH_INTERVAL_CONTAINER_FACTORY)
+    public ConcurrentKafkaListenerContainerFactory<String, String> ingestionBatchIntervalConfluentKafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, String> concurrentKafkaListenerContainerFactory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         concurrentKafkaListenerContainerFactory.setConsumerFactory(ingestionConfluentKafkaConsumerFactory());
-        concurrentKafkaListenerContainerFactory.setBatchListener(true);
-        concurrentKafkaListenerContainerFactory.getContainerProperties().setAckMode(ContainerProperties.AckMode.TIME);
-        concurrentKafkaListenerContainerFactory.getContainerProperties().setAckTime(Long.valueOf(offsetCommitTime));
+        concurrentKafkaListenerContainerFactory.setBatchListener(false);
+        concurrentKafkaListenerContainerFactory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
 
 
         log.info("ingestion kafka consumer created with configs {}",

@@ -20,6 +20,7 @@ import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
@@ -43,13 +44,15 @@ public class IngestionConfluentKafkaViewEventsListener {
     private KafkaService kafkaService;
     @Autowired
     private StatsdMetricManager statsdMetricManager;
+    private ThreadLocal<List<AdViewEvent>> adViewEvents = ThreadLocal.withInitial(ArrayList::new);
+    private ThreadLocal<Long> startTime = ThreadLocal.withInitial(System::currentTimeMillis);
 
     @Value(ConsumerConstants.IngestionViewEventsConsumer.DEAD_QUEUE_TOPIC)
     private String ingestionViewEventsDeadQueueTopic;
 
     @KafkaListener(
             id = ConsumerConstants.IngestionViewEventsConsumer.CONFLUENT_CONSUMER_ID,
-            containerFactory = ConsumerConstants.IngestionServiceConfluentKafka.BATCH_CONTAINER_FACTORY,
+            containerFactory = ConsumerConstants.IngestionServiceConfluentKafka.BATCH_INTERVAL_CONTAINER_FACTORY,
             topics = {
                     "#{'${kafka.ingestion.view.event.consumer.topics}'.split(',')}"
             },
@@ -61,56 +64,62 @@ public class IngestionConfluentKafkaViewEventsListener {
             }
     )
     @DigestLogger(metricType = MetricType.METHOD, tagSet = "className=ingestionConfluentViewEventsConsumer")
-    public void listen(@Payload List<ConsumerRecord<String, GenericRecord>> consumerRecords) {
-        handleIngestionViewEvent(consumerRecords);
+    public void listen(@Payload ConsumerRecord<String, GenericRecord> consumerRecord, Acknowledgment ack) {
+        handleIngestionViewEvent(consumerRecord, ack);
     }
 
-    protected void handleIngestionViewEvent(@Payload List<ConsumerRecord<String, GenericRecord>> consumerRecords) {
-        List<AdViewEvent> adViewEvents = new ArrayList<>();
+    protected void handleIngestionViewEvent(@Payload ConsumerRecord<String, GenericRecord> consumerRecord, Acknowledgment ack) {
         MDC.put(com.meesho.ads.lib.constants.Constants.GUID, UUID.randomUUID().toString());
         String countryCode = "IN";
         org.slf4j.MDC.put(Constants.COUNTRY_CODE, Country.getValueDefaultCountryFromEnv(countryCode).getCountryCode());
 
-        for (ConsumerRecord<String, GenericRecord> consumerRecord : consumerRecords) {
+        String value = consumerRecord.value().toString();
+        log.info("Ingestion view event received : {}", value);
 
-            String value = consumerRecord.value().toString();
-            log.info("Ingestion view event received : {}", value);
-
-            AdViewEvent adViewEvent = null;
-            try {
-                adViewEvent = objectMapper.readValue(value, AdViewEvent.class);
-            } catch (JsonProcessingException e) {
-                log.error("JsonProcessingException event : {}", value,e);
-            }
-
-            if (Objects.isNull(adViewEvent) || !ValidationHelper.isValidAdViewEvent(adViewEvent)) {
-                log.error("Invalid event {}", adViewEvent);
-                statsdMetricManager.incrementCounter(VIEW_EVENT_KEY, String.format(VIEW_EVENT_TAGS, NAN, NAN, NAN, INVALID,
-                        NAN));
-                kafkaService.sendMessage(ingestionViewEventsDeadQueueTopic,
-                        consumerRecord.key(), consumerRecord.value().toString());
-                continue;
-            }
-
-            adViewEvents.add(adViewEvent);
+        AdViewEvent adViewEvent = null;
+        try {
+            adViewEvent = objectMapper.readValue(value, AdViewEvent.class);
+        } catch (JsonProcessingException e) {
+            log.error("JsonProcessingException event : {}", value,e);
         }
 
-        try {
-            catalogViewEventService.handle(adViewEvents);
-        } catch (Exception e) {
-            log.error("Exception while processing ingestion view events {}", adViewEvents, e);
-            for (AdViewEvent adViewEvent : adViewEvents) {
-                try {
-                    kafkaService.sendMessage(
-                            ingestionViewEventsDeadQueueTopic,
-                            String.valueOf(adViewEvent.getProperties().getId()),
-                            objectMapper.writeValueAsString(adViewEvent)
-                    );
-                } catch (JsonProcessingException e1) {
-                    // TODO silent failure needs to be handled
-                    log.error("Failed to push to dead queue event {}", adViewEvent);
+        if (Objects.isNull(adViewEvent) || !ValidationHelper.isValidAdViewEvent(adViewEvent)) {
+            log.error("Invalid event {}", adViewEvent);
+            statsdMetricManager.incrementCounter(VIEW_EVENT_KEY, String.format(VIEW_EVENT_TAGS, NAN, NAN, NAN, INVALID,
+                    NAN));
+            kafkaService.sendMessage(ingestionViewEventsDeadQueueTopic,
+                    consumerRecord.key(), consumerRecord.value().toString());
+        } else {
+            // store the events in memory
+            List<AdViewEvent> adViewEventsTillNow = adViewEvents.get();
+            adViewEventsTillNow.add(adViewEvent);
+            adViewEvents.set(adViewEventsTillNow);
+        }
+
+        long currentTime = System.currentTimeMillis();
+        long batchInterval = Long.parseLong(ConsumerConstants.IngestionViewEventsConsumer.BATCH_INTERVAL_MS);
+
+        if (currentTime >= startTime.get() + batchInterval) {
+            try {
+                catalogViewEventService.handle(adViewEvents.get());
+            } catch (Exception e) {
+                log.error("Exception while processing ingestion view events {}", adViewEvents, e);
+                for (AdViewEvent eachAdViewEvent : adViewEvents.get()) {
+                    try {
+                        kafkaService.sendMessage(
+                                ingestionViewEventsDeadQueueTopic,
+                                String.valueOf(eachAdViewEvent.getProperties().getId()),
+                                objectMapper.writeValueAsString(eachAdViewEvent)
+                        );
+                    } catch (JsonProcessingException e1) {
+                        // TODO silent failure needs to be handled
+                        log.error("Failed to push to dead queue event {}", eachAdViewEvent);
+                    }
                 }
             }
+            ack.acknowledge();
+            adViewEvents.set(new ArrayList<>());
+            startTime.set(System.currentTimeMillis());
         }
         MDC.clear();
     }
