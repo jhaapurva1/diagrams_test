@@ -27,7 +27,7 @@ public class IngestionViewEventListener {
     IngestionConfluentKafkaViewEventsListener ingestionConfluentKafkaViewEventsListener;
 
     @KafkaListener(id = ConsumerConstants.IngestionViewEventsConsumer.ID, containerFactory =
-            ConsumerConstants.IngestionServiceKafka.BATCH_INTERVAL_CONTAINER_FACTORY, topics = {
+            ConsumerConstants.IngestionServiceKafka.BATCH_CONTAINER_FACTORY, topics = {
             "#{'${kafka.ingestion.view.event.consumer.topics}'.split(',')}"}, autoStartup =
             ConsumerConstants.IngestionViewEventsConsumer.AUTO_START, concurrency =
             ConsumerConstants.IngestionViewEventsConsumer.CONCURRENCY, properties = {
@@ -35,8 +35,8 @@ public class IngestionViewEventListener {
                     ConsumerConstants.IngestionViewEventsConsumer.MAX_POLL_INTERVAL_MS,
             ConsumerConfig.MAX_POLL_RECORDS_CONFIG + "=" + ConsumerConstants.IngestionViewEventsConsumer.BATCH_SIZE})
     @DigestLogger(metricType = MetricType.METHOD, tagSet = "consumer=IngestionViewEventListener")
-    public void listen(@Payload ConsumerRecord<String, GenericRecord> consumerRecord, Acknowledgment ack) {
-        ingestionConfluentKafkaViewEventsListener.handleIngestionViewEvent(consumerRecord, ack);
+    public void listen(@Payload List<ConsumerRecord<String, GenericRecord>> consumerRecords, Acknowledgment ack) {
+        ingestionConfluentKafkaViewEventsListener.handleIngestionViewEvent(consumerRecords, ack);
     }
 
 }

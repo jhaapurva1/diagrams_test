@@ -124,12 +124,12 @@ public class KafkaConfig {
         return concurrentKafkaListenerContainerFactory;
     }
 
-    @Bean(name = ConsumerConstants.IngestionServiceKafka.BATCH_INTERVAL_CONTAINER_FACTORY)
-    public ConcurrentKafkaListenerContainerFactory<String, String> ingestionBatchIntervalKafkaListenerContainerFactory() {
+    @Bean(name = ConsumerConstants.IngestionServiceKafka.BATCH_CONTAINER_FACTORY)
+    public ConcurrentKafkaListenerContainerFactory<String, String> ingestionBatchKafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, String> concurrentKafkaListenerContainerFactory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         concurrentKafkaListenerContainerFactory.setConsumerFactory(ingestionKafkaConsumerFactory());
-        concurrentKafkaListenerContainerFactory.setBatchListener(false);
+        concurrentKafkaListenerContainerFactory.setBatchListener(true);
         concurrentKafkaListenerContainerFactory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
 
         log.info("ingestion kafka consumer created with configs {}",
@@ -137,12 +137,12 @@ public class KafkaConfig {
         return concurrentKafkaListenerContainerFactory;
     }
 
-    @Bean(name = ConsumerConstants.IngestionServiceConfluentKafka.BATCH_INTERVAL_CONTAINER_FACTORY)
-    public ConcurrentKafkaListenerContainerFactory<String, String> ingestionBatchIntervalConfluentKafkaListenerContainerFactory() {
+    @Bean(name = ConsumerConstants.IngestionServiceConfluentKafka.BATCH_CONTAINER_FACTORY)
+    public ConcurrentKafkaListenerContainerFactory<String, String> ingestionBatchConfluentKafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, String> concurrentKafkaListenerContainerFactory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         concurrentKafkaListenerContainerFactory.setConsumerFactory(ingestionConfluentKafkaConsumerFactory());
-        concurrentKafkaListenerContainerFactory.setBatchListener(false);
+        concurrentKafkaListenerContainerFactory.setBatchListener(true);
         concurrentKafkaListenerContainerFactory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
 
 

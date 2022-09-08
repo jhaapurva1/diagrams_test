@@ -52,7 +52,7 @@ public class IngestionConfluentKafkaViewEventsListener {
 
     @KafkaListener(
             id = ConsumerConstants.IngestionViewEventsConsumer.CONFLUENT_CONSUMER_ID,
-            containerFactory = ConsumerConstants.IngestionServiceConfluentKafka.BATCH_INTERVAL_CONTAINER_FACTORY,
+            containerFactory = ConsumerConstants.IngestionServiceConfluentKafka.BATCH_CONTAINER_FACTORY,
             topics = {
                     "#{'${kafka.ingestion.view.event.consumer.topics}'.split(',')}"
             },
@@ -64,32 +64,35 @@ public class IngestionConfluentKafkaViewEventsListener {
             }
     )
     @DigestLogger(metricType = MetricType.METHOD, tagSet = "className=ingestionConfluentViewEventsConsumer")
-    public void listen(@Payload ConsumerRecord<String, GenericRecord> consumerRecord, Acknowledgment ack) {
-        handleIngestionViewEvent(consumerRecord, ack);
+    public void listen(@Payload List<ConsumerRecord<String, GenericRecord>> consumerRecords, Acknowledgment ack) {
+        handleIngestionViewEvent(consumerRecords, ack);
     }
 
-    protected void handleIngestionViewEvent(@Payload ConsumerRecord<String, GenericRecord> consumerRecord, Acknowledgment ack) {
+    protected void handleIngestionViewEvent(@Payload List<ConsumerRecord<String, GenericRecord>> consumerRecords, Acknowledgment ack) {
         MDC.put(com.meesho.ads.lib.constants.Constants.GUID, UUID.randomUUID().toString());
         String countryCode = "IN";
         org.slf4j.MDC.put(Constants.COUNTRY_CODE, Country.getValueDefaultCountryFromEnv(countryCode).getCountryCode());
 
-        String value = consumerRecord.value().toString();
-        log.info("Ingestion view event received : {}", value);
+        for (ConsumerRecord<String, GenericRecord> consumerRecord : consumerRecords) {
+            String value = consumerRecord.value().toString();
+            log.info("Ingestion view event received : {}", value);
 
-        AdViewEvent adViewEvent = null;
-        try {
-            adViewEvent = objectMapper.readValue(value, AdViewEvent.class);
-        } catch (JsonProcessingException e) {
-            log.error("JsonProcessingException event : {}", value,e);
-        }
+            AdViewEvent adViewEvent = null;
+            try {
+                adViewEvent = objectMapper.readValue(value, AdViewEvent.class);
+            } catch (JsonProcessingException e) {
+                log.error("JsonProcessingException event : {}", value,e);
+            }
 
-        if (Objects.isNull(adViewEvent) || !ValidationHelper.isValidAdViewEvent(adViewEvent)) {
-            log.error("Invalid event {}", adViewEvent);
-            statsdMetricManager.incrementCounter(VIEW_EVENT_KEY, String.format(VIEW_EVENT_TAGS, NAN, NAN, NAN, INVALID,
-                    NAN));
-            kafkaService.sendMessage(ingestionViewEventsDeadQueueTopic,
-                    consumerRecord.key(), consumerRecord.value().toString());
-        } else {
+            if (Objects.isNull(adViewEvent) || !ValidationHelper.isValidAdViewEvent(adViewEvent)) {
+                log.error("Invalid event {}", adViewEvent);
+                statsdMetricManager.incrementCounter(VIEW_EVENT_KEY, String.format(VIEW_EVENT_TAGS, NAN, NAN, NAN, INVALID,
+                        NAN));
+                kafkaService.sendMessage(ingestionViewEventsDeadQueueTopic,
+                        consumerRecord.key(), consumerRecord.value().toString());
+                continue;
+            }
+
             // store the events in memory
             List<AdViewEvent> adViewEventsTillNow = adViewEvents.get();
             adViewEventsTillNow.add(adViewEvent);
@@ -101,6 +104,7 @@ public class IngestionConfluentKafkaViewEventsListener {
 
         if (currentTime >= startTime.get() + batchInterval) {
             try {
+                ack.acknowledge();
                 catalogViewEventService.handle(adViewEvents.get());
             } catch (Exception e) {
                 log.error("Exception while processing ingestion view events {}", adViewEvents, e);
@@ -117,7 +121,6 @@ public class IngestionConfluentKafkaViewEventsListener {
                     }
                 }
             }
-            ack.acknowledge();
             adViewEvents.set(new ArrayList<>());
             startTime.set(System.currentTimeMillis());
         }
