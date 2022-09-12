@@ -186,15 +186,11 @@ public class IngestionConfluentKafkaViewEventsListener implements ApplicationLis
 
             String campaignCatalogViewCountKey = getCampaignCatalogKey(campaignId, catalogId, eventDate);
 
-            if (campaignCatalogViewCountMapTillNow.containsKey(campaignCatalogViewCountKey)) {
-                CampaignCatalogViewCount campaignCatalogViewCount =
-                        campaignCatalogViewCountMapTillNow.get(campaignCatalogViewCountKey);
-                campaignCatalogViewCount.setCount(campaignCatalogViewCount.getCount() + 1);
-                campaignCatalogViewCountMapTillNow.put(campaignCatalogViewCountKey, campaignCatalogViewCount);
-            } else {
-                campaignCatalogViewCountMapTillNow.put(campaignCatalogViewCountKey, CampaignCatalogViewCount.builder()
-                        .campaignId(campaignId).catalogId(catalogId).date(eventDate).count(1).build());
-            }
+            CampaignCatalogViewCount campaignCatalogViewCount =
+                    campaignCatalogViewCountMapTillNow.getOrDefault(campaignCatalogViewCountKey, CampaignCatalogViewCount.builder()
+                            .campaignId(campaignId).catalogId(catalogId).date(eventDate).count(0).build());
+            campaignCatalogViewCount.setCount(campaignCatalogViewCount.getCount() + 1);
+            campaignCatalogViewCountMapTillNow.put(campaignCatalogViewCountKey, campaignCatalogViewCount);
         }
         campaignCatalogViewCountMap.set(campaignCatalogViewCountMapTillNow);
     }
