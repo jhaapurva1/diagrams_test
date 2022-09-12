@@ -5,6 +5,8 @@ import com.meesho.ads.lib.utils.HbaseUtils;
 import com.meesho.cps.constants.DBConstants;
 import com.meesho.cps.data.entity.hbase.CampaignCatalogDateMetrics;
 import com.meesho.cps.data.internal.CampaignCatalogViewCount;
+import com.meesho.instrumentation.annotation.DigestLogger;
+import com.meesho.instrumentation.enums.MetricType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
@@ -89,6 +91,7 @@ public class CampaignCatalogDateMetricsRepository {
         return campaignCatalogDateMetrics;
     }
 
+    @DigestLogger(metricType = MetricType.METHOD, tagSet = "className=CampaignCatalogDateMetricsRepository,method=get")
     public CampaignCatalogDateMetrics get(Long campaignId, Long catalogId, LocalDate date) {
         Get get = new Get(Bytes.toBytes(CampaignCatalogDateMetrics.generateRowKey(campaignId, catalogId, date)));
         try (Table table = getTable()) {

@@ -5,12 +5,12 @@
     <parent>
         <groupId>com.meesho</groupId>
         <artifactId>campaign-performance-service</artifactId>
-        <version>0.0.51-RELEASE</version>
+        <version>0.0.52-RELEASE</version>
     </parent>
 
     <groupId>com.meesho</groupId>
     <artifactId>cps</artifactId>
-    <version>0.0.51-RELEASE</version>
+    <version>0.0.52-RELEASE</version>
     <name>cps</name>
     <description>Campaign Performance Service</description>
     <properties>
@@ -170,7 +170,7 @@
         <dependency>
             <groupId>com.meesho</groupId>
             <artifactId>cps-client</artifactId>
-            <version>0.0.6-RELEASE</version>
+            <version>0.0.7-RELEASE</version>
         </dependency>
 
         <!-- Ad Client-->

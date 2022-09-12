@@ -5,6 +5,7 @@ import com.meesho.cps.constants.CampaignType;
 import com.meesho.cps.constants.Constants;
 import com.meesho.cps.constants.DBConstants;
 import com.meesho.cps.data.entity.elasticsearch.EsCampaignCatalogAggregateResponse;
+import com.meesho.cps.data.entity.hbase.CampaignCatalogDateMetrics;
 import com.meesho.cps.data.entity.hbase.CampaignDatewiseMetrics;
 import com.meesho.cps.data.entity.hbase.CampaignMetrics;
 import com.meesho.cps.data.entity.hbase.SupplierWeekWiseMetrics;
@@ -22,10 +23,12 @@ import com.meesho.cpsclient.request.BudgetUtilisedRequest;
 import com.meesho.cpsclient.request.CampaignCatalogPerformanceRequest;
 import com.meesho.cpsclient.request.CampaignPerformanceRequest;
 import com.meesho.cpsclient.request.SupplierPerformanceRequest;
+import com.meesho.cpsclient.request.CampaignCatalogDateLevelBudgetUtilisedRequest;
 import com.meesho.cpsclient.response.BudgetUtilisedResponse;
 import com.meesho.cpsclient.response.CampaignCatalogPerformanceResponse;
 import com.meesho.cpsclient.response.CampaignPerformanceResponse;
 import com.meesho.cpsclient.response.SupplierPerformanceResponse;
+import com.meesho.cpsclient.response.CampaignCatalogDateLevelBudgetUtilisedResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -36,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -177,6 +181,39 @@ public class CampaignPerformanceService {
         List<SupplierWeekWiseMetrics> supplierWeekWiseMetrics = supplierWeekWiseMetricsRepository.getAll(supplierIds, weekStartDate);
 
         return campaignPerformanceTransformer.getBudgetUtilisedResponse(campaignMetrics, campaignDateWiseMetrics, supplierWeekWiseMetrics);
+    }
+
+    public CampaignCatalogDateLevelBudgetUtilisedResponse getDateLevelBudgetUtilised(CampaignCatalogDateLevelBudgetUtilisedRequest request) {
+        List<CampaignCatalogDateLevelBudgetUtilisedResponse.CampaignDetails> campaignDetailsResponseList = new ArrayList<>();
+
+        for (CampaignCatalogDateLevelBudgetUtilisedRequest.CampaignDetails campaignDetails : request.getCampaignDetails()) {
+            CampaignCatalogDateLevelBudgetUtilisedResponse.CampaignDetails campaignDetailsResponse = new CampaignCatalogDateLevelBudgetUtilisedResponse.CampaignDetails();
+
+            Long campaignId = campaignDetails.getCampaignId();
+            LocalDate date = campaignDetails.getDate();
+
+            campaignDetailsResponse.setCampaignId(campaignId);
+            campaignDetailsResponse.setDate(date);
+
+            List<CampaignCatalogDateLevelBudgetUtilisedResponse.CampaignDetails.CatalogDetails> catalogDetailsResponseList = new ArrayList<>();
+            for (CampaignCatalogDateLevelBudgetUtilisedRequest.CampaignDetails.CatalogDetails catalogDetails : campaignDetails.getCatalogDetails()) {
+                Long catalogId = catalogDetails.getCatalogId();
+                CampaignCatalogDateMetrics metrics = campaignCatalogMetricsRepository.get(campaignId, catalogId, date);
+                if (Objects.nonNull(metrics) && Objects.nonNull(metrics.getBudgetUtilised()) && Objects.nonNull(metrics.getCatalogId())) {
+                    CampaignCatalogDateLevelBudgetUtilisedResponse.CampaignDetails.CatalogDetails catalogDetailsResponse =
+                            CampaignCatalogDateLevelBudgetUtilisedResponse.CampaignDetails.CatalogDetails.builder()
+                                    .catalogId(metrics.getCatalogId()).budgetUtilised(metrics.getBudgetUtilised()).build();
+                    catalogDetailsResponseList.add(catalogDetailsResponse);
+                }
+                else {
+                    log.error("Error in getting budget utilised for campaignId - {}, catalogId - {}, date - {}", campaignId, catalogId, date);
+                }
+            }
+            campaignDetailsResponse.setCatalogDetails(catalogDetailsResponseList);
+            campaignDetailsResponseList.add(campaignDetailsResponse);
+        }
+
+        return CampaignCatalogDateLevelBudgetUtilisedResponse.builder().campaignDetails(campaignDetailsResponseList).build();
     }
 
 }
