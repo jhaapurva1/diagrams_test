@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -35,6 +36,9 @@ public class CampaignPerformanceESIndexingScheduler extends AbstractScheduler {
     @Value(ConsumerConstants.DayWisePerformanceEventsConsumer.TOPIC)
     String dayWisePerformanceEventsConsumerTopic;
 
+    @Value(ConsumerConstants.DayWisePerformanceEventsConsumer.CAMPAIGN_CATALOG_DATE_BATCH_SIZE)
+    private Integer CAMPAIGN_CATALOG_DATE_BATCH_SIZE;
+
     @Override
     public String getType() {
         return SchedulerType.CAMPAIGN_PERFORMANCE_ES_INDEXING.name();
@@ -43,17 +47,30 @@ public class CampaignPerformanceESIndexingScheduler extends AbstractScheduler {
     @Override
     public Long process(String country, int limit, ZonedDateTime startTime, int processBatchSize) throws Exception {
         List<CampaignCatalogDate> campaignCatalogDates = updatedCampaignCatalogCacheDao.getAllUpdatedCampaignCatalogs();
-        
+
         // group campaignCatalogDateIds on campaignCatalogMonth level
         Map<String, List<CampaignCatalogDate>> campaignCatalogDateGroupByMonth = campaignCatalogDates.stream()
                 .collect(Collectors.groupingBy(campaignCatalogDate -> campaignCatalogDate.getCampaignId() + "_" +
                         campaignCatalogDate.getCatalogId() + "_" +
                         campaignCatalogDate.getDate().substring(0, campaignCatalogDate.getDate().length() - 3)));
 
+
+        List<CampaignCatalogDate> campaignCatalogDateIds = new ArrayList<>();
+
         for (List<CampaignCatalogDate> campaignCatalogDateIdsOfAMonth : campaignCatalogDateGroupByMonth.values()) {
-            kafkaService.sendMessage(dayWisePerformanceEventsConsumerTopic, null,
-                    objectMapper.writeValueAsString(campaignCatalogDateIdsOfAMonth));
+            if (campaignCatalogDateIds.size() < CAMPAIGN_CATALOG_DATE_BATCH_SIZE) {
+                campaignCatalogDateIds.addAll(campaignCatalogDateIdsOfAMonth);
+            } else {
+                kafkaService.sendMessage(dayWisePerformanceEventsConsumerTopic, null,
+                        objectMapper.writeValueAsString(campaignCatalogDateIds));
+                campaignCatalogDateIds = campaignCatalogDateIdsOfAMonth;
+            }
         }
+
+        if(campaignCatalogDateIds.size()> 0)
+            kafkaService.sendMessage(dayWisePerformanceEventsConsumerTopic, null,
+                    objectMapper.writeValueAsString(campaignCatalogDateIds));
+
         return (long) campaignCatalogDates.size();
     }
 

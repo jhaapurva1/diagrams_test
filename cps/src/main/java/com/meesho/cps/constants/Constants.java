@@ -22,6 +22,8 @@ public class Constants {
         public static final String CAMPAIGN_CATALOG_PERFORMANCE = "/campaign-catalog/performance";
         public static final String CAMPAIGN_BUDGET_UTILISED = "/campaign/budget-utilised";
 
+        public static final String CAMPAIGN_CATALOG_DATE_LEVEL_BUDGET_UTILISED = "campaign-catalog-date/budget-utilised";
+
         public static class DEBUG_API {
             public static final String BASE_PATH = "/api/v1/debug";
             public static final String GET_CAMPAIGN_METRICS = "/campaign_metrics/get";
