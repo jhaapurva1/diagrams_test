@@ -85,7 +85,10 @@ public class ConsumerConstants {
         public static final String AUTO_START = "${kafka.dayWisePerf.event.consumer.start}";
         public static final String CONCURRENCY = "${kafka.dayWisePerf.event.consumer.concurrency}";
         public static final String MAX_POLL_INTERVAL_MS = "${kafka.dayWisePerf.event.consumer.max.poll.interval.ms}";
+
         public static final String BATCH_SIZE = "${kafka.dayWisePerf.event.consumer.batch.size}";
+
+        public static final String CAMPAIGN_CATALOG_DATE_BATCH_SIZE = "${kafka.dayWisePerf.campaign.catalog.date.batch.size}";
     }
 
     public static class IngestionViewEventsConsumer {
