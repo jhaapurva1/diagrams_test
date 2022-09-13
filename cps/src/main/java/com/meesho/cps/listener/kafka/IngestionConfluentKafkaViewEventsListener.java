@@ -58,6 +58,9 @@ public class IngestionConfluentKafkaViewEventsListener implements ApplicationLis
     @Value(ConsumerConstants.IngestionViewEventsConsumer.DEAD_QUEUE_TOPIC)
     private String ingestionViewEventsDeadQueueTopic;
 
+    @Value(ConsumerConstants.IngestionViewEventsConsumer.BATCH_INTERVAL_MS)
+    private Long batchInterval;
+
     @KafkaListener(
             id = ConsumerConstants.IngestionViewEventsConsumer.CONFLUENT_CONSUMER_ID,
             containerFactory = ConsumerConstants.IngestionServiceConfluentKafka.BATCH_CONTAINER_FACTORY,
@@ -139,9 +142,7 @@ public class IngestionConfluentKafkaViewEventsListener implements ApplicationLis
         }
 
         updateCampaignCatalogViewCounts(adViewEvents, catalogMetadataMap);
-
         long currentTime = System.currentTimeMillis();
-        long batchInterval = Long.parseLong(ConsumerConstants.IngestionViewEventsConsumer.BATCH_INTERVAL_MS);
 
         if (currentTime >= startTime.get() + batchInterval) {
             ack.acknowledge();
