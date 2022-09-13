@@ -1,6 +1,7 @@
 package com.meesho.cps.db.hbase.repository;
 
 import com.meesho.ads.lib.exception.HbaseException;
+import com.meesho.ads.lib.helper.TelegrafMetricsHelper;
 import com.meesho.ads.lib.utils.HbaseUtils;
 import com.meesho.cps.constants.DBConstants;
 import com.meesho.cps.data.entity.hbase.CampaignCatalogDateMetrics;
@@ -21,12 +22,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.meesho.cps.constants.TelegrafConstants.*;
+
 /**
  * @author shubham.aggarwal
  * 02/08/21
  */
 @Slf4j
 @Repository
+@DigestLogger(metricType = MetricType.HBASE, tagSet = "className=CampaignCatalogDateMetricsRepository")
 public class CampaignCatalogDateMetricsRepository {
 
     private static final Long MULTIPLIER = 100000L;
@@ -56,6 +60,9 @@ public class CampaignCatalogDateMetricsRepository {
     private static final byte[] COLUMN_ORDERS = Bytes.toBytes("orders");
 
     private static final byte[] COLUMN_DATE = Bytes.toBytes("date");
+
+    @Autowired
+    private TelegrafMetricsHelper telegrafMetricsHelper;
 
     @Autowired
     Connection connection;
@@ -225,6 +232,7 @@ public class CampaignCatalogDateMetricsRepository {
         try (Table table = getTable()) {
             Object[] results = new Object[increments.size()];
             table.batch(increments, results);
+            telegrafMetricsHelper.increment(VIEW_INCREMENTS, results.length);
             log.debug("bulkIncrementViewCount results {}", results);
         } catch (InterruptedException | IOException e) {
             log.error("Error in incrementing view count for " +

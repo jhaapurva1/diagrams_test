@@ -11,6 +11,7 @@ public class TelegrafConstants {
     public static final String INTERACTION_EVENT_KEY = SERVICE_NAME + "InteractionEvent";
     public static final String VIEW_EVENT_KEY = SERVICE_NAME + "ViewEvent";
     public static final String INTERACTION_EVENT_CPC_KEY = SERVICE_NAME + "InteractionEventCPC";
+    public static final String VIEW_INCREMENTS = SERVICE_NAME + "ViewIncrements";
 
     // tags placeholder
     public static final String INTERACTION_EVENT_TAGS = "eventName=%s,screen=%s,origin=%s,status=%s,reason=%s";
