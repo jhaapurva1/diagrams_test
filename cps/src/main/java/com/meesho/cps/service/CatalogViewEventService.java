@@ -64,6 +64,7 @@ public class CatalogViewEventService {
         return responses.stream().collect(Collectors.toMap(CampaignCatalogMetadataResponse.CatalogMetadata::getCatalogId, Function.identity()));
     }
 
+    @DigestLogger(metricType = MetricType.METHOD, tagSet = "className=CatalogViewEventService,method=writeToHbase")
     public void writeToHbase(List<CampaignCatalogViewCount> campaignCatalogViewCountList) {
         List<List<CampaignCatalogViewCount>> campaignCatalogViewCountPartitionedList =
                 Lists.partition(campaignCatalogViewCountList, applicationProperties.getIncrementViewHbaseBatchSize());
