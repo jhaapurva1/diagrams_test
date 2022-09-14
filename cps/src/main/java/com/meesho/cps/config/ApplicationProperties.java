@@ -123,6 +123,9 @@ public class ApplicationProperties {
     @Value("${backfill.date-wise.metrics.prism.batch-size}")
     private Integer backfillDateWiseMetricsBatchSize;
 
+    @Value("${kafka.ingestion.view.event.consumer.batch.interval.ms}")
+    private Long batchInterval;
+
     @Value("#{T(java.time.LocalDate).parse('${campaign.date-wise.metrics.reference-date}')}")
     private LocalDate campaignDatewiseMetricsReferenceDate;
 

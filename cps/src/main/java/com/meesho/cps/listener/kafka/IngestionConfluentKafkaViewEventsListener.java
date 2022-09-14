@@ -6,6 +6,7 @@ import com.meesho.ad.client.response.CampaignCatalogMetadataResponse;
 import com.meesho.ads.lib.constants.Constants;
 import com.meesho.ads.lib.utils.DateTimeUtils;
 import com.meesho.commons.enums.Country;
+import com.meesho.cps.config.ApplicationProperties;
 import com.meesho.cps.constants.AdInteractionInvalidReason;
 import com.meesho.cps.constants.ConsumerConstants;
 import com.meesho.cps.data.entity.kafka.AdViewEvent;
@@ -52,14 +53,13 @@ public class IngestionConfluentKafkaViewEventsListener implements ApplicationLis
     private StatsdMetricManager statsdMetricManager;
     @Autowired
     private CampaignPerformanceHelper campaignPerformanceHelper;
+    @Autowired
+    ApplicationProperties applicationProperties;
     private ThreadLocal<Long> startTime = ThreadLocal.withInitial(System::currentTimeMillis);
     private ThreadLocal<Map<String, CampaignCatalogViewCount>> campaignCatalogViewCountMap = ThreadLocal.withInitial(HashMap::new);
 
     @Value(ConsumerConstants.IngestionViewEventsConsumer.DEAD_QUEUE_TOPIC)
     private String ingestionViewEventsDeadQueueTopic;
-
-    @Value(ConsumerConstants.IngestionViewEventsConsumer.BATCH_INTERVAL_MS)
-    private Long batchInterval;
 
     @KafkaListener(
             id = ConsumerConstants.IngestionViewEventsConsumer.CONFLUENT_CONSUMER_ID,
@@ -144,7 +144,7 @@ public class IngestionConfluentKafkaViewEventsListener implements ApplicationLis
         updateCampaignCatalogViewCounts(adViewEvents, catalogMetadataMap);
         long currentTime = System.currentTimeMillis();
 
-        if (currentTime >= startTime.get() + batchInterval) {
+        if (currentTime >= startTime.get() + applicationProperties.getBatchInterval()) {
             ack.acknowledge();
             List<CampaignCatalogViewCount> campaignCatalogViewCountList = new ArrayList<>(campaignCatalogViewCountMap.get().values());
             catalogViewEventService.writeToHbase(campaignCatalogViewCountList);
