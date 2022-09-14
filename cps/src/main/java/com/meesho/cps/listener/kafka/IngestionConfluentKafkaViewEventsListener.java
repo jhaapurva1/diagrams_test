@@ -145,7 +145,9 @@ public class IngestionConfluentKafkaViewEventsListener implements ApplicationLis
         long currentTime = System.currentTimeMillis();
 
         if (currentTime >= startTime.get() + batchInterval) {
+            log.info("Acknowledging the commit to Kafka");
             ack.acknowledge();
+            log.info("Writing to Hbase at time : {}", System.currentTimeMillis());
             List<CampaignCatalogViewCount> campaignCatalogViewCountList = new ArrayList<>(campaignCatalogViewCountMap.get().values());
             catalogViewEventService.writeToHbase(campaignCatalogViewCountList);
             campaignCatalogViewCountMap.set(new HashMap<>());
