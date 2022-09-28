@@ -52,4 +52,18 @@ public class PrismService {
         }
     }
 
+    public <T> void publishEventEx(String eventName, List<T> eventProperties) {
+        List<PrismEventRequest<T>> requestBody = PrismEventRequest.of(eventName, eventProperties);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set(CommonConstants.COUNTRY_HEADER, MDC.get(Constants.COUNTRY_CODE));
+        String authValue = "Basic " + Base64.encodeBase64String(
+                (prismServiceClientConfig.getUsername() + ":" + prismServiceClientConfig.getSecret()).getBytes());
+        headers.set(HttpHeaders.AUTHORIZATION, authValue);
+        HttpEntity<List<PrismEventRequest<T>>> request = new HttpEntity<>(requestBody, headers);
+        restTemplate.postForLocation(prismServiceClientConfig.getHost() +
+                com.meesho.cps.constants.Constants.API.PrismService.EVENT_PUBLISH + eventName, request);
+        log.info("============ publishEventEx: SUCCESS");
+    }
+
 }

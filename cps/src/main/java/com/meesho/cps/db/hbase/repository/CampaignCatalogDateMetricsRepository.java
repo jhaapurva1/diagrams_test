@@ -271,4 +271,23 @@ public class CampaignCatalogDateMetricsRepository {
             throw new HbaseException(e.getMessage());
         }
     }
+
+    public List<CampaignCatalogDateMetrics> scanByCampaignId(Long campaignId) {
+        String rowKey = CampaignCatalogDateMetrics.generateRowKeyForCampaignId(campaignId);
+        try (Table table = getTable()) {
+            Scan scan = new Scan();
+            scan.setRowPrefixFilter(Bytes.toBytes(rowKey));
+            ResultScanner resultScanner = table.getScanner(scan);
+            List<CampaignCatalogDateMetrics> campaignCatalogMetricsList = new ArrayList<>();
+            resultScanner.forEach(result -> {
+                if(!result.isEmpty()){
+                    campaignCatalogMetricsList.add(mapper(result, campaignId, null));
+                }
+            });
+            return campaignCatalogMetricsList;
+        } catch (IOException e) {
+            log.error("Error in CampaignCatalogDateMetricsRepository scan", e);
+            throw new HbaseException(e.getMessage());
+        }
+    }
 }

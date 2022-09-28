@@ -11,7 +11,7 @@ public class Constants {
 
     public static class API {
         public static final String BASE_PATH = "/api/v1";
-
+        public static final Integer HBASE_BATCH_SIZE = 30;
         public static final String HEALTH_CHECK_ENDPOINT = "/health";
         public static final String MANUAL_SCHEDULER_START = "/api/v1/scheduler/start";
         public static final String MIGRATE_CAMPAIGN_PERFORMANCE = "/api/v1/migrate-campaign-performance";
@@ -76,6 +76,7 @@ public class Constants {
     public static class PrismEventNames {
         public static final String AD_INTERACTIONS = "ad_interaction_events";
         public static final String DAY_WISE_PERF_EVENTS = "campaign_catalog_day_performance_events";
+        public static final String HBASE_PRESTO_TABLE_NAME = "scrap.campaign_catalog_reconciled_metrics";
     }
 
     public static class DefaultRealEstateMetaData {
