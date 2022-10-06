@@ -7,6 +7,7 @@ import com.meesho.cps.data.entity.elasticsearch.ESDailyIndexDocument;
 import com.meesho.cps.data.entity.elasticsearch.ESMonthlyIndexDocument;
 import com.meesho.cps.data.entity.elasticsearch.EsCampaignCatalogAggregateResponse;
 import com.meesho.cps.data.internal.ElasticFiltersRequest;
+import com.meesho.cps.data.internal.FetchCampaignCatalogsForDateRequest;
 import com.meesho.cps.exception.ESIndexingException;
 import com.meesho.cps.helper.ESQueryBuilder;
 import com.meesho.instrumentation.annotation.DigestLogger;
@@ -104,4 +105,14 @@ public class ElasticSearchRepository {
         SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
         return EsCampaignCatalogAggregateResponse.builder().aggregations(searchResponse.getAggregations()).build();
     }
+
+    public SearchResponse fetchEsCampaignCatalogsForDate(
+            FetchCampaignCatalogsForDateRequest fetchCampaignCatalogsForDateRequest) throws IOException {
+        SearchSourceBuilder searchSourceBuilder = ESQueryBuilder.getESQuery(fetchCampaignCatalogsForDateRequest);
+        SearchRequest searchRequest = new SearchRequest().source(searchSourceBuilder)
+                .indices(applicationProperties.getEsCampaignCatalogDateWiseIndices());
+        log.info("Date wise index ES query : {}", searchRequest.source().toString());
+        return restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+    }
+
 }

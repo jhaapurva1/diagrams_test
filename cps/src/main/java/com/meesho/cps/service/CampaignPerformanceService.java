@@ -4,12 +4,15 @@ import com.meesho.ads.lib.utils.DateTimeUtils;
 import com.meesho.cps.constants.CampaignType;
 import com.meesho.cps.constants.Constants;
 import com.meesho.cps.constants.DBConstants;
+import com.meesho.cps.constants.SortType;
 import com.meesho.cps.data.entity.elasticsearch.EsCampaignCatalogAggregateResponse;
+import com.meesho.cps.data.entity.elasticsearch.internal.SortConfig;
 import com.meesho.cps.data.entity.hbase.CampaignCatalogDateMetrics;
 import com.meesho.cps.data.entity.hbase.CampaignDatewiseMetrics;
 import com.meesho.cps.data.entity.hbase.CampaignMetrics;
 import com.meesho.cps.data.entity.hbase.SupplierWeekWiseMetrics;
 import com.meesho.cps.data.internal.ElasticFiltersRequest;
+import com.meesho.cps.data.internal.FetchCampaignCatalogsForDateRequest;
 import com.meesho.cps.db.elasticsearch.ElasticSearchRepository;
 import com.meesho.cps.db.hbase.repository.CampaignCatalogDateMetricsRepository;
 import com.meesho.cps.db.hbase.repository.CampaignDatewiseMetricsRepository;
@@ -19,27 +22,18 @@ import com.meesho.cps.db.mysql.dao.CampaignPerformanceDao;
 import com.meesho.cps.helper.CampaignPerformanceHelper;
 import com.meesho.cps.transformer.CampaignPerformanceTransformer;
 import com.meesho.cps.utils.CommonUtils;
-import com.meesho.cpsclient.request.BudgetUtilisedRequest;
-import com.meesho.cpsclient.request.CampaignCatalogPerformanceRequest;
-import com.meesho.cpsclient.request.CampaignPerformanceRequest;
-import com.meesho.cpsclient.request.SupplierPerformanceRequest;
-import com.meesho.cpsclient.request.CampaignCatalogDateLevelBudgetUtilisedRequest;
-import com.meesho.cpsclient.response.BudgetUtilisedResponse;
-import com.meesho.cpsclient.response.CampaignCatalogPerformanceResponse;
-import com.meesho.cpsclient.response.CampaignPerformanceResponse;
-import com.meesho.cpsclient.response.SupplierPerformanceResponse;
-import com.meesho.cpsclient.response.CampaignCatalogDateLevelBudgetUtilisedResponse;
+import com.meesho.cpsclient.request.*;
+import com.meesho.cpsclient.response.*;
 import lombok.extern.slf4j.Slf4j;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -214,6 +208,35 @@ public class CampaignPerformanceService {
         }
 
         return CampaignCatalogDateLevelBudgetUtilisedResponse.builder().campaignDetails(campaignDetailsResponseList).build();
+    }
+
+    public FetchCampaignsForDateResponse getCampaignsForDate(FetchCampaignsForDateRequest request) throws IOException {
+
+        String cursor = campaignPerformanceHelper.decodeCursor(request.getCursor());
+
+        Pair<String, String> campaignDateKVPair = Pair.of(Constants.ESFieldNames.CAMPAIGN_DATE, request.getDate());
+        List<String> includeFields = Arrays.asList(Constants.ESFieldNames.SUPPLIER_ID, Constants.ESFieldNames.CAMPAIGN_ID, Constants.ESFieldNames.CATALOG_ID);
+        List<String> mustExistFields = Collections.singletonList(Constants.ESFieldNames.BUDGET_UTILISED);
+
+        Object[] searchAfterValues = null;
+        if(Objects.nonNull(cursor)) {
+            searchAfterValues = new Object[]{cursor};
+        }
+
+        FetchCampaignCatalogsForDateRequest fetchCampaignCatalogsForDateRequest = FetchCampaignCatalogsForDateRequest.builder()
+                .orderedListOfSortConfigs(Collections.singletonList(SortConfig.builder().type(SortType.FIELD).fieldName(Constants.ESFieldNames.ID).order(SortOrder.ASC).build()))
+                .mustMatchKeyValuePairs(Collections.singletonList(campaignDateKVPair))
+                .limit(campaignPerformanceHelper.getCampaignCatalogLimit(request.getLimit()))
+                .searchAfterValues(searchAfterValues)
+                .includeFields(includeFields)
+                .mustExistFields(mustExistFields)
+                .build();
+
+        SearchResponse searchResponse = elasticSearchRepository.fetchEsCampaignCatalogsForDate(fetchCampaignCatalogsForDateRequest);
+        log.info("Query Response: " + searchResponse);
+
+        return campaignPerformanceTransformer.getFetchCampaignsForDateResponse(searchResponse);
+
     }
 
 }
