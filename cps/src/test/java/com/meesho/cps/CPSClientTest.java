@@ -69,13 +69,13 @@ public class CPSClientTest {
         BudgetUtilisedResponse budgetUtilisedResponse = budgetUtilisedResponseServiceResponse.getResponse();
         System.out.println(budgetUtilisedResponse);
 
-        FetchCampaignsForDateRequest fetchCampaignsForDateRequest = FetchCampaignsForDateRequest.builder()
+        FetchActiveCampaignsRequest fetchActiveCampaignsRequest = FetchActiveCampaignsRequest.builder()
                 .date("2022-09-23")
                 .limit(10)
                 .cursor("")
                 .build();
         ServiceResponse<FetchCampaignsForDateResponse> fetchCampaignsForDateServiceResponse =
-                cpsClientService.getCampaignsForDate(ServiceRequest.of(fetchCampaignsForDateRequest));
+                cpsClientService.getCampaignsForDate(ServiceRequest.of(fetchActiveCampaignsRequest));
         FetchCampaignsForDateResponse fetchCampaignsForDateResponse = fetchCampaignsForDateServiceResponse.getResponse();
         System.out.println(fetchCampaignsForDateResponse);
     }

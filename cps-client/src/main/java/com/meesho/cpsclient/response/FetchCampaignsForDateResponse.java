@@ -19,7 +19,7 @@ import java.util.List;
 public class FetchCampaignsForDateResponse {
 
     @JsonProperty("active_campaigns")
-    private List<ActiveCampaignDetails> activeCampaigns;
+    private List<CampaignDetails> activeCampaigns;
 
     @JsonProperty("cursor")
     private String cursor;
@@ -29,7 +29,7 @@ public class FetchCampaignsForDateResponse {
     @NoArgsConstructor
     @AllArgsConstructor
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class ActiveCampaignDetails {
+    public static class CampaignDetails {
 
         @JsonProperty("supplier_id")
         private Long supplierID;

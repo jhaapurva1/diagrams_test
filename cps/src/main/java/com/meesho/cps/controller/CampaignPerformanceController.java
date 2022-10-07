@@ -73,12 +73,12 @@ public class CampaignPerformanceController {
         return performanceService.getDateLevelBudgetUtilised(request);
     }
 
-    @ApiOperation(value = Constants.API.CAMPAIGNS_FOR_DATE, notes = "API to get campaigns for a date",
+    @ApiOperation(value = Constants.API.ACTIVE_CAMPAIGNS, notes = "API to get campaigns for a date",
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    @RequestMapping(path = Constants.API.CAMPAIGNS_FOR_DATE, method = RequestMethod.POST, consumes =
+    @RequestMapping(path = Constants.API.ACTIVE_CAMPAIGNS, method = RequestMethod.POST, consumes =
             MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public FetchCampaignsForDateResponse getCampaignsForDate(
-            @Valid @RequestBody FetchCampaignsForDateRequest request) throws Exception {
+            @Valid @RequestBody FetchActiveCampaignsRequest request) throws Exception {
         return performanceService.getCampaignsForDate(request);
     }
 

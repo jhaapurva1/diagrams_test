@@ -12,7 +12,7 @@ import com.meesho.cps.data.entity.hbase.CampaignDatewiseMetrics;
 import com.meesho.cps.data.entity.hbase.CampaignMetrics;
 import com.meesho.cps.data.entity.hbase.SupplierWeekWiseMetrics;
 import com.meesho.cps.data.internal.ElasticFiltersRequest;
-import com.meesho.cps.data.internal.FetchCampaignCatalogsForDateRequest;
+import com.meesho.cps.data.internal.FetchCampaignCatalogsESRequest;
 import com.meesho.cps.db.elasticsearch.ElasticSearchRepository;
 import com.meesho.cps.db.hbase.repository.CampaignCatalogDateMetricsRepository;
 import com.meesho.cps.db.hbase.repository.CampaignDatewiseMetricsRepository;
@@ -210,7 +210,7 @@ public class CampaignPerformanceService {
         return CampaignCatalogDateLevelBudgetUtilisedResponse.builder().campaignDetails(campaignDetailsResponseList).build();
     }
 
-    public FetchCampaignsForDateResponse getCampaignsForDate(FetchCampaignsForDateRequest request) throws IOException {
+    public FetchCampaignsForDateResponse getCampaignsForDate(FetchActiveCampaignsRequest request) throws IOException {
 
         String cursor = campaignPerformanceHelper.decodeCursor(request.getCursor());
 
@@ -222,17 +222,21 @@ public class CampaignPerformanceService {
         if(Objects.nonNull(cursor)) {
             searchAfterValues = new Object[]{cursor};
         }
+        Integer limit = request.getLimit();
+        if(Objects.isNull(limit)) {
+            limit = Constants.FetchCampaignCatalog.DEFAULT_LIMIT;
+        }
 
-        FetchCampaignCatalogsForDateRequest fetchCampaignCatalogsForDateRequest = FetchCampaignCatalogsForDateRequest.builder()
+        FetchCampaignCatalogsESRequest fetchCampaignCatalogsESRequest = FetchCampaignCatalogsESRequest.builder()
                 .orderedListOfSortConfigs(Collections.singletonList(SortConfig.builder().type(SortType.FIELD).fieldName(Constants.ESFieldNames.ID).order(SortOrder.ASC).build()))
                 .mustMatchKeyValuePairs(Collections.singletonList(campaignDateKVPair))
-                .limit(campaignPerformanceHelper.getCampaignCatalogLimit(request.getLimit()))
+                .limit(limit)
                 .searchAfterValues(searchAfterValues)
                 .includeFields(includeFields)
                 .mustExistFields(mustExistFields)
                 .build();
 
-        SearchResponse searchResponse = elasticSearchRepository.fetchEsCampaignCatalogsForDate(fetchCampaignCatalogsForDateRequest);
+        SearchResponse searchResponse = elasticSearchRepository.fetchEsCampaignCatalogsForDate(fetchCampaignCatalogsESRequest);
         log.info("Query Response: " + searchResponse);
 
         return campaignPerformanceTransformer.getFetchCampaignsForDateResponse(searchResponse);

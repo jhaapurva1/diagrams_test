@@ -23,7 +23,7 @@ public class Constants {
         public static final String CAMPAIGN_BUDGET_UTILISED = "/campaign/budget-utilised";
 
         public static final String CAMPAIGN_CATALOG_DATE_LEVEL_BUDGET_UTILISED = "campaign-catalog-date/budget-utilised";
-        public static final String CAMPAIGNS_FOR_DATE = "/get-campaigns-for-date";
+        public static final String ACTIVE_CAMPAIGNS = "/get-active-campaigns";
 
         public static class DEBUG_API {
             public static final String BASE_PATH = "/api/v1/debug";

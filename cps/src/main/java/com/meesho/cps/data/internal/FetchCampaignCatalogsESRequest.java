@@ -11,7 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class FetchCampaignCatalogsForDateRequest {
+public class FetchCampaignCatalogsESRequest {
 
     private List<SortConfig> orderedListOfSortConfigs;
 

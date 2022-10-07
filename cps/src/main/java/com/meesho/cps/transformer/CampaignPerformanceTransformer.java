@@ -205,15 +205,15 @@ public class CampaignPerformanceTransformer {
             campaignIdToESDailyIndexDocumentMap.get(esDailyIndexDocument.getCampaignId()).add(esDailyIndexDocument);
         }
 
-        List<FetchCampaignsForDateResponse.ActiveCampaignDetails> activeCampaignDetailsList = new ArrayList<>();
+        List<FetchCampaignsForDateResponse.CampaignDetails> campaignDetailsList = new ArrayList<>();
 
         campaignIdToESDailyIndexDocumentMap.forEach((campaignId, esDailyIndexDocumentList) -> {
-            FetchCampaignsForDateResponse.ActiveCampaignDetails activeCampaignDetails = FetchCampaignsForDateResponse.ActiveCampaignDetails.builder()
+            FetchCampaignsForDateResponse.CampaignDetails campaignDetails = FetchCampaignsForDateResponse.CampaignDetails.builder()
                     .supplierID(esDailyIndexDocumentList.get(0).getSupplierId())
                     .campaignID(esDailyIndexDocumentList.get(0).getCampaignId())
                     .catalogId(esDailyIndexDocumentList.stream().map(ESBasePerformanceMetricsDocument::getCatalogId).collect(Collectors.toList()))
                     .build();
-            activeCampaignDetailsList.add(activeCampaignDetails);
+            campaignDetailsList.add(campaignDetails);
         });
 
         String lastProcessedDocId = null;
@@ -222,7 +222,7 @@ public class CampaignPerformanceTransformer {
         }
 
         return FetchCampaignsForDateResponse.builder()
-                .activeCampaigns(activeCampaignDetailsList)
+                .activeCampaigns(campaignDetailsList)
                 .cursor(campaignPerformanceHelper.encodeCursor(lastProcessedDocId))
                 .build();
 

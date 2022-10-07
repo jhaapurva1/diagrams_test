@@ -1,11 +1,10 @@
 package com.meesho.cps.helper;
 
-import com.meesho.cps.constants.Constants;
 import com.meesho.cps.constants.DBConstants;
 import com.meesho.cps.constants.SortType;
 import com.meesho.cps.data.entity.elasticsearch.internal.SortConfig;
 import com.meesho.cps.data.internal.ElasticFiltersRequest;
-import com.meesho.cps.data.internal.FetchCampaignCatalogsForDateRequest;
+import com.meesho.cps.data.internal.FetchCampaignCatalogsESRequest;
 import lombok.NonNull;
 import org.elasticsearch.index.query.*;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
@@ -31,13 +30,13 @@ public class ESQueryBuilder {
         return searchSourceBuilder;
     }
 
-    public static SearchSourceBuilder getESQuery(@NonNull FetchCampaignCatalogsForDateRequest fetchCampaignCatalogsForDateRequest) {
+    public static SearchSourceBuilder getESQuery(@NonNull FetchCampaignCatalogsESRequest fetchCampaignCatalogsESRequest) {
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
-        addMustMatchFieldsToBoolQuery(boolQuery, fetchCampaignCatalogsForDateRequest.getMustMatchKeyValuePairs());
-        addMustExistFieldsToBoolQuery(boolQuery, fetchCampaignCatalogsForDateRequest.getMustExistFields());
+        addMustMatchFieldsToBoolQuery(boolQuery, fetchCampaignCatalogsESRequest.getMustMatchKeyValuePairs());
+        addMustExistFieldsToBoolQuery(boolQuery, fetchCampaignCatalogsESRequest.getMustExistFields());
         SearchSourceBuilder searchSourceBuilder = SearchSourceBuilder.searchSource().query(boolQuery);
-        searchSourceBuilder.fetchSource(fetchCampaignCatalogsForDateRequest.getIncludeFields().toArray(new String[0]), null);
-        addPaginationSortingFilters(searchSourceBuilder, fetchCampaignCatalogsForDateRequest);
+        searchSourceBuilder.fetchSource(fetchCampaignCatalogsESRequest.getIncludeFields().toArray(new String[0]), null);
+        addPaginationSortingFilters(searchSourceBuilder, fetchCampaignCatalogsESRequest);
         return searchSourceBuilder;
     }
 
@@ -101,17 +100,17 @@ public class ESQueryBuilder {
     }
 
     private static void addPaginationSortingFilters(SearchSourceBuilder searchSourceBuilder,
-                                                    FetchCampaignCatalogsForDateRequest fetchCampaignCatalogsForDateRequest) {
-        if(Objects.nonNull(fetchCampaignCatalogsForDateRequest.getSearchAfterValues()) && fetchCampaignCatalogsForDateRequest.getSearchAfterValues().length > 0) {
-            searchSourceBuilder.searchAfter(fetchCampaignCatalogsForDateRequest.getSearchAfterValues());
+                                                    FetchCampaignCatalogsESRequest fetchCampaignCatalogsESRequest) {
+        if(Objects.nonNull(fetchCampaignCatalogsESRequest.getSearchAfterValues()) && fetchCampaignCatalogsESRequest.getSearchAfterValues().length > 0) {
+            searchSourceBuilder.searchAfter(fetchCampaignCatalogsESRequest.getSearchAfterValues());
         }
 
-        if (Objects.nonNull(fetchCampaignCatalogsForDateRequest.getLimit())) {
-            searchSourceBuilder.size(fetchCampaignCatalogsForDateRequest.getLimit());
+        if (Objects.nonNull(fetchCampaignCatalogsESRequest.getLimit())) {
+            searchSourceBuilder.size(fetchCampaignCatalogsESRequest.getLimit());
         }
 
-        if(!CollectionUtils.isEmpty(fetchCampaignCatalogsForDateRequest.getOrderedListOfSortConfigs())) {
-            for (SortConfig sortConfig : fetchCampaignCatalogsForDateRequest.getOrderedListOfSortConfigs()) {
+        if(!CollectionUtils.isEmpty(fetchCampaignCatalogsESRequest.getOrderedListOfSortConfigs())) {
+            for (SortConfig sortConfig : fetchCampaignCatalogsESRequest.getOrderedListOfSortConfigs()) {
                 if (sortConfig.getType().equals(SortType.FIELD)) {
                     searchSourceBuilder.sort(
                             SortBuilders.fieldSort(sortConfig.getFieldName()).order(sortConfig.getOrder()));

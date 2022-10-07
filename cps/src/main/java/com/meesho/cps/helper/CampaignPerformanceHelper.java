@@ -129,10 +129,4 @@ public class CampaignPerformanceHelper {
         return cursor;
     }
 
-    public Integer getCampaignCatalogLimit(Integer limit) {
-        if(!Objects.nonNull(limit)) {
-            return Constants.FetchCampaignCatalog.DEFAULT_LIMIT;
-        }
-        return limit;
-    }
 }

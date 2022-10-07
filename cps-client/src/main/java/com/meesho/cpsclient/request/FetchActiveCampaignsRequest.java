@@ -16,7 +16,7 @@ import javax.validation.constraints.NotNull;
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class FetchCampaignsForDateRequest {
+public class FetchActiveCampaignsRequest {
 
     @JsonProperty("date")
     @NotNull(message = "date is required")
@@ -27,6 +27,6 @@ public class FetchCampaignsForDateRequest {
     private String cursor;
 
     @JsonProperty("limit")
-    private int limit;
+    private Integer limit;
 
 }
