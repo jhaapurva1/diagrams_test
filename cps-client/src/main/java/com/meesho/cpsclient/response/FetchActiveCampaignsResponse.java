@@ -16,7 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class FetchCampaignsForDateResponse {
+public class FetchActiveCampaignsResponse {
 
     @JsonProperty("active_campaigns")
     private List<CampaignDetails> activeCampaigns;

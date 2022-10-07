@@ -74,10 +74,10 @@ public class CPSClientTest {
                 .limit(10)
                 .cursor("")
                 .build();
-        ServiceResponse<FetchCampaignsForDateResponse> fetchCampaignsForDateServiceResponse =
+        ServiceResponse<FetchActiveCampaignsResponse> fetchCampaignsForDateServiceResponse =
                 cpsClientService.getCampaignsForDate(ServiceRequest.of(fetchActiveCampaignsRequest));
-        FetchCampaignsForDateResponse fetchCampaignsForDateResponse = fetchCampaignsForDateServiceResponse.getResponse();
-        System.out.println(fetchCampaignsForDateResponse);
+        FetchActiveCampaignsResponse fetchActiveCampaignsResponse = fetchCampaignsForDateServiceResponse.getResponse();
+        System.out.println(fetchActiveCampaignsResponse);
     }
 
 }

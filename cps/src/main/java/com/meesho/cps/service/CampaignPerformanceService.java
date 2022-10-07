@@ -210,7 +210,7 @@ public class CampaignPerformanceService {
         return CampaignCatalogDateLevelBudgetUtilisedResponse.builder().campaignDetails(campaignDetailsResponseList).build();
     }
 
-    public FetchCampaignsForDateResponse getCampaignsForDate(FetchActiveCampaignsRequest request) throws IOException {
+    public FetchActiveCampaignsResponse getCampaignsForDate(FetchActiveCampaignsRequest request) throws IOException {
 
         String cursor = campaignPerformanceHelper.decodeCursor(request.getCursor());
 

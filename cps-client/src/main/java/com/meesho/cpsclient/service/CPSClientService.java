@@ -82,12 +82,12 @@ public class CPSClientService extends BaseHTTPHandler {
         return ServiceResponse.ofSuccess(response);
     }
 
-    public ServiceResponse<FetchCampaignsForDateResponse> getCampaignsForDate(
+    public ServiceResponse<FetchActiveCampaignsResponse> getCampaignsForDate(
             ServiceRequest<FetchActiveCampaignsRequest> request) {
-        FetchCampaignsForDateResponse response = restTemplate.postForObject(
+        FetchActiveCampaignsResponse response = restTemplate.postForObject(
                 serviceRestConfig.getURL(ACTIVE_CAMPAIGNS),
                 new HttpEntity<>(request.getRequest(), getHeaders(request)),
-                FetchCampaignsForDateResponse.class);
+                FetchActiveCampaignsResponse.class);
 
         return ServiceResponse.ofSuccess(response);
     }

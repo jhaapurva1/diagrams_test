@@ -192,7 +192,7 @@ public class CampaignPerformanceTransformer {
                 .totalViews(totalViews).build();
     }
 
-    public FetchCampaignsForDateResponse getFetchCampaignsForDateResponse(SearchResponse searchResponse) throws JsonProcessingException {
+    public FetchActiveCampaignsResponse getFetchCampaignsForDateResponse(SearchResponse searchResponse) throws JsonProcessingException {
 
         SearchHits searchHits = searchResponse.getHits();
 
@@ -205,10 +205,10 @@ public class CampaignPerformanceTransformer {
             campaignIdToESDailyIndexDocumentMap.get(esDailyIndexDocument.getCampaignId()).add(esDailyIndexDocument);
         }
 
-        List<FetchCampaignsForDateResponse.CampaignDetails> campaignDetailsList = new ArrayList<>();
+        List<FetchActiveCampaignsResponse.CampaignDetails> campaignDetailsList = new ArrayList<>();
 
         campaignIdToESDailyIndexDocumentMap.forEach((campaignId, esDailyIndexDocumentList) -> {
-            FetchCampaignsForDateResponse.CampaignDetails campaignDetails = FetchCampaignsForDateResponse.CampaignDetails.builder()
+            FetchActiveCampaignsResponse.CampaignDetails campaignDetails = FetchActiveCampaignsResponse.CampaignDetails.builder()
                     .supplierID(esDailyIndexDocumentList.get(0).getSupplierId())
                     .campaignID(esDailyIndexDocumentList.get(0).getCampaignId())
                     .catalogId(esDailyIndexDocumentList.stream().map(ESBasePerformanceMetricsDocument::getCatalogId).collect(Collectors.toList()))
@@ -221,7 +221,7 @@ public class CampaignPerformanceTransformer {
             lastProcessedDocId = (String) searchHits.getAt(searchHits.getHits().length-1).getSortValues()[0];
         }
 
-        return FetchCampaignsForDateResponse.builder()
+        return FetchActiveCampaignsResponse.builder()
                 .activeCampaigns(campaignDetailsList)
                 .cursor(campaignPerformanceHelper.encodeCursor(lastProcessedDocId))
                 .build();
