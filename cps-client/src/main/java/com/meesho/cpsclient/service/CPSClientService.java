@@ -82,7 +82,7 @@ public class CPSClientService extends BaseHTTPHandler {
         return ServiceResponse.ofSuccess(response);
     }
 
-    public ServiceResponse<FetchActiveCampaignsResponse> getCampaignsForDate(
+    public ServiceResponse<FetchActiveCampaignsResponse> getActiveCampaignsForDate(
             ServiceRequest<FetchActiveCampaignsRequest> request) {
         FetchActiveCampaignsResponse response = restTemplate.postForObject(
                 serviceRestConfig.getURL(ACTIVE_CAMPAIGNS),

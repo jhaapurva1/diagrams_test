@@ -77,9 +77,9 @@ public class CampaignPerformanceController {
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @RequestMapping(path = Constants.API.ACTIVE_CAMPAIGNS, method = RequestMethod.POST, consumes =
             MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public FetchActiveCampaignsResponse getCampaignsForDate(
+    public FetchActiveCampaignsResponse getActiveCampaignsForDate(
             @Valid @RequestBody FetchActiveCampaignsRequest request) throws Exception {
-        return performanceService.getCampaignsForDate(request);
+        return performanceService.getActiveCampaignsForDate(request);
     }
 
 }

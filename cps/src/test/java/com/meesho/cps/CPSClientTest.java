@@ -75,7 +75,7 @@ public class CPSClientTest {
                 .cursor("")
                 .build();
         ServiceResponse<FetchActiveCampaignsResponse> fetchCampaignsForDateServiceResponse =
-                cpsClientService.getCampaignsForDate(ServiceRequest.of(fetchActiveCampaignsRequest));
+                cpsClientService.getActiveCampaignsForDate(ServiceRequest.of(fetchActiveCampaignsRequest));
         FetchActiveCampaignsResponse fetchActiveCampaignsResponse = fetchCampaignsForDateServiceResponse.getResponse();
         System.out.println(fetchActiveCampaignsResponse);
     }

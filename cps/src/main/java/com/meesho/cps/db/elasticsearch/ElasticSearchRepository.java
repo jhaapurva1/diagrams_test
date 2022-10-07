@@ -15,11 +15,15 @@ import com.meesho.instrumentation.enums.MetricType;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.search.ClearScrollRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.search.SearchScrollRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.search.Scroll;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,6 +31,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @Slf4j
@@ -108,11 +113,23 @@ public class ElasticSearchRepository {
 
     public SearchResponse fetchEsCampaignCatalogsForDate(
             FetchCampaignCatalogsESRequest fetchCampaignCatalogsESRequest) throws IOException {
-        SearchSourceBuilder searchSourceBuilder = ESQueryBuilder.getESQuery(fetchCampaignCatalogsESRequest);
-        SearchRequest searchRequest = new SearchRequest().source(searchSourceBuilder)
-                .indices(applicationProperties.getEsCampaignCatalogDateWiseIndices());
-        log.info("Date wise index ES query : {}", searchRequest.source().toString());
-        return restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+
+        String scrollId = fetchCampaignCatalogsESRequest.getScrollId();
+        final Scroll scroll = new Scroll(TimeValue.timeValueMinutes(applicationProperties.getFetchActiveCampaignsEsScrollTimeoutMinutes()));
+        SearchResponse searchResponse = null;
+
+        if(Objects.nonNull(scrollId)){
+            SearchScrollRequest scrollRequest = new SearchScrollRequest(scrollId).scroll(scroll);
+            log.info("Date wise index ES Scroll query : {}", scrollRequest.toString());
+            searchResponse =  restHighLevelClient.scroll(scrollRequest, RequestOptions.DEFAULT);
+        }else{
+            SearchSourceBuilder searchSourceBuilder = ESQueryBuilder.getESQuery(fetchCampaignCatalogsESRequest);
+            SearchRequest searchRequest = new SearchRequest().source(searchSourceBuilder).scroll(scroll)
+                    .indices(applicationProperties.getEsCampaignCatalogDateWiseIndices());
+            log.info("Date wise index ES query : {}", searchRequest.source().toString());
+            searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+        }
+        return searchResponse;
     }
 
 }

@@ -1,8 +1,6 @@
 package com.meesho.cps.data.internal;
 
-import com.meesho.cps.data.entity.elasticsearch.internal.SortConfig;
 import lombok.*;
-import org.springframework.data.util.Pair;
 
 import java.util.List;
 
@@ -13,15 +11,28 @@ import java.util.List;
 @ToString
 public class FetchCampaignCatalogsESRequest {
 
-    private List<SortConfig> orderedListOfSortConfigs;
-
-    private List<Pair<String, String>> mustMatchKeyValuePairs;
+    private List<RangeFilter> rangeFilters;
 
     private Integer limit;
 
-    private Object[] searchAfterValues;
+    private String scrollId;
 
     private List<String> mustExistFields;
 
     private List<String> includeFields;
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class RangeFilter {
+
+        private Object gte;
+
+        private Object lte;
+
+        private String format;
+
+        private String fieldName;
+    }
 }

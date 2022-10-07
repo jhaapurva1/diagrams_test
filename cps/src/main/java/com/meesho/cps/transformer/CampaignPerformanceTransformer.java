@@ -192,9 +192,10 @@ public class CampaignPerformanceTransformer {
                 .totalViews(totalViews).build();
     }
 
-    public FetchActiveCampaignsResponse getFetchCampaignsForDateResponse(SearchResponse searchResponse) throws JsonProcessingException {
+    public FetchActiveCampaignsResponse getFetchActiveCampaignsResponse(SearchResponse searchResponse) throws JsonProcessingException {
 
         SearchHits searchHits = searchResponse.getHits();
+        String scrollId = searchResponse.getScrollId();
 
         Map<Long, List<ESDailyIndexDocument>> campaignIdToESDailyIndexDocumentMap = new HashMap<>();
         for(SearchHit searchHit: searchHits.getHits()) {
@@ -216,14 +217,13 @@ public class CampaignPerformanceTransformer {
             campaignDetailsList.add(campaignDetails);
         });
 
-        String lastProcessedDocId = null;
-        if(searchHits.getHits().length > 0) {
-            lastProcessedDocId = (String) searchHits.getAt(searchHits.getHits().length-1).getSortValues()[0];
+        if(searchHits.getHits().length == 0) {
+            scrollId=null;
         }
 
         return FetchActiveCampaignsResponse.builder()
                 .activeCampaigns(campaignDetailsList)
-                .cursor(campaignPerformanceHelper.encodeCursor(lastProcessedDocId))
+                .cursor(campaignPerformanceHelper.encodeCursor(scrollId))
                 .build();
 
     }

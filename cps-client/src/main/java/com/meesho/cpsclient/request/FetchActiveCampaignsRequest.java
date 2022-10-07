@@ -23,7 +23,6 @@ public class FetchActiveCampaignsRequest {
     private String date;
 
     @JsonProperty("cursor")
-    @NotNull
     private String cursor;
 
     @JsonProperty("limit")
