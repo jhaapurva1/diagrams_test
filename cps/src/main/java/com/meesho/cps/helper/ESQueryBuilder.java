@@ -58,14 +58,6 @@ public class ESQueryBuilder {
         });
     }
 
-    private static void addMustMatchFieldsToBoolQuery(BoolQueryBuilder boolQuery, List<Pair<String, String>> mustMatchKeyValuePairs) {
-
-        mustMatchKeyValuePairs.forEach(kvPair -> {
-            MatchQueryBuilder matchQuery = QueryBuilders.matchQuery(kvPair.getFirst(), kvPair.getSecond());
-            boolQuery.must(matchQuery);
-        });
-    }
-
     private static void addAggregations(SearchSourceBuilder searchSourceBuilder, ElasticFiltersRequest elasticFiltersRequest) {
         if (!CollectionUtils.isEmpty(elasticFiltersRequest.getAggregationBuilders())) {
             for (AggregationBuilder aggregationBuilder : elasticFiltersRequest.getAggregationBuilders()) {

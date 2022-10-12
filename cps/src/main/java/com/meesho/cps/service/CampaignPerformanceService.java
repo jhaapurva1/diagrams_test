@@ -64,6 +64,9 @@ public class CampaignPerformanceService {
     @Autowired
     private SupplierWeekWiseMetricsRepository supplierWeekWiseMetricsRepository;
 
+    private final List<String> fetchActiveCampaignsESSourceIncludeFields = Arrays.asList(Constants.ESFieldNames.SUPPLIER_ID, Constants.ESFieldNames.CAMPAIGN_ID, Constants.ESFieldNames.CATALOG_ID);
+    private final List<String> fetchActiveCampaignsESMustExistFields = Collections.singletonList(Constants.ESFieldNames.BUDGET_UTILISED);
+
     public SupplierPerformanceResponse getSupplierPerformanceMetrics(SupplierPerformanceRequest request) throws IOException {
         ElasticFiltersRequest elasticFiltersRequestMonthWise = ElasticFiltersRequest.builder()
                 .supplierIds(Collections.singletonList(request.getSupplierId()))
@@ -210,9 +213,6 @@ public class CampaignPerformanceService {
 
         String scrollId = campaignPerformanceHelper.decodeCursor(request.getCursor());
 
-        List<String> includeFields = Arrays.asList(Constants.ESFieldNames.SUPPLIER_ID, Constants.ESFieldNames.CAMPAIGN_ID, Constants.ESFieldNames.CATALOG_ID);
-        List<String> mustExistFields = Collections.singletonList(Constants.ESFieldNames.BUDGET_UTILISED);
-
         FetchCampaignCatalogsESRequest.RangeFilter rangeFilter = FetchCampaignCatalogsESRequest.RangeFilter.builder()
                 .fieldName(Constants.ESFieldNames.CAMPAIGN_DATE)
                 .format(Constants.ESConstants.DAY_DATE_FORMAT)
@@ -228,13 +228,13 @@ public class CampaignPerformanceService {
         FetchCampaignCatalogsESRequest fetchCampaignCatalogsESRequest = FetchCampaignCatalogsESRequest.builder()
                 .limit(limit)
                 .scrollId(scrollId)
-                .includeFields(includeFields)
+                .includeFields(fetchActiveCampaignsESSourceIncludeFields)
                 .rangeFilters(Arrays.asList(rangeFilter))
-                .mustExistFields(mustExistFields)
+                .mustExistFields(fetchActiveCampaignsESMustExistFields)
                 .build();
 
         SearchResponse searchResponse = elasticSearchRepository.fetchEsCampaignCatalogsForDate(fetchCampaignCatalogsESRequest);
-        log.info("Query Response: " + searchResponse);
+        log.debug("Query Response: " + searchResponse);
 
         return campaignPerformanceTransformer.getFetchActiveCampaignsResponse(searchResponse);
 

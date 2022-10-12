@@ -15,7 +15,6 @@ import com.meesho.instrumentation.enums.MetricType;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.action.search.ClearScrollRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;
@@ -120,13 +119,13 @@ public class ElasticSearchRepository {
 
         if(Objects.nonNull(scrollId)){
             SearchScrollRequest scrollRequest = new SearchScrollRequest(scrollId).scroll(scroll);
-            log.info("Date wise index ES Scroll query : {}", scrollRequest.toString());
+            log.debug("Date wise index ES Scroll query : {}", scrollRequest.toString());
             searchResponse =  restHighLevelClient.scroll(scrollRequest, RequestOptions.DEFAULT);
         }else{
             SearchSourceBuilder searchSourceBuilder = ESQueryBuilder.getESQuery(fetchCampaignCatalogsESRequest);
             SearchRequest searchRequest = new SearchRequest().source(searchSourceBuilder).scroll(scroll)
                     .indices(applicationProperties.getEsCampaignCatalogDateWiseIndices());
-            log.info("Date wise index ES query : {}", searchRequest.source().toString());
+            log.debug("Date wise index ES query : {}", searchRequest.source().toString());
             searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
         }
         return searchResponse;

@@ -37,8 +37,8 @@ public class FetchActiveCampaignsResponse {
         @JsonProperty("campaign_id")
         private Long campaignID;
 
-        @JsonProperty("catalog_id")
-        private List<Long> catalogId;
+        @JsonProperty("catalog_ids")
+        private List<Long> catalogIds;
 
     }
 

@@ -212,7 +212,7 @@ public class CampaignPerformanceTransformer {
             FetchActiveCampaignsResponse.CampaignDetails campaignDetails = FetchActiveCampaignsResponse.CampaignDetails.builder()
                     .supplierID(esDailyIndexDocumentList.get(0).getSupplierId())
                     .campaignID(esDailyIndexDocumentList.get(0).getCampaignId())
-                    .catalogId(esDailyIndexDocumentList.stream().map(ESBasePerformanceMetricsDocument::getCatalogId).collect(Collectors.toList()))
+                    .catalogIds(esDailyIndexDocumentList.stream().map(ESBasePerformanceMetricsDocument::getCatalogId).collect(Collectors.toList()))
                     .build();
             campaignDetailsList.add(campaignDetails);
         });

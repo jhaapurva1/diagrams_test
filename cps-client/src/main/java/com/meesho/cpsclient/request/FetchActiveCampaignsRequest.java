@@ -7,7 +7,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.validation.constraints.Max;
 import javax.validation.constraints.NotNull;
 
 @Data
@@ -26,6 +28,7 @@ public class FetchActiveCampaignsRequest {
     private String cursor;
 
     @JsonProperty("limit")
+    @Max(1000)
     private Integer limit;
 
 }
