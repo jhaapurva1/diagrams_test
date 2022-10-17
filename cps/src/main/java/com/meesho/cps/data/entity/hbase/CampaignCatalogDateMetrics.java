@@ -43,6 +43,10 @@ public class CampaignCatalogDateMetrics {
         return HashingUtils.generateRowKeyWithHashedId(campaignId.toString(), catalogId.toString(), monthPrefix);
     }
 
+    public static String generateRowKeyForCampaignId(Long campaignId) {
+        return HashingUtils.generateRowKeyWithHashedId(campaignId.toString());
+    }
+
     public String getRowKey() {
         rowKey = (rowKey == null) ? generateRowKey(campaignId, catalogId, date) : rowKey;
         return rowKey;

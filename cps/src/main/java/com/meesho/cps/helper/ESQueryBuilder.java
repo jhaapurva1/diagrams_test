@@ -1,15 +1,13 @@
 package com.meesho.cps.helper;
 
-import com.meesho.cps.constants.Constants;
 import com.meesho.cps.constants.DBConstants;
 import com.meesho.cps.data.internal.ElasticFiltersRequest;
+import com.meesho.cps.data.internal.FetchCampaignCatalogsESRequest;
 import lombok.NonNull;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.index.query.RangeQueryBuilder;
-import org.elasticsearch.index.query.TermsQueryBuilder;
+import org.elasticsearch.index.query.*;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.springframework.data.util.Pair;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
@@ -27,6 +25,37 @@ public class ESQueryBuilder {
         addRangeFilters(boolQuery, elasticFiltersRequest);
         addAggregations(searchSourceBuilder, elasticFiltersRequest);
         return searchSourceBuilder;
+    }
+
+    public static SearchSourceBuilder getESQuery(@NonNull FetchCampaignCatalogsESRequest fetchCampaignCatalogsESRequest) {
+        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+        addRangeFiltersToBoolQuery(boolQuery, fetchCampaignCatalogsESRequest.getRangeFilters());
+        addMustExistFieldsToBoolQuery(boolQuery, fetchCampaignCatalogsESRequest.getMustExistFields());
+        SearchSourceBuilder searchSourceBuilder = SearchSourceBuilder.searchSource().query(boolQuery);
+        searchSourceBuilder.fetchSource(fetchCampaignCatalogsESRequest.getIncludeFields().toArray(new String[0]), null);
+        addPaginationSortingFilters(searchSourceBuilder, fetchCampaignCatalogsESRequest);
+        return searchSourceBuilder;
+    }
+
+    private static void addRangeFiltersToBoolQuery(BoolQueryBuilder boolQuery, List<FetchCampaignCatalogsESRequest.RangeFilter> rangeFilters) {
+
+        rangeFilters.forEach(filter->{
+            RangeQueryBuilder rangeQuery = QueryBuilders.rangeQuery(filter.getFieldName())
+                    .format(filter.getFormat())
+                    .gte(filter.getGte())
+                    .lte(filter.getLte());
+
+            boolQuery.filter(rangeQuery);
+
+        });
+    }
+
+    private static void addMustExistFieldsToBoolQuery(BoolQueryBuilder boolQuery, List<String> mustExistFields) {
+
+        mustExistFields.forEach(field -> {
+            ExistsQueryBuilder existsQuery = QueryBuilders.existsQuery(field);
+            boolQuery.filter(existsQuery);
+        });
     }
 
     private static void addAggregations(SearchSourceBuilder searchSourceBuilder, ElasticFiltersRequest elasticFiltersRequest) {
@@ -69,6 +98,14 @@ public class ESQueryBuilder {
         }
         if (!CollectionUtils.isEmpty(elasticFiltersRequest.getSupplierIds())) {
             topLevelBoolQuery.filter(getTermsQuery(DBConstants.ElasticSearch.SUPPLIER_ID, elasticFiltersRequest.getSupplierIds()));
+        }
+    }
+
+    private static void addPaginationSortingFilters(SearchSourceBuilder searchSourceBuilder,
+                                                    FetchCampaignCatalogsESRequest fetchCampaignCatalogsESRequest) {
+
+        if (Objects.nonNull(fetchCampaignCatalogsESRequest.getLimit())) {
+            searchSourceBuilder.size(fetchCampaignCatalogsESRequest.getLimit());
         }
     }
 

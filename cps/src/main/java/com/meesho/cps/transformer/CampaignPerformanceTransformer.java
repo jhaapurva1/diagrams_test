@@ -1,6 +1,10 @@
 package com.meesho.cps.transformer;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.meesho.cps.constants.Constants;
+import com.meesho.cps.data.entity.elasticsearch.ESBasePerformanceMetricsDocument;
+import com.meesho.cps.data.entity.elasticsearch.ESDailyIndexDocument;
 import com.meesho.cps.data.entity.elasticsearch.EsCampaignCatalogAggregateResponse;
 import com.meesho.cps.data.entity.hbase.CampaignCatalogDateMetrics;
 import com.meesho.cps.data.entity.hbase.CampaignDatewiseMetrics;
@@ -8,23 +12,24 @@ import com.meesho.cps.data.entity.hbase.CampaignMetrics;
 import com.meesho.cps.data.entity.hbase.SupplierWeekWiseMetrics;
 import com.meesho.cps.data.internal.PerformancePojo;
 import com.meesho.cps.data.presto.CampaignPerformancePrestoData;
+import com.meesho.cps.helper.CampaignPerformanceHelper;
 import com.meesho.cps.utils.CalculationUtils;
-import com.meesho.cpsclient.response.BudgetUtilisedResponse;
-import com.meesho.cpsclient.response.CampaignCatalogPerformanceResponse;
-import com.meesho.cpsclient.response.CampaignPerformanceResponse;
-import com.meesho.cpsclient.response.SupplierPerformanceResponse;
+import com.meesho.cpsclient.response.*;
 import lombok.extern.slf4j.Slf4j;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.metrics.Sum;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author shubham.aggarwal
@@ -33,6 +38,12 @@ import java.util.Optional;
 @Service
 @Slf4j
 public class CampaignPerformanceTransformer {
+
+    @Autowired
+    private CampaignPerformanceHelper campaignPerformanceHelper;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     public BudgetUtilisedResponse getBudgetUtilisedResponse(List<CampaignMetrics> campaignMetrics,
                                                             List<CampaignDatewiseMetrics> campaignDatewiseMetrics,
@@ -180,4 +191,41 @@ public class CampaignPerformanceTransformer {
                 .totalWishlist(totalWishlist).totalClicks(totalClicks).totalBudgetUtilised(totalBudgetUtilised)
                 .totalViews(totalViews).build();
     }
+
+    public FetchActiveCampaignsResponse getFetchActiveCampaignsResponse(SearchResponse searchResponse) throws JsonProcessingException {
+
+        SearchHits searchHits = searchResponse.getHits();
+        String scrollId = searchResponse.getScrollId();
+
+        Map<Long, List<ESDailyIndexDocument>> campaignIdToESDailyIndexDocumentMap = new HashMap<>();
+        for(SearchHit searchHit: searchHits.getHits()) {
+            ESDailyIndexDocument esDailyIndexDocument = objectMapper.readValue(searchHit.getSourceAsString(), ESDailyIndexDocument.class);
+            if(!campaignIdToESDailyIndexDocumentMap.containsKey(esDailyIndexDocument.getCampaignId())) {
+                campaignIdToESDailyIndexDocumentMap.put(esDailyIndexDocument.getCampaignId(), new ArrayList<>());
+            }
+            campaignIdToESDailyIndexDocumentMap.get(esDailyIndexDocument.getCampaignId()).add(esDailyIndexDocument);
+        }
+
+        List<FetchActiveCampaignsResponse.CampaignDetails> campaignDetailsList = new ArrayList<>();
+
+        campaignIdToESDailyIndexDocumentMap.forEach((campaignId, esDailyIndexDocumentList) -> {
+            FetchActiveCampaignsResponse.CampaignDetails campaignDetails = FetchActiveCampaignsResponse.CampaignDetails.builder()
+                    .supplierID(esDailyIndexDocumentList.get(0).getSupplierId())
+                    .campaignID(esDailyIndexDocumentList.get(0).getCampaignId())
+                    .catalogIds(esDailyIndexDocumentList.stream().map(ESBasePerformanceMetricsDocument::getCatalogId).collect(Collectors.toList()))
+                    .build();
+            campaignDetailsList.add(campaignDetails);
+        });
+
+        if(searchHits.getHits().length == 0) {
+            scrollId=null;
+        }
+
+        return FetchActiveCampaignsResponse.builder()
+                .activeCampaigns(campaignDetailsList)
+                .cursor(campaignPerformanceHelper.encodeCursor(scrollId))
+                .build();
+
+    }
+
 }
