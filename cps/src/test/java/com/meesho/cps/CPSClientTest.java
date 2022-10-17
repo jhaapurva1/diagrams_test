@@ -5,14 +5,8 @@ import com.meesho.baseclient.pojos.ServiceRequest;
 import com.meesho.baseclient.pojos.ServiceResponse;
 import com.meesho.baseclient.pojos.ServiceRestConfig;
 import com.meesho.cps.constants.CampaignType;
-import com.meesho.cpsclient.request.BudgetUtilisedRequest;
-import com.meesho.cpsclient.request.CampaignCatalogPerformanceRequest;
-import com.meesho.cpsclient.request.CampaignPerformanceRequest;
-import com.meesho.cpsclient.request.SupplierPerformanceRequest;
-import com.meesho.cpsclient.response.BudgetUtilisedResponse;
-import com.meesho.cpsclient.response.CampaignCatalogPerformanceResponse;
-import com.meesho.cpsclient.response.CampaignPerformanceResponse;
-import com.meesho.cpsclient.response.SupplierPerformanceResponse;
+import com.meesho.cpsclient.request.*;
+import com.meesho.cpsclient.response.*;
 import com.meesho.cpsclient.service.CPSClientService;
 import org.springframework.web.client.RestTemplate;
 
@@ -74,6 +68,16 @@ public class CPSClientTest {
                 cpsClientService.getCampaignBudgetUtilised(ServiceRequest.of(budgetUtilisedRequest));
         BudgetUtilisedResponse budgetUtilisedResponse = budgetUtilisedResponseServiceResponse.getResponse();
         System.out.println(budgetUtilisedResponse);
+
+        FetchActiveCampaignsRequest fetchActiveCampaignsRequest = FetchActiveCampaignsRequest.builder()
+                .date("2022-09-23")
+                .limit(10)
+                .cursor("")
+                .build();
+        ServiceResponse<FetchActiveCampaignsResponse> fetchCampaignsForDateServiceResponse =
+                cpsClientService.getActiveCampaignsForDate(ServiceRequest.of(fetchActiveCampaignsRequest));
+        FetchActiveCampaignsResponse fetchActiveCampaignsResponse = fetchCampaignsForDateServiceResponse.getResponse();
+        System.out.println(fetchActiveCampaignsResponse);
     }
 
 }

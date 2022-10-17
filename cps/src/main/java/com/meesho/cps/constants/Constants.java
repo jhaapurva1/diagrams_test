@@ -23,6 +23,7 @@ public class Constants {
         public static final String CAMPAIGN_BUDGET_UTILISED = "/campaign/budget-utilised";
 
         public static final String CAMPAIGN_CATALOG_DATE_LEVEL_BUDGET_UTILISED = "campaign-catalog-date/budget-utilised";
+        public static final String ACTIVE_CAMPAIGNS = "/get-active-campaigns";
 
         public static class DEBUG_API {
             public static final String BASE_PATH = "/api/v1/debug";
@@ -102,6 +103,16 @@ public class Constants {
         public static final String TOTAL_BUDGET_UTILISED = "total_budget_utilised";
     }
 
+    public static class ESFieldNames {
+        public static final String CAMPAIGN_DATE = "date";
+        public static final String BUDGET_UTILISED = "budget_utilised";
+        public static final String ID = "_id";
+        public static final String CAMPAIGN_ID = "campaign_id";
+        public static final String SUPPLIER_ID = "supplier_id";
+        public static final String CATALOG_ID = "catalog_id";
+
+    }
+
     public static class Kafka {
         public static final String BUDGET_EXHAUSTED_TOPIC = "${kafka.budget_exhausted.topic}";
 
@@ -110,4 +121,7 @@ public class Constants {
         public static final String SUPPLIER_WEEKLY_BUDGET_EXHAUSTED_TOPIC = "${kafka.supplier.weekly.budget.exhausted.topic}";
     }
 
+    public static class FetchCampaignCatalog {
+        public static final Integer DEFAULT_LIMIT = 100;
+    }
 }

@@ -7,6 +7,7 @@ import com.meesho.cps.data.entity.elasticsearch.ESDailyIndexDocument;
 import com.meesho.cps.data.entity.elasticsearch.ESMonthlyIndexDocument;
 import com.meesho.cps.data.entity.elasticsearch.EsCampaignCatalogAggregateResponse;
 import com.meesho.cps.data.internal.ElasticFiltersRequest;
+import com.meesho.cps.data.internal.FetchCampaignCatalogsESRequest;
 import com.meesho.cps.exception.ESIndexingException;
 import com.meesho.cps.helper.ESQueryBuilder;
 import com.meesho.instrumentation.annotation.DigestLogger;
@@ -16,9 +17,12 @@ import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.search.SearchScrollRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.search.Scroll;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,6 +30,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @Slf4j
@@ -104,4 +109,26 @@ public class ElasticSearchRepository {
         SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
         return EsCampaignCatalogAggregateResponse.builder().aggregations(searchResponse.getAggregations()).build();
     }
+
+    public SearchResponse fetchEsCampaignCatalogsForDate(
+            FetchCampaignCatalogsESRequest fetchCampaignCatalogsESRequest) throws IOException {
+
+        String scrollId = fetchCampaignCatalogsESRequest.getScrollId();
+        final Scroll scroll = new Scroll(TimeValue.timeValueMinutes(applicationProperties.getFetchActiveCampaignsEsScrollTimeoutMinutes()));
+        SearchResponse searchResponse = null;
+
+        if(Objects.nonNull(scrollId)){
+            SearchScrollRequest scrollRequest = new SearchScrollRequest(scrollId).scroll(scroll);
+            log.debug("Date wise index ES Scroll query : {}", scrollRequest.toString());
+            searchResponse =  restHighLevelClient.scroll(scrollRequest, RequestOptions.DEFAULT);
+        }else{
+            SearchSourceBuilder searchSourceBuilder = ESQueryBuilder.getESQuery(fetchCampaignCatalogsESRequest);
+            SearchRequest searchRequest = new SearchRequest().source(searchSourceBuilder).scroll(scroll)
+                    .indices(applicationProperties.getEsCampaignCatalogDateWiseIndices());
+            log.debug("Date wise index ES query : {}", searchRequest.source().toString());
+            searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+        }
+        return searchResponse;
+    }
+
 }
