@@ -11,7 +11,7 @@ public class Constants {
 
     public static class API {
         public static final String BASE_PATH = "/api/v1";
-
+        public static final Integer HBASE_BATCH_SIZE = 30;
         public static final String HEALTH_CHECK_ENDPOINT = "/health";
         public static final String MANUAL_SCHEDULER_START = "/api/v1/scheduler/start";
         public static final String MIGRATE_CAMPAIGN_PERFORMANCE = "/api/v1/migrate-campaign-performance";
@@ -23,6 +23,7 @@ public class Constants {
         public static final String CAMPAIGN_BUDGET_UTILISED = "/campaign/budget-utilised";
 
         public static final String CAMPAIGN_CATALOG_DATE_LEVEL_BUDGET_UTILISED = "campaign-catalog-date/budget-utilised";
+        public static final String ACTIVE_CAMPAIGNS = "/get-active-campaigns";
 
         public static class DEBUG_API {
             public static final String BASE_PATH = "/api/v1/debug";
@@ -76,6 +77,7 @@ public class Constants {
     public static class PrismEventNames {
         public static final String AD_INTERACTIONS = "ad_interaction_events";
         public static final String DAY_WISE_PERF_EVENTS = "campaign_catalog_day_performance_events";
+        public static final String HBASE_PRESTO_TABLE_NAME = "scrap.campaign_catalog_reconciled_metrics";
     }
 
     public static class DefaultRealEstateMetaData {
@@ -101,6 +103,16 @@ public class Constants {
         public static final String TOTAL_BUDGET_UTILISED = "total_budget_utilised";
     }
 
+    public static class ESFieldNames {
+        public static final String CAMPAIGN_DATE = "date";
+        public static final String BUDGET_UTILISED = "budget_utilised";
+        public static final String ID = "_id";
+        public static final String CAMPAIGN_ID = "campaign_id";
+        public static final String SUPPLIER_ID = "supplier_id";
+        public static final String CATALOG_ID = "catalog_id";
+
+    }
+
     public static class Kafka {
         public static final String BUDGET_EXHAUSTED_TOPIC = "${kafka.budget_exhausted.topic}";
 
@@ -109,4 +121,7 @@ public class Constants {
         public static final String SUPPLIER_WEEKLY_BUDGET_EXHAUSTED_TOPIC = "${kafka.supplier.weekly.budget.exhausted.topic}";
     }
 
+    public static class FetchCampaignCatalog {
+        public static final Integer DEFAULT_LIMIT = 100;
+    }
 }

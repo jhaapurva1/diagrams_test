@@ -129,6 +129,9 @@ public class ApplicationProperties {
     @Value("#{T(java.time.LocalDate).parse('${campaign.date-wise.metrics.reference-date}')}")
     private LocalDate campaignDatewiseMetricsReferenceDate;
 
+    @Value("${fetch.active_campaign.es.scroll.timeout.minutes}")
+    private Integer fetchActiveCampaignsEsScrollTimeoutMinutes;
+
     @PostConstruct
     public void init() {
         SchedulerProperty.SchedulerPropertyBuilder schedulerPropertyBuilder = SchedulerProperty.builder();

@@ -10,6 +10,7 @@ import com.meesho.cps.data.entity.hbase.CampaignDatewiseMetrics;
 import com.meesho.cps.data.entity.hbase.CampaignMetrics;
 import com.meesho.cps.data.entity.hbase.SupplierWeekWiseMetrics;
 import com.meesho.cps.data.internal.ElasticFiltersRequest;
+import com.meesho.cps.data.internal.FetchCampaignCatalogsESRequest;
 import com.meesho.cps.db.elasticsearch.ElasticSearchRepository;
 import com.meesho.cps.db.hbase.repository.CampaignCatalogDateMetricsRepository;
 import com.meesho.cps.db.hbase.repository.CampaignDatewiseMetricsRepository;
@@ -19,27 +20,16 @@ import com.meesho.cps.db.mysql.dao.CampaignPerformanceDao;
 import com.meesho.cps.helper.CampaignPerformanceHelper;
 import com.meesho.cps.transformer.CampaignPerformanceTransformer;
 import com.meesho.cps.utils.CommonUtils;
-import com.meesho.cpsclient.request.BudgetUtilisedRequest;
-import com.meesho.cpsclient.request.CampaignCatalogPerformanceRequest;
-import com.meesho.cpsclient.request.CampaignPerformanceRequest;
-import com.meesho.cpsclient.request.SupplierPerformanceRequest;
-import com.meesho.cpsclient.request.CampaignCatalogDateLevelBudgetUtilisedRequest;
-import com.meesho.cpsclient.response.BudgetUtilisedResponse;
-import com.meesho.cpsclient.response.CampaignCatalogPerformanceResponse;
-import com.meesho.cpsclient.response.CampaignPerformanceResponse;
-import com.meesho.cpsclient.response.SupplierPerformanceResponse;
-import com.meesho.cpsclient.response.CampaignCatalogDateLevelBudgetUtilisedResponse;
+import com.meesho.cpsclient.request.*;
+import com.meesho.cpsclient.response.*;
 import lombok.extern.slf4j.Slf4j;
+import org.elasticsearch.action.search.SearchResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -73,6 +63,9 @@ public class CampaignPerformanceService {
 
     @Autowired
     private SupplierWeekWiseMetricsRepository supplierWeekWiseMetricsRepository;
+
+    private final List<String> fetchActiveCampaignsESSourceIncludeFields = Arrays.asList(Constants.ESFieldNames.SUPPLIER_ID, Constants.ESFieldNames.CAMPAIGN_ID, Constants.ESFieldNames.CATALOG_ID);
+    private final List<String> fetchActiveCampaignsESMustExistFields = Collections.singletonList(Constants.ESFieldNames.BUDGET_UTILISED);
 
     public SupplierPerformanceResponse getSupplierPerformanceMetrics(SupplierPerformanceRequest request) throws IOException {
         ElasticFiltersRequest elasticFiltersRequestMonthWise = ElasticFiltersRequest.builder()
@@ -214,6 +207,37 @@ public class CampaignPerformanceService {
         }
 
         return CampaignCatalogDateLevelBudgetUtilisedResponse.builder().campaignDetails(campaignDetailsResponseList).build();
+    }
+
+    public FetchActiveCampaignsResponse getActiveCampaignsForDate(FetchActiveCampaignsRequest request) throws IOException {
+
+        String scrollId = campaignPerformanceHelper.decodeCursor(request.getCursor());
+
+        FetchCampaignCatalogsESRequest.RangeFilter rangeFilter = FetchCampaignCatalogsESRequest.RangeFilter.builder()
+                .fieldName(Constants.ESFieldNames.CAMPAIGN_DATE)
+                .format(Constants.ESConstants.DAY_DATE_FORMAT)
+                .lte(request.getDate())
+                .gte(request.getDate())
+                .build();
+
+        Integer limit = request.getLimit();
+        if(Objects.isNull(limit)) {
+            limit = Constants.FetchCampaignCatalog.DEFAULT_LIMIT;
+        }
+
+        FetchCampaignCatalogsESRequest fetchCampaignCatalogsESRequest = FetchCampaignCatalogsESRequest.builder()
+                .limit(limit)
+                .scrollId(scrollId)
+                .includeFields(fetchActiveCampaignsESSourceIncludeFields)
+                .rangeFilters(Arrays.asList(rangeFilter))
+                .mustExistFields(fetchActiveCampaignsESMustExistFields)
+                .build();
+
+        SearchResponse searchResponse = elasticSearchRepository.fetchEsCampaignCatalogsForDate(fetchCampaignCatalogsESRequest);
+        log.debug("Query Response: " + searchResponse);
+
+        return campaignPerformanceTransformer.getFetchActiveCampaignsResponse(searchResponse);
+
     }
 
 }

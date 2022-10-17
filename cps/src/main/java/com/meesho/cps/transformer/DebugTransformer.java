@@ -4,10 +4,13 @@ import com.meesho.ads.lib.utils.DateTimeUtils;
 import com.meesho.cps.data.entity.hbase.CampaignCatalogDateMetrics;
 import com.meesho.cps.data.entity.hbase.CampaignDatewiseMetrics;
 import com.meesho.cps.data.entity.hbase.CampaignMetrics;
+import com.meesho.cps.data.presto.CampaignCatalogReconciledMetricsPrestoData;
 import com.meesho.cps.data.request.CampaignCatalogDateMetricsSaveRequest;
 import com.meesho.cps.data.request.CampaignDatewiseMetricsSaveRequest;
 import com.meesho.cps.data.request.CampaignMetricsSaveRequest;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Objects;
 
 /**
@@ -48,6 +51,32 @@ public class DebugTransformer {
 
         if (Objects.nonNull(campaignCatalogMetricsSaveRequest.getBudgetUtilised()))
             campaignCatalogDateMetrics.setBudgetUtilised(campaignCatalogMetricsSaveRequest.getBudgetUtilised());
+
+        return campaignCatalogDateMetrics;
+    }
+
+    public static CampaignCatalogDateMetrics convertCampaignCatalogMetricsFromCampaignCatalogPrestoMetrics(
+            CampaignCatalogReconciledMetricsPrestoData campaignCatalogMetricsSaveRequest,
+            CampaignCatalogDateMetrics campaignCatalogDateMetrics) {
+        if (Objects.isNull(campaignCatalogDateMetrics)) {
+            campaignCatalogDateMetrics = new CampaignCatalogDateMetrics();
+            campaignCatalogDateMetrics.setCampaignId(campaignCatalogMetricsSaveRequest.getCampaignId());
+            campaignCatalogDateMetrics.setCatalogId(campaignCatalogMetricsSaveRequest.getCatalogId());
+        }
+        if (Objects.nonNull(campaignCatalogMetricsSaveRequest.getClickCount()))
+            campaignCatalogDateMetrics.setClickCount(campaignCatalogMetricsSaveRequest.getClickCount());
+
+        if (Objects.nonNull(campaignCatalogMetricsSaveRequest.getSharesCount()))
+            campaignCatalogDateMetrics.setSharesCount(campaignCatalogMetricsSaveRequest.getSharesCount());
+
+        if (Objects.nonNull(campaignCatalogMetricsSaveRequest.getWishlistCount()))
+            campaignCatalogDateMetrics.setWishlistCount(campaignCatalogMetricsSaveRequest.getWishlistCount());
+
+        if (Objects.nonNull(campaignCatalogMetricsSaveRequest.getEventDate()))
+            campaignCatalogDateMetrics.setDate(LocalDate.parse(campaignCatalogMetricsSaveRequest.getEventDate()));
+
+        if (Objects.nonNull(campaignCatalogMetricsSaveRequest.getBudgetUtilized()))
+            campaignCatalogDateMetrics.setBudgetUtilised(BigDecimal.valueOf(campaignCatalogMetricsSaveRequest.getBudgetUtilized()));
 
         return campaignCatalogDateMetrics;
     }

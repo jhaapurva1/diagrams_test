@@ -73,4 +73,13 @@ public class CampaignPerformanceController {
         return performanceService.getDateLevelBudgetUtilised(request);
     }
 
+    @ApiOperation(value = Constants.API.ACTIVE_CAMPAIGNS, notes = "API to get active campaigns for a date",
+            consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(path = Constants.API.ACTIVE_CAMPAIGNS, method = RequestMethod.POST, consumes =
+            MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public FetchActiveCampaignsResponse getActiveCampaignsForDate(
+            @Valid @RequestBody FetchActiveCampaignsRequest request) throws Exception {
+        return performanceService.getActiveCampaignsForDate(request);
+    }
+
 }
