@@ -2,7 +2,9 @@ package com.meesho.cps.transformer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
 import com.meesho.cps.constants.Constants;
+import com.meesho.cps.constants.DBConstants;
 import com.meesho.cps.data.entity.elasticsearch.ESBasePerformanceMetricsDocument;
 import com.meesho.cps.data.entity.elasticsearch.ESDailyIndexDocument;
 import com.meesho.cps.data.entity.elasticsearch.EsCampaignCatalogAggregateResponse;
@@ -17,8 +19,10 @@ import com.meesho.cps.utils.CalculationUtils;
 import com.meesho.cpsclient.response.*;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.ml.job.results.Bucket;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.metrics.Sum;
@@ -171,6 +175,25 @@ public class CampaignPerformanceTransformer {
         }
         return CampaignCatalogPerformanceResponse.builder().catalogs(catalogDetailsList).build();
     }
+
+/*    public CampaignPerformanceDatewiseResponse getCampaignCatalogDatewisePerformanceResponse(
+            EsCampaignCatalogAggregateResponse dateWiseResponse,
+            Long campaignId, List<Long> catalogIds) {
+*//*
+
+        Terms dateWiseTerms = Optional.ofNullable(dateWiseResponse.getAggregations())
+                .map(ag -> (Terms) ag.get(Constants.ESConstants.BY_CATALOG)).orElse(null);
+        CampaignPerformanceDatewiseResponse.CatalogDetailsDatewise catalogDetailsDatewise =
+                CampaignPerformanceDatewiseResponse.CatalogDetailsDatewise.builder().build();
+
+*//*
+
+
+        return CampaignPerformanceDatewiseResponse.builder()
+                .campaignPerfDatewise(catalogDetailsDatewise)
+                .campaignId(campaignId)
+                .build();
+    }*/
 
     private Double sumAggregates(Aggregations dateWise, Aggregations monthWise, String fieldName) {
         Double totalAggregateDateWise = Optional.ofNullable(dateWise).map(mw -> ((Sum) mw.get(fieldName)).getValue()).orElse(0.0);
