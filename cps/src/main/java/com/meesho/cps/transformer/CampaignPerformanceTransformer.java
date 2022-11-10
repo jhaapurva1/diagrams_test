@@ -176,25 +176,6 @@ public class CampaignPerformanceTransformer {
         return CampaignCatalogPerformanceResponse.builder().catalogs(catalogDetailsList).build();
     }
 
-/*    public CampaignPerformanceDatewiseResponse getCampaignCatalogDatewisePerformanceResponse(
-            EsCampaignCatalogAggregateResponse dateWiseResponse,
-            Long campaignId, List<Long> catalogIds) {
-*//*
-
-        Terms dateWiseTerms = Optional.ofNullable(dateWiseResponse.getAggregations())
-                .map(ag -> (Terms) ag.get(Constants.ESConstants.BY_CATALOG)).orElse(null);
-        CampaignPerformanceDatewiseResponse.CatalogDetailsDatewise catalogDetailsDatewise =
-                CampaignPerformanceDatewiseResponse.CatalogDetailsDatewise.builder().build();
-
-*//*
-
-
-        return CampaignPerformanceDatewiseResponse.builder()
-                .campaignPerfDatewise(catalogDetailsDatewise)
-                .campaignId(campaignId)
-                .build();
-    }*/
-
     private Double sumAggregates(Aggregations dateWise, Aggregations monthWise, String fieldName) {
         Double totalAggregateDateWise = Optional.ofNullable(dateWise).map(mw -> ((Sum) mw.get(fieldName)).getValue()).orElse(0.0);
         Double totalAggregateMonthWise = Optional.ofNullable(monthWise).map(mw -> ((Sum) mw.get(fieldName)).getValue()).orElse(0.0);
