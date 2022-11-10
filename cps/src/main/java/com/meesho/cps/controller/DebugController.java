@@ -109,21 +109,4 @@ public class DebugController {
         debugService.BackillCampaignCatalogDayPerformanceEventsToPrism(path);
     }
 
-    @Autowired
-    private AdInteractionEventListener  adInteractionEventListener;
-
-    @Autowired
-    private DayWisePerformanceMetricsService dayWisePerformanceMetricsService;
-
-    @PostMapping("/perf")
-    public void getCPS(@Valid @RequestBody AdInteractionEvent event) throws Exception {
-        adInteractionEventListener.consume(event);
-        dayWisePerformanceMetricsService.handleMessage(Collections.singletonList(CampaignCatalogDate
-                .builder()
-                        .catalogId(event.getProperties().getId())
-                        .date("2022-11-09")
-                        .campaignId(302224L)
-                .build()));
-    }
-
 }
