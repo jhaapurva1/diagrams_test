@@ -2,6 +2,8 @@ package com.meesho.cps.service;
 
 import com.meesho.cps.data.entity.hbase.CampaignCatalogDateMetrics;
 import com.meesho.cps.data.entity.hbase.SupplierWeekWiseMetrics;
+import com.meesho.cps.data.internal.ElasticFiltersRequest;
+import com.meesho.cps.db.elasticsearch.ElasticSearchRepository;
 import com.meesho.cps.db.hbase.repository.CampaignCatalogDateMetricsRepository;
 import com.meesho.cps.db.hbase.repository.CampaignDatewiseMetricsRepository;
 import com.meesho.cps.db.hbase.repository.CampaignMetricsRepository;
@@ -10,8 +12,10 @@ import com.meesho.cps.helper.CampaignPerformanceHelper;
 import com.meesho.cps.transformer.CampaignPerformanceTransformer;
 import com.meesho.cpsclient.request.BudgetUtilisedRequest;
 import com.meesho.cpsclient.request.CampaignCatalogDateLevelBudgetUtilisedRequest;
+import com.meesho.cpsclient.request.CampaignCatalogPerfDatawiseRequest;
 import com.meesho.cpsclient.response.BudgetUtilisedResponse;
 import com.meesho.cpsclient.response.CampaignCatalogDateLevelBudgetUtilisedResponse;
+import com.meesho.cpsclient.response.CampaignPerformanceDatewiseResponse;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,6 +25,7 @@ import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -29,6 +34,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 
 
 @RunWith(MockitoJUnitRunner.class)
@@ -48,6 +54,9 @@ public class CampaignPerformanceServiceTest {
 
     @Mock
     private CampaignPerformanceHelper campaignPerformanceHelper;
+
+    @Mock
+    private ElasticSearchRepository elasticSearchRepository;
 
     @Spy
     private CampaignPerformanceTransformer campaignPerformanceTransformer;
@@ -76,6 +85,15 @@ public class CampaignPerformanceServiceTest {
                 campaignPerformanceService.getDateLevelBudgetUtilised(getDateLevelBudgetUtilisedRequest());
         CampaignCatalogDateLevelBudgetUtilisedResponse expectedResponse = getExpectedDateLevelBudgetUtilisedResponse();
         Assert.assertEquals(expectedResponse, actualResponse);
+    }
+
+    @Test
+    public void testCampaignCatalogPerfDatewise() throws IOException {
+        Mockito.doReturn(CampaignPerformanceDatewiseResponse.builder().build())
+                .when(elasticSearchRepository).getCampaignCatalogDatePerf(any(), anyLong());
+        CampaignPerformanceDatewiseResponse response = campaignPerformanceService.getCampaignCatalogPerfDatewise(getSampleCampaignCatalogPerfDatawiseRequest());
+        Mockito.verify(elasticSearchRepository).getCampaignCatalogDatePerf(any(), anyLong());
+
     }
 
     private BudgetUtilisedRequest getSampleBudgetUtilisedRequest() {
@@ -127,6 +145,16 @@ public class CampaignPerformanceServiceTest {
                         .date(LocalDate.now()).catalogDetails(Collections.singletonList(catalogDetails)).build();
         return CampaignCatalogDateLevelBudgetUtilisedResponse.builder()
                 .campaignDetails(Collections.singletonList(campaignDetails)).build();
+    }
+
+    private CampaignCatalogPerfDatawiseRequest getSampleCampaignCatalogPerfDatawiseRequest() {
+
+        return CampaignCatalogPerfDatawiseRequest.builder()
+                .campaignId(1L)
+                .catalogIds(Arrays.asList(11L, 12L))
+                .startDate(LocalDate.now())
+                .endDate(LocalDate.now())
+                .build();
     }
 
 }
