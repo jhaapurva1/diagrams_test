@@ -5,12 +5,12 @@
     <parent>
         <groupId>com.meesho</groupId>
         <artifactId>campaign-performance-service</artifactId>
-        <version>0.0.54-RELEASE</version>
+        <version>0.0.55-RELEASE</version>
     </parent>
 
     <groupId>com.meesho</groupId>
     <artifactId>cps</artifactId>
-    <version>0.0.54-RELEASE</version>
+    <version>0.0.55-RELEASE</version>
     <name>cps</name>
     <description>Campaign Performance Service</description>
     <properties>
@@ -19,7 +19,7 @@
         <confluent.version>5.3.2</confluent.version>
         <elasticsearch.version>7.0.1</elasticsearch.version>
         <swagger>2.9.2</swagger>
-        <log4j2.version>2.16.0</log4j2.version>
+        <log4j2.version>2.17.1</log4j2.version>
     </properties>
 
     <repositories>
