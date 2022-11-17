@@ -1,22 +1,14 @@
 package com.meesho.cps.controller;
 
-import com.meesho.ads.lib.exception.DataValidationException;
-import com.meesho.ads.lib.utils.DateTimeUtils;
-import com.meesho.commons.utils.DateUtils;
 import com.meesho.cps.constants.Constants;
 import com.meesho.cps.data.entity.hbase.CampaignCatalogDateMetrics;
 import com.meesho.cps.data.entity.hbase.CampaignDatewiseMetrics;
 import com.meesho.cps.data.entity.hbase.CampaignMetrics;
-import com.meesho.cps.data.entity.kafka.AdInteractionEvent;
-import com.meesho.cps.data.internal.CampaignCatalogDate;
 import com.meesho.cps.data.request.CampaignCatalogDateMetricsSaveRequest;
 import com.meesho.cps.data.request.CampaignDatewiseMetricsSaveRequest;
 import com.meesho.cps.data.request.CampaignMetricsSaveRequest;
-import com.meesho.cps.listener.kafka.AdInteractionEventListener;
-import com.meesho.cps.service.DayWisePerformanceMetricsService;
 import com.meesho.cps.service.DebugService;
 import io.swagger.annotations.ApiOperation;
-import jdk.jfr.internal.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
@@ -24,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.time.LocalDate;
-import java.util.Collections;
 
 /**
  * @author shubham.aggarwal
