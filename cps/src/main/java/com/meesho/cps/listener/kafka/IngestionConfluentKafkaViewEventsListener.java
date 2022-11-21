@@ -2,7 +2,7 @@ package com.meesho.cps.listener.kafka;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.meesho.ad.client.response.CampaignCatalogMetadataResponse;
+import com.meesho.ad.client.response.AdViewEventMetadataResponse;
 import com.meesho.ads.lib.constants.Constants;
 import com.meesho.ads.lib.utils.DateTimeUtils;
 import com.meesho.commons.enums.Country;
@@ -116,7 +116,7 @@ public class IngestionConfluentKafkaViewEventsListener implements ApplicationLis
             adViewEvents.add(adViewEvent);
         }
 
-        Map<Long, CampaignCatalogMetadataResponse.CatalogMetadata> catalogMetadataMap;
+        Map<Long, AdViewEventMetadataResponse.CatalogCampaignMetadata> catalogMetadataMap;
         try {
             catalogMetadataMap = catalogViewEventService.getCampaignCatalogMetadataFromAdViewEvents(adViewEvents);
         } catch (Exception e) {
@@ -159,7 +159,7 @@ public class IngestionConfluentKafkaViewEventsListener implements ApplicationLis
     }
 
     private void updateCampaignCatalogViewCounts(List<AdViewEvent> adViewEvents,
-                                                 Map<Long, CampaignCatalogMetadataResponse.CatalogMetadata> catalogMetadataMap) {
+                                                 Map<Long, AdViewEventMetadataResponse.CatalogCampaignMetadata> catalogMetadataMap) {
 
         Map<String, CampaignCatalogViewCount> campaignCatalogViewCountMapTillNow = campaignCatalogViewCountMap.get();
         LocalDate eventDate = campaignPerformanceHelper.getLocalDateForDailyCampaignFromLocalDateTime(
@@ -168,15 +168,15 @@ public class IngestionConfluentKafkaViewEventsListener implements ApplicationLis
         for (AdViewEvent adViewEvent : adViewEvents) {
 
             Long catalogId = adViewEvent.getProperties().getId();
-            CampaignCatalogMetadataResponse.CatalogMetadata catalogMetadata = catalogMetadataMap.get(catalogId);
-            if(Objects.isNull(catalogMetadata) || !catalogMetadata.getCampaignActive()){
+            AdViewEventMetadataResponse.CatalogCampaignMetadata catalogMetadata = catalogMetadataMap.get(catalogId);
+            if(Objects.isNull(catalogMetadata) || !catalogMetadata.getIsCampaignActive()){
                 log.error("No active ad on catalogId {} userId {} eventId {}",adViewEvent.getProperties().getId(),adViewEvent.getUserId(),adViewEvent.getEventId());
                 statsdMetricManager.incrementCounter(VIEW_EVENT_KEY, String.format(VIEW_EVENT_TAGS,
                         adViewEvent.getEventName(), adViewEvent.getProperties().getScreen(), adViewEvent.getProperties().getOrigin(), INVALID,
                         AdInteractionInvalidReason.CAMPAIGN_INACTIVE));
                 continue;
             }
-            Long campaignId = catalogMetadata.getCampaignDetails().getCampaignId();
+            Long campaignId = catalogMetadata.getCampaignId();
 
             log.info("Processing view event for eventId {} catalogId {} campaignId {} userId {} appVersionCode {}",
                     adViewEvent.getEventId(), adViewEvent.getProperties().getId(), campaignId, adViewEvent.getUserId(),
