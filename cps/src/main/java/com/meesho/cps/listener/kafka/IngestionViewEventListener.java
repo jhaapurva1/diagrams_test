@@ -21,10 +21,10 @@ import java.util.List;
  * 02/08/21
  */
 @Slf4j
-@Component
+//@Component
 public class IngestionViewEventListener {
 
-    IngestionConfluentKafkaViewEventsListener ingestionConfluentKafkaViewEventsListener;
+/*    IngestionConfluentKafkaViewEventsListener ingestionConfluentKafkaViewEventsListener;
 
     @KafkaListener(id = ConsumerConstants.IngestionViewEventsConsumer.ID, containerFactory =
             ConsumerConstants.IngestionServiceKafka.BATCH_CONTAINER_FACTORY, topics = {
@@ -37,6 +37,6 @@ public class IngestionViewEventListener {
     @DigestLogger(metricType = MetricType.METHOD, tagSet = "consumer=IngestionViewEventListener")
     public void listen(@Payload List<ConsumerRecord<String, GenericRecord>> consumerRecords, Acknowledgment ack) {
         ingestionConfluentKafkaViewEventsListener.handleIngestionViewEvent(consumerRecords, ack);
-    }
+    }*/
 
 }
