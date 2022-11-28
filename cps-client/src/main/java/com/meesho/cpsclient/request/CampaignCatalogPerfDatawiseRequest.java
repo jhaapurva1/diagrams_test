@@ -20,11 +20,11 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CampaignCatalogPerfDatawiseRequest {
 
-    @NotNull(message = "campaign_id is required")
+    @NotNull(message = "campaign id is required")
     @JsonProperty("campaign_id")
     private Long campaignId;
 
-    @NotNull(message = "catalog_ids cannot be empty")
+    @NotNull(message = "catalog ids cannot be empty")
     @JsonProperty("catalog_ids")
     private List<Long> catalogIds;
 
