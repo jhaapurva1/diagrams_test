@@ -21,10 +21,10 @@ import org.springframework.stereotype.Component;
  * This is done to avoid race conditions in interaction event consumers
  */
 @Slf4j
-@Component
+//@Component
 public class UnPartitionedIngestionInteractionEventListener {
 
-    @Autowired
+   /* @Autowired
     private UnPartitionedIngestionConfluentKafkaInteractionEventListener unPartitionedIngestionConfluentKafkaInteractionEventListener;
 
     @KafkaListener(id = ConsumerConstants.IngestionInteractionEventsConsumer.ID, containerFactory =
@@ -39,6 +39,6 @@ public class UnPartitionedIngestionInteractionEventListener {
     @DigestLogger(metricType = MetricType.METHOD, tagSet = "consumer=IngestionInteractionEventListener")
     public void listen(ConsumerRecord<String, GenericRecord> consumerRecord) {
         unPartitionedIngestionConfluentKafkaInteractionEventListener.handleIngestionInteractionEvent(consumerRecord);
-    }
+    }*/
 
 }
