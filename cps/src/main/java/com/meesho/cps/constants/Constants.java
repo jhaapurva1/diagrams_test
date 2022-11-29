@@ -20,6 +20,7 @@ public class Constants {
         public static final String SUPPLIER_PERFORMANCE = "/supplier/performance";
         public static final String CAMPAIGN_PERFORMANCE = "/campaign/performance";
         public static final String CAMPAIGN_CATALOG_PERFORMANCE = "/campaign-catalog/performance";
+        public static final String CAMPAIGN_CATALOG_PERFORMANCE_DATE_WISE = "/campaign-catalog/performance_date_wise";
         public static final String CAMPAIGN_BUDGET_UTILISED = "/campaign/budget-utilised";
 
         public static final String CAMPAIGN_CATALOG_DATE_LEVEL_BUDGET_UTILISED = "campaign-catalog-date/budget-utilised";

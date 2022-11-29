@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.io.IOException;
 
 /**
  * @author shubham.aggarwal
@@ -80,6 +81,16 @@ public class CampaignPerformanceController {
     public FetchActiveCampaignsResponse getActiveCampaignsForDate(
             @Valid @RequestBody FetchActiveCampaignsRequest request) throws Exception {
         return performanceService.getActiveCampaignsForDate(request);
+    }
+
+    @ApiOperation(value = Constants.API.CAMPAIGN_CATALOG_PERFORMANCE_DATE_WISE,
+            notes = "API to get campaign_catalog perf datewise",
+            consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(path = Constants.API.CAMPAIGN_CATALOG_PERFORMANCE_DATE_WISE, method = RequestMethod.POST, consumes =
+            MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public CampaignPerformanceDatewiseResponse getCampaignCatalogPerfDateWise(
+            @Valid @RequestBody CampaignCatalogPerfDatawiseRequest request) throws IOException {
+        return performanceService.getCampaignCatalogPerfDatewise(request);
     }
 
 }

@@ -24,6 +24,7 @@ import com.meesho.cpsclient.request.*;
 import com.meesho.cpsclient.response.*;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.search.SearchHit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -240,4 +241,18 @@ public class CampaignPerformanceService {
 
     }
 
+    public CampaignPerformanceDatewiseResponse getCampaignCatalogPerfDatewise(
+            CampaignCatalogPerfDatawiseRequest request) throws IOException {
+
+        ElasticFiltersRequest elasticFiltersRequestDateWise = ElasticFiltersRequest.builder()
+                .campaignIds(Collections.singletonList(request.getCampaignId()))
+                .catalogIds(request.getCatalogIds())
+                .build();
+
+        elasticFiltersRequestDateWise.setRangeFilters(Collections.singletonList(ElasticFiltersRequest.RangeFilter
+                .builder().gte(request.getStartDate()).lte(request.getEndDate())
+                .fieldName(DBConstants.ElasticSearch.DATE).format(Constants.ESConstants.DAY_DATE_FORMAT).build()));
+        return elasticSearchRepository.getCampaignCatalogDatePerf(elasticFiltersRequestDateWise,
+                request.getCampaignId());
+    }
 }
