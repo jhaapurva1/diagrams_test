@@ -106,6 +106,8 @@ public class ElasticSearchRepository {
     public CampaignPerformanceDatewiseResponse getCampaignCatalogDatePerf(
             ElasticFiltersRequest elasticFiltersRequest, Long campaignId) throws IOException {
         SearchSourceBuilder searchSourceBuilder = ESQueryBuilder.getESQuery(elasticFiltersRequest);
+        searchSourceBuilder.size(1000);
+        searchSourceBuilder.from(0);
         SearchRequest searchRequest = new SearchRequest().source(searchSourceBuilder)
                 .indices(applicationProperties.getEsCampaignCatalogDateWiseIndices());
         log.info("Daily index ES query : {}", searchRequest.source().toString());
