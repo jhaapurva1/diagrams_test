@@ -1,0 +1,96 @@
+---
+
+app_name: campaign-performance
+app_port: 7070
+health_check: /health
+module: cps
+bu: supply
+team: supplier-ads
+priority: p1
+initialDelaySeconds: 60
+replica_count: 1
+environment:
+  ftr:
+    as_enabled: true
+    as_min: 1
+    as_max: 1
+    cpu_request: 500m
+    memory_limit: 4G
+    memory_request: 2G
+    deploymentStrategy: rollingUpdate
+    appMetrics: false
+    deployment_args:
+      - -Dspring.profiles.active=dev
+      - -XX:+UseG1GC
+      - -XX:+PrintGCDateStamps
+      - -XX:+PrintGCDetails
+      - -XX:+PrintGCApplicationStoppedTime
+      - -XX:+PrintGCApplicationConcurrentTime
+      - -XX:+PrintHeapAtGC
+      - -Xloggc:/var/log/gc.log
+      - -XX:+UseGCLogFileRotation
+      - -XX:NumberOfGCLogFiles=5
+      - -XX:GCLogFileSize=9000k
+  dev:
+    as_enabled: true
+    as_min: 1
+    as_max: 1
+    cpu_request: 500m
+    memory_limit: 4G
+    memory_request: 2G
+    deploymentStrategy: rollingUpdate
+    appMetrics: false
+    deployment_args:
+      - -Dspring.profiles.active=dev
+      - -XX:+UseG1GC
+      - -XX:+PrintGCDateStamps
+      - -XX:+PrintGCDetails
+      - -XX:+PrintGCApplicationStoppedTime
+      - -XX:+PrintGCApplicationConcurrentTime
+      - -XX:+PrintHeapAtGC
+      - -Xloggc:/var/log/gc.log
+      - -XX:+UseGCLogFileRotation
+      - -XX:NumberOfGCLogFiles=5
+      - -XX:GCLogFileSize=9000k
+  int:
+    as_enabled: true
+    as_min: 1
+    as_max: 1
+    cpu_request: 500m
+    memory_limit: 4G
+    memory_request: 2G
+    deploymentStrategy: rollingUpdate
+    appMetrics: true
+    deployment_args:
+      - -Dspring.profiles.active=int
+      - -XX:+UseG1GC
+      - -XX:+PrintGCDateStamps
+      - -XX:+PrintGCDetails
+      - -XX:+PrintGCApplicationStoppedTime
+      - -XX:+PrintGCApplicationConcurrentTime
+      - -XX:+PrintHeapAtGC
+      - -Xloggc:/var/log/gc.log
+      - -XX:+UseGCLogFileRotation
+      - -XX:NumberOfGCLogFiles=5
+      - -XX:GCLogFileSize=9000k
+  prd:
+    as_enabled: true
+    as_min: 1
+    as_max: 1
+    cpu_request: 500m
+    memory_limit: 4G
+    memory_request: 2G
+    deploymentStrategy: rollingUpdate
+    appMetrics: true
+    deployment_args:
+      - -Dspring.profiles.active=prd
+      - -XX:+UseG1GC
+      - -XX:+PrintGCDateStamps
+      - -XX:+PrintGCDetails
+      - -XX:+PrintGCApplicationStoppedTime
+      - -XX:+PrintGCApplicationConcurrentTime
+      - -XX:+PrintHeapAtGC
+      - -Xloggc:/var/log/gc.log
+      - -XX:+UseGCLogFileRotation
+      - -XX:NumberOfGCLogFiles=5
+      - -XX:GCLogFileSize=9000k

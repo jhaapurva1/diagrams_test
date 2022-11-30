@@ -1,0 +1,20 @@
+---
+
+repo_name: campaign-performance
+maintainer: akhil.gupta
+skip_sonar: false
+build_tool: docker
+dockerBuildVersion: maven-3.3-jdk-8
+notify_channel: supplier-ads-ci-alerts
+arch: amd64
+excludedModules:
+  - cps-client
+team: supplier-ads
+bu: supply
+deployArgo: true
+deployment_order:
+  - campaign-performance
+branch_params:
+  develop.*:
+    push_to_jfrog: true
+    push_to_s3: true
