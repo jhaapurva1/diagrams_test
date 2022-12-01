@@ -87,15 +87,6 @@ public class CampaignPerformanceServiceTest {
         Assert.assertEquals(expectedResponse, actualResponse);
     }
 
-    @Test
-    public void testCampaignCatalogPerfDatewise() throws IOException {
-        Mockito.doReturn(CampaignPerformanceDatewiseResponse.builder().build())
-                .when(elasticSearchRepository).getCampaignCatalogDatePerf(any(), anyLong());
-        CampaignPerformanceDatewiseResponse response = campaignPerformanceService.getCampaignCatalogPerfDatewise(getSampleCampaignCatalogPerfDatawiseRequest());
-        Mockito.verify(elasticSearchRepository).getCampaignCatalogDatePerf(any(), anyLong());
-
-    }
-
     private BudgetUtilisedRequest getSampleBudgetUtilisedRequest() {
         return BudgetUtilisedRequest.builder()
                 .campaignDataList(new ArrayList<>())
@@ -151,7 +142,6 @@ public class CampaignPerformanceServiceTest {
 
         return CampaignCatalogPerfDatawiseRequest.builder()
                 .campaignId(1L)
-                .catalogIds(Arrays.asList(11L, 12L))
                 .startDate(LocalDate.now())
                 .endDate(LocalDate.now())
                 .build();

@@ -93,6 +93,7 @@ public class Constants {
     public static class ESConstants {
         public static final String BY_CAMPAIGN = "by_campaign";
         public static final String BY_CATALOG = "by_catalog";
+        public static final String BY_DATE = "by_date";
         public static final String DAY_DATE_FORMAT = "yyyy-MM-dd";
         public static final String MONTH_DATE_FORMAT = "yyyy-MM";
         public static final String TOTAL_VIEWS = "total_views";

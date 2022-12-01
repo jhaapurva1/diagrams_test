@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
-import java.util.List;
 
 @Data
 @Builder
@@ -23,10 +22,6 @@ public class CampaignCatalogPerfDatawiseRequest {
     @NotNull(message = "campaign id is required")
     @JsonProperty("campaign_id")
     private Long campaignId;
-
-    @NotNull(message = "catalog ids cannot be empty")
-    @JsonProperty("catalog_ids")
-    private List<Long> catalogIds;
 
     @NotNull(message = "start date can't be null")
     @JsonProperty("start_date")

@@ -241,18 +241,23 @@ public class CampaignPerformanceService {
 
     }
 
-    public CampaignPerformanceDatewiseResponse getCampaignCatalogPerfDatewise(
+    public CampaignPerformanceDatewiseResponse getCampaignCatalogPerfDateWise(
             CampaignCatalogPerfDatawiseRequest request) throws IOException {
 
         ElasticFiltersRequest elasticFiltersRequestDateWise = ElasticFiltersRequest.builder()
                 .campaignIds(Collections.singletonList(request.getCampaignId()))
-                .catalogIds(request.getCatalogIds())
+                .aggregationBuilders(campaignPerformanceHelper.createBucketAggregations(
+                        Constants.ESConstants.BY_DATE, DBConstants.ElasticSearch.DATE))
                 .build();
 
         elasticFiltersRequestDateWise.setRangeFilters(Collections.singletonList(ElasticFiltersRequest.RangeFilter
                 .builder().gte(request.getStartDate()).lte(request.getEndDate())
                 .fieldName(DBConstants.ElasticSearch.DATE).format(Constants.ESConstants.DAY_DATE_FORMAT).build()));
-        return elasticSearchRepository.getCampaignCatalogDatePerf(elasticFiltersRequestDateWise,
-                request.getCampaignId());
+
+        EsCampaignCatalogAggregateResponse dateWiseResponse = new EsCampaignCatalogAggregateResponse();
+        dateWiseResponse = elasticSearchRepository.fetchEsCampaignCatalogsDateWise(elasticFiltersRequestDateWise);
+
+        return campaignPerformanceTransformer.getCampaignPerformanceDateWiseResponse(request.getCampaignId(),
+                dateWiseResponse);
     }
 }
