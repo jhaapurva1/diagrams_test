@@ -100,7 +100,6 @@ public class ElasticSearchRepository {
                 .indices(applicationProperties.getEsCampaignCatalogDateWiseIndices());
         log.info("Daily index ES query : {}", searchRequest.source().toString());
         SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
-
         return EsCampaignCatalogAggregateResponse.builder().aggregations(searchResponse.getAggregations()).build();
     }
 
