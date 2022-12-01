@@ -103,45 +103,6 @@ public class ElasticSearchRepository {
         return EsCampaignCatalogAggregateResponse.builder().aggregations(searchResponse.getAggregations()).build();
     }
 
-    public CampaignPerformanceDatewiseResponse getCampaignCatalogDatePerf(
-            ElasticFiltersRequest elasticFiltersRequest, Long campaignId) throws IOException {
-        SearchSourceBuilder searchSourceBuilder = ESQueryBuilder.getESQuery(elasticFiltersRequest);
-        searchSourceBuilder.size(1000);
-        searchSourceBuilder.from(0);
-        SearchRequest searchRequest = new SearchRequest().source(searchSourceBuilder)
-                .indices(applicationProperties.getEsCampaignCatalogDateWiseIndices());
-        log.info("Daily index ES query : {}", searchRequest.source().toString());
-        SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
-        SearchHits searchHits = searchResponse.getHits();
-        Map<String, List<CampaignPerformanceDatewiseResponse.CatalogDetails>> dateCatalogsMap = new HashMap<>();
-        for (SearchHit searchHit : searchHits.getHits()) {
-            ESDailyIndexDocument esDailyIndexDocument = objectMapper.readValue(searchHit.getSourceAsString(),
-                    ESDailyIndexDocument.class);
-            if(dateCatalogsMap.containsKey(esDailyIndexDocument.getDate())) {
-                dateCatalogsMap.get(esDailyIndexDocument.getDate()).add(
-                        CampaignPerformanceDatewiseResponse.CatalogDetails.builder()
-                                .catalogId(esDailyIndexDocument.getCatalogId())
-                                .clicks(esDailyIndexDocument.getClicks())
-                                .views(esDailyIndexDocument.getViews())
-                                .orders(esDailyIndexDocument.getOrders())
-                                .build());
-            } else {
-                dateCatalogsMap.put(esDailyIndexDocument.getDate(), Lists.newArrayList(
-                        CampaignPerformanceDatewiseResponse.CatalogDetails.builder()
-                                .catalogId(esDailyIndexDocument.getCatalogId())
-                                .clicks(esDailyIndexDocument.getClicks())
-                                .views(esDailyIndexDocument.getViews())
-                                .orders(esDailyIndexDocument.getOrders())
-                                .build()
-                ));
-            }
-        }
-        return CampaignPerformanceDatewiseResponse.builder()
-                .campaignId(campaignId)
-                .dateCatalogsMap(dateCatalogsMap)
-                .build();
-    }
-
     public EsCampaignCatalogAggregateResponse fetchEsCampaignCatalogsMonthWise(
             ElasticFiltersRequest elasticFiltersRequest) throws IOException {
         SearchSourceBuilder searchSourceBuilder = ESQueryBuilder.getESQuery(elasticFiltersRequest);

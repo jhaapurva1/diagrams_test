@@ -14,11 +14,13 @@ import com.meesho.cps.data.internal.PerformancePojo;
 import com.meesho.cps.data.presto.CampaignPerformancePrestoData;
 import com.meesho.cps.helper.CampaignPerformanceHelper;
 import com.meesho.cps.utils.CalculationUtils;
+import com.meesho.cpsclient.request.CampaignCatalogPerfDatawiseRequest;
 import com.meesho.cpsclient.response.*;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.metrics.Sum;
@@ -170,6 +172,37 @@ public class CampaignPerformanceTransformer {
                     .conversionRate(CalculationUtils.getConversionRate(pp.getTotalOrders(), pp.getTotalClicks())).catalogId(catalogId).build());
         }
         return CampaignCatalogPerformanceResponse.builder().catalogs(catalogDetailsList).build();
+    }
+
+    public CampaignPerformanceDatewiseResponse getCampaignPerformanceDateWiseResponse(
+            Long campaignId, EsCampaignCatalogAggregateResponse dateWiseResponse) {
+        Terms dateWiseTerms = Optional.ofNullable(dateWiseResponse.getAggregations())
+                .map(ag -> (Terms) ag.get(Constants.ESConstants.BY_DATE)).orElse(null);
+
+        Map<LocalDate, CampaignPerformanceDatewiseResponse.GraphDetails> dateCatalogsMap = new HashMap<>();
+
+        List<? extends Terms.Bucket> buckets = Optional.ofNullable(dateWiseTerms)
+                .map(Terms::getBuckets).orElse(new ArrayList<>());
+        buckets.forEach(dw->{
+            CampaignPerformanceDatewiseResponse.GraphDetails graphDetails = CampaignPerformanceDatewiseResponse
+                    .GraphDetails.builder()
+                    .views(Optional.ofNullable(dw.getAggregations()).map(mw ->
+                            ((Sum) mw.get(Constants.ESConstants.TOTAL_VIEWS)).getValue())
+                            .orElse(0.0).longValue())
+                    .clicks(Optional.ofNullable(dw.getAggregations()).map(mw ->
+                            ((Sum) mw.get(Constants.ESConstants.TOTAL_CLICKS)).getValue())
+                            .orElse(0.0).longValue())
+                    .orders(Optional.ofNullable(dw.getAggregations()).map(mw ->
+                            ((Sum) mw.get(Constants.ESConstants.TOTAL_ORDERS)).getValue())
+                            .orElse(0.0).intValue())
+                    .build();
+            dateCatalogsMap.put(LocalDate.parse(dw.getKeyAsString()), graphDetails);
+        });
+
+        return CampaignPerformanceDatewiseResponse.builder()
+                .campaignId(campaignId)
+                .dateCatalogsMap(dateCatalogsMap)
+                .build();
     }
 
     private Double sumAggregates(Aggregations dateWise, Aggregations monthWise, String fieldName) {

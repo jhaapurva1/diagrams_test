@@ -9,7 +9,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Map;
 
 @Data
@@ -24,7 +23,7 @@ public class CampaignPerformanceDatewiseResponse {
     private Long campaignId;
 
     @JsonProperty("date_catalog_details_map")
-    Map<String, List<CatalogDetails>> dateCatalogsMap;
+    Map<LocalDate, GraphDetails> dateCatalogsMap;
 
     @Data
     @Builder
@@ -32,9 +31,7 @@ public class CampaignPerformanceDatewiseResponse {
     @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class CatalogDetails {
-        @JsonProperty("catalog_id")
-        private Long catalogId;
+    public static class GraphDetails {
 
         @JsonProperty("orders")
         private Integer orders;
