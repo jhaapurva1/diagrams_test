@@ -29,7 +29,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -246,8 +248,9 @@ public class CampaignPerformanceService {
 
         ElasticFiltersRequest elasticFiltersRequestDateWise = ElasticFiltersRequest.builder()
                 .campaignIds(Collections.singletonList(request.getCampaignId()))
-                .aggregationBuilders(campaignPerformanceHelper.createBucketAggregations(
-                        Constants.ESConstants.BY_DATE, DBConstants.ElasticSearch.DATE))
+                .aggregationBuilders(campaignPerformanceHelper.createGraphBucketAggregations(
+                        Constants.ESConstants.BY_DATE, DBConstants.ElasticSearch.DATE,
+                        (int) ChronoUnit.DAYS.between(request.getStartDate(), request.getEndDate()) + 1))
                 .build();
 
         elasticFiltersRequestDateWise.setRangeFilters(Collections.singletonList(ElasticFiltersRequest.RangeFilter
