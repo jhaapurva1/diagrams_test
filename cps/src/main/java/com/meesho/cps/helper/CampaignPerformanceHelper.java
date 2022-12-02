@@ -81,8 +81,8 @@ public class CampaignPerformanceHelper {
         return Collections.singletonList(aggregationBuilderRoot);
     }
 
-    public List<AggregationBuilder> createBucketAggregations(String term, String fieldName) {
-        AggregationBuilder aggregationBuilderRoot = AggregationBuilders.terms(term).field(fieldName);
+    public List<AggregationBuilder> createGraphBucketAggregations(String term, String fieldName, Integer size) {
+        AggregationBuilder aggregationBuilderRoot = AggregationBuilders.terms(term).field(fieldName).size(size);
         List<AggregationBuilder> aggregationBuilders = createGraphAggregations();
 
         for (AggregationBuilder aggregationBuilder : aggregationBuilders) {
