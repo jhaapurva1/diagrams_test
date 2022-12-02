@@ -67,6 +67,8 @@ public class CampaignPerformanceHelper {
         aggregationBuilders.add(AggregationBuilders.sum(Constants.ESConstants.TOTAL_CLICKS).field(DBConstants.ElasticSearch.CLICKS));
         aggregationBuilders.add(AggregationBuilders.sum(Constants.ESConstants.TOTAL_VIEWS).field(DBConstants.ElasticSearch.VIEWS));
         aggregationBuilders.add(AggregationBuilders.sum(Constants.ESConstants.TOTAL_ORDERS).field(DBConstants.ElasticSearch.ORDERS));
+        aggregationBuilders.add(AggregationBuilders.sum(Constants.ESConstants.TOTAL_SHARES).field(DBConstants.ElasticSearch.SHARES));
+        aggregationBuilders.add(AggregationBuilders.sum(Constants.ESConstants.TOTAL_WISHLIST).field(DBConstants.ElasticSearch.WISHLIST));
         return aggregationBuilders;
     }
 
