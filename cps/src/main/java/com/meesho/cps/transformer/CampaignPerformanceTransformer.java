@@ -190,10 +190,16 @@ public class CampaignPerformanceTransformer {
                             ((Sum) mw.get(Constants.ESConstants.TOTAL_VIEWS)).getValue())
                             .orElse(0.0).longValue())
                     .clicks(Optional.ofNullable(dw.getAggregations()).map(mw ->
-                            ((Sum) mw.get(Constants.ESConstants.TOTAL_CLICKS)).getValue())
-                            .orElse(0.0).longValue())
+                                    ((Sum) mw.get(Constants.ESConstants.TOTAL_CLICKS)).getValue())
+                            .orElse(0.0).longValue() +
+                            Optional.ofNullable(dw.getAggregations()).map(mw ->
+                                            ((Sum) mw.get(Constants.ESConstants.TOTAL_SHARES)).getValue())
+                                    .orElse(0.0).longValue() +
+                            Optional.ofNullable(dw.getAggregations()).map(mw ->
+                                            ((Sum) mw.get(Constants.ESConstants.TOTAL_WISHLIST)).getValue())
+                                    .orElse(0.0).longValue())
                     .orders(Optional.ofNullable(dw.getAggregations()).map(mw ->
-                            ((Sum) mw.get(Constants.ESConstants.TOTAL_ORDERS)).getValue())
+                                    ((Sum) mw.get(Constants.ESConstants.TOTAL_ORDERS)).getValue())
                             .orElse(0.0).intValue())
                     .build();
             dateCatalogsMap.put(LocalDate.parse(dw.getKeyAsString()), graphDetails);
