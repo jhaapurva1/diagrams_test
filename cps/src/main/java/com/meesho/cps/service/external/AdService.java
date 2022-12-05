@@ -104,10 +104,10 @@ public class AdService {
      * @return
      * @throws ExternalRequestFailedException
      */
-    public CampaignCatalogMetadataResponse getCampaignCatalogMetadata(List<Long> catalogIds) throws ExternalRequestFailedException {
+    public CampaignCatalogMetadataResponse getCampaignCatalogMetadata(List<Long> catalogIds, String userId, String feedType) throws ExternalRequestFailedException {
         log.info("getCampaignCatalogMetadata request, catalogIds {}", catalogIds);
         CampaignCatalogMetadataRequest request =
-                CampaignCatalogMetadataRequest.builder().catalogIds(catalogIds).build();
+                CampaignCatalogMetadataRequest.builder().catalogIds(catalogIds).userId(userId).feedType(feedType).build();
 
         ServiceRequest<CampaignCatalogMetadataRequest> serviceRequest = ServiceRequest.of(request);
 
