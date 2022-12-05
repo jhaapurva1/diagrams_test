@@ -62,6 +62,16 @@ public class CampaignPerformanceHelper {
         return aggregationBuilders;
     }
 
+    public List<AggregationBuilder> createGraphAggregations() {
+        List<AggregationBuilder> aggregationBuilders = new ArrayList<>();
+        aggregationBuilders.add(AggregationBuilders.sum(Constants.ESConstants.TOTAL_CLICKS).field(DBConstants.ElasticSearch.CLICKS));
+        aggregationBuilders.add(AggregationBuilders.sum(Constants.ESConstants.TOTAL_VIEWS).field(DBConstants.ElasticSearch.VIEWS));
+        aggregationBuilders.add(AggregationBuilders.sum(Constants.ESConstants.TOTAL_ORDERS).field(DBConstants.ElasticSearch.ORDERS));
+        aggregationBuilders.add(AggregationBuilders.sum(Constants.ESConstants.TOTAL_SHARES).field(DBConstants.ElasticSearch.SHARES));
+        aggregationBuilders.add(AggregationBuilders.sum(Constants.ESConstants.TOTAL_WISHLIST).field(DBConstants.ElasticSearch.WISHLIST));
+        return aggregationBuilders;
+    }
+
     public List<AggregationBuilder> createBucketAggregations(String term, String fieldName, Integer size) {
         AggregationBuilder aggregationBuilderRoot = AggregationBuilders.terms(term).field(fieldName).size(size);
         List<AggregationBuilder> aggregationBuilders = createAggregations();
@@ -70,6 +80,16 @@ public class CampaignPerformanceHelper {
             aggregationBuilderRoot.subAggregation(aggregationBuilder);
         }
 
+        return Collections.singletonList(aggregationBuilderRoot);
+    }
+
+    public List<AggregationBuilder> createGraphBucketAggregations(String term, String fieldName, Integer size) {
+        AggregationBuilder aggregationBuilderRoot = AggregationBuilders.terms(term).field(fieldName).size(size);
+        List<AggregationBuilder> aggregationBuilders = createGraphAggregations();
+
+        for (AggregationBuilder aggregationBuilder : aggregationBuilders) {
+            aggregationBuilderRoot.subAggregation(aggregationBuilder);
+        }
         return Collections.singletonList(aggregationBuilderRoot);
     }
 

@@ -29,7 +29,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -241,18 +243,24 @@ public class CampaignPerformanceService {
 
     }
 
-    public CampaignPerformanceDatewiseResponse getCampaignCatalogPerfDatewise(
+    public CampaignPerformanceDatewiseResponse getCampaignCatalogPerfDateWise(
             CampaignCatalogPerfDatawiseRequest request) throws IOException {
 
         ElasticFiltersRequest elasticFiltersRequestDateWise = ElasticFiltersRequest.builder()
                 .campaignIds(Collections.singletonList(request.getCampaignId()))
-                .catalogIds(request.getCatalogIds())
+                .aggregationBuilders(campaignPerformanceHelper.createGraphBucketAggregations(
+                        Constants.ESConstants.BY_DATE, DBConstants.ElasticSearch.DATE,
+                        (int) ChronoUnit.DAYS.between(request.getStartDate(), request.getEndDate()) + 1))
                 .build();
 
         elasticFiltersRequestDateWise.setRangeFilters(Collections.singletonList(ElasticFiltersRequest.RangeFilter
                 .builder().gte(request.getStartDate()).lte(request.getEndDate())
                 .fieldName(DBConstants.ElasticSearch.DATE).format(Constants.ESConstants.DAY_DATE_FORMAT).build()));
-        return elasticSearchRepository.getCampaignCatalogDatePerf(elasticFiltersRequestDateWise,
-                request.getCampaignId());
+
+        EsCampaignCatalogAggregateResponse dateWiseResponse = new EsCampaignCatalogAggregateResponse();
+        dateWiseResponse = elasticSearchRepository.fetchEsCampaignCatalogsDateWise(elasticFiltersRequestDateWise);
+
+        return campaignPerformanceTransformer.getCampaignPerformanceDateWiseResponse(request.getCampaignId(),
+                dateWiseResponse);
     }
 }

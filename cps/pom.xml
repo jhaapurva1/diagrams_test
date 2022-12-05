@@ -129,7 +129,7 @@
         <dependency>
             <groupId>com.meesho</groupId>
             <artifactId>ads-common-lib</artifactId>
-            <version>0.0.35-RELEASE</version>
+            <version>1.0.0-RELEASE</version>
         </dependency>
 
         <!-- Kafka -->
@@ -170,7 +170,7 @@
         <dependency>
             <groupId>com.meesho</groupId>
             <artifactId>cps-client</artifactId>
-            <version>0.0.11-RELEASE</version>
+            <version>0.0.12-RELEASE</version>
         </dependency>
 
         <!-- Ad Client-->

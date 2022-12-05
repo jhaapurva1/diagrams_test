@@ -90,7 +90,7 @@ public class CampaignPerformanceController {
             MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public CampaignPerformanceDatewiseResponse getCampaignCatalogPerfDateWise(
             @Valid @RequestBody CampaignCatalogPerfDatawiseRequest request) throws IOException {
-        return performanceService.getCampaignCatalogPerfDatewise(request);
+        return performanceService.getCampaignCatalogPerfDateWise(request);
     }
 
 }
