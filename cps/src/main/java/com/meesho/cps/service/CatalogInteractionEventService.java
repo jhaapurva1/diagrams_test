@@ -24,6 +24,7 @@ import com.meesho.cps.factory.AdBillFactory;
 import com.meesho.cps.helper.CampaignPerformanceHelper;
 import com.meesho.cps.service.external.AdService;
 import com.meesho.cps.service.external.PrismService;
+import com.meesho.cps.transformer.OriginScreenREMapper;
 import com.meesho.cps.transformer.PrismEventTransformer;
 import com.meesho.instrumentation.annotation.DigestLogger;
 import com.meesho.instrumentation.enums.MetricType;
@@ -109,7 +110,15 @@ public class CatalogInteractionEventService {
         AdInteractionPrismEvent adInteractionPrismEvent =
                 PrismEventTransformer.getAdInteractionPrismEvent(adInteractionEvent, userId, catalogId, productId);
 
-        CampaignCatalogMetadataResponse campaignCatalogMetadataResponse = adService.getCampaignCatalogMetadata(Lists.newArrayList(catalogId));
+        String feedType = null;
+        if(Objects.nonNull(adInteractionEvent.getProperties())){
+            String origin = adInteractionEvent.getProperties().getOrigin();
+            String screen = adInteractionEvent.getProperties().getScreen();
+            feedType = OriginScreenREMapper.getFeedType(origin, screen);
+        }
+
+
+        CampaignCatalogMetadataResponse campaignCatalogMetadataResponse = adService.getCampaignCatalogMetadata(Lists.newArrayList(catalogId), userId, feedType);
         List<CampaignCatalogMetadataResponse.CatalogMetadata> catalogMetadataList = campaignCatalogMetadataResponse.getCampaignDetailsList();
         List<CampaignCatalogMetadataResponse.SupplierMetadata> supplierMetadataList = campaignCatalogMetadataResponse.getSupplierDetailsList();
 
