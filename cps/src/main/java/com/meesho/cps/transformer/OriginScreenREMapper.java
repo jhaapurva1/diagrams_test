@@ -76,7 +76,7 @@ public class OriginScreenREMapper {
 
         origin = StringUtils.lowerCase(origin);
         screen = StringUtils.lowerCase(screen);
-        return originScreenREMap.get(origin + "-" + screen);
+        return originScreenREMap.get(screen + "-" + origin);
     }
 
 }
