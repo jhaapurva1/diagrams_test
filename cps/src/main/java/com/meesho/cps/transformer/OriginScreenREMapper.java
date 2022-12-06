@@ -66,6 +66,7 @@ public class OriginScreenREMapper {
         originScreenREMap.put("main-widget", FeedType.COLLECTION.getValue());
         originScreenREMap.put("catalog_search_results-widget", FeedType.COLLECTION.getValue());
         originScreenREMap.put("social_profile_wishlist-similar_products", FeedType.PRODUCT_RECO.getValue());
+        originScreenREMap.put("pdp_recommendations-similar_catalogs", FeedType.PRODUCT_RECO.getValue());
     }
 
     public static String getFeedType(String origin, String screen){
