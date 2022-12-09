@@ -18,7 +18,7 @@ environment:
     memory_limit: 4G
     memory_request: 2G
     deploymentStrategy: rollingUpdate
-    appMetrics: false
+    appMetrics: true
     deployment_args:
       - -Dspring.profiles.active=dev
       - -XX:+UseG1GC
@@ -39,7 +39,7 @@ environment:
     memory_limit: 4G
     memory_request: 2G
     deploymentStrategy: rollingUpdate
-    appMetrics: false
+    appMetrics: true
     deployment_args:
       - -Dspring.profiles.active=dev
       - -XX:+UseG1GC

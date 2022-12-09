@@ -5,12 +5,12 @@
     <parent>
         <groupId>com.meesho</groupId>
         <artifactId>campaign-performance-service</artifactId>
-        <version>0.0.68-RELEASE</version>
+        <version>0.0.69-RELEASE</version>
     </parent>
 
     <groupId>com.meesho</groupId>
     <artifactId>cps</artifactId>
-    <version>0.0.68-RELEASE</version>
+    <version>0.0.69-RELEASE</version>
     <name>cps</name>
     <description>Campaign Performance Service</description>
     <properties>
@@ -130,6 +130,11 @@
             <groupId>com.meesho</groupId>
             <artifactId>ads-common-lib</artifactId>
             <version>1.0.0-RELEASE</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.meesho</groupId>
+                    <artifactId>meesho-instrumentation</artifactId>
+                </exclusion></exclusions>
         </dependency>
 
         <!-- Kafka -->
@@ -164,6 +169,12 @@
             <groupId>io.springfox</groupId>
             <artifactId>springfox-swagger-ui</artifactId>
             <version>${swagger}</version>
+        </dependency>
+        <!-- INSTRUMENTATION-->
+        <dependency>
+            <groupId>com.meesho</groupId>
+            <artifactId>meesho-instrumentation</artifactId>
+            <version>4.1.0-RELEASE</version>
         </dependency>
 
         <!-- CPS Client-->
