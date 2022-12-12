@@ -28,6 +28,10 @@ public class MissedEventsBackfillRequest {
     private Integer batchSize;
 
     @NotNull
+    @NotEmpty
+    private String prestoTableName;
+
+    @NotNull
     private Integer processBatchSize;
 
     private Boolean processSync;

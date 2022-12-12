@@ -31,6 +31,10 @@ public class HbaseCampaignDataBackfillRequest {
     private Integer batchSize;
 
     @NotNull
+    @NotEmpty
+    private String prestoTableName;
+
+    @NotNull
     private Boolean backfillCampaignCatalogDateMetrics;
 
 
