@@ -149,7 +149,7 @@ public class BackFillMissedEventsService {
         final LinkedHashMap<String, PrismSortOrder> sortOrderMap = new LinkedHashMap<>();
         sortOrderMap.put(FIELD_TO_FILTER, PrismSortOrder.ASCENDING);
 
-        String filter = String.format(" %s > '%s' and event_name = 'ad_click' and dump_id = '%s'", FIELD_TO_FILTER, lastProcessedEventId, dumpId);
+        String filter = String.format(" %s > '%s' and dump_id = '%s'", FIELD_TO_FILTER, lastProcessedEventId, dumpId);
 
         PrismDW prismDW = PrismDW.getInstance();
         EngineResponse prismEngineResponse =  prismDW.fetchOffset(prestoTableName,
