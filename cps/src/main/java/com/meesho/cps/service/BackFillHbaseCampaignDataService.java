@@ -91,10 +91,10 @@ public class BackFillHbaseCampaignDataService {
                         }
                         if (campaignIdtoCampaignBudgetUtilizedMap.containsKey(campaignCatalogReconciledMetricsPrestoData.getCampaignId())) {
                             double budgetUtilized = campaignIdtoCampaignBudgetUtilizedMap.get(campaignCatalogReconciledMetricsPrestoData.getCampaignId());
-                            budgetUtilized = budgetUtilized + campaignCatalogReconciledMetricsPrestoData.getBudgetUtilized();
+                            budgetUtilized = budgetUtilized + campaignCatalogReconciledMetricsPrestoData.getBudgetUtilised();
                             campaignIdtoCampaignBudgetUtilizedMap.put(campaignCatalogReconciledMetricsPrestoData.getCampaignId(), budgetUtilized);
                         } else {
-                            campaignIdtoCampaignBudgetUtilizedMap.put(campaignCatalogReconciledMetricsPrestoData.getCampaignId(), campaignCatalogReconciledMetricsPrestoData.getBudgetUtilized());
+                            campaignIdtoCampaignBudgetUtilizedMap.put(campaignCatalogReconciledMetricsPrestoData.getCampaignId(), campaignCatalogReconciledMetricsPrestoData.getBudgetUtilised());
                         }
                         if(hbaseCampaignDataBackfillRequest.getBackfillCampaignCatalogDateMetrics()) {
                             CampaignCatalogDate campaignCatalogDate = new CampaignCatalogDate();
