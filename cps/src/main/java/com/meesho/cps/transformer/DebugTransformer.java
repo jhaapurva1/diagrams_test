@@ -75,8 +75,8 @@ public class DebugTransformer {
         if (Objects.nonNull(campaignCatalogMetricsSaveRequest.getEventDate()))
             campaignCatalogDateMetrics.setDate(LocalDate.parse(campaignCatalogMetricsSaveRequest.getEventDate()));
 
-        if (Objects.nonNull(campaignCatalogMetricsSaveRequest.getBudgetUtilized()))
-            campaignCatalogDateMetrics.setBudgetUtilised(BigDecimal.valueOf(campaignCatalogMetricsSaveRequest.getBudgetUtilized()));
+        if (Objects.nonNull(campaignCatalogMetricsSaveRequest.getBudgetUtilised()))
+            campaignCatalogDateMetrics.setBudgetUtilised(BigDecimal.valueOf(campaignCatalogMetricsSaveRequest.getBudgetUtilised()));
 
         return campaignCatalogDateMetrics;
     }

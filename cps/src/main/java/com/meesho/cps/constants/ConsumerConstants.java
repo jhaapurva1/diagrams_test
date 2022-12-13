@@ -23,7 +23,6 @@ public class ConsumerConstants {
         public static final String BOOTSTRAP_SERVERS = "${kafka.ingestion.bootstrap.servers}";
         public static final String CONTAINER_FACTORY = "ingestionKafkaListenerContainerFactory";
         public static final String BATCH_CONTAINER_FACTORY = "ingestionBatchKafkaListenerContainerFactory";
-        public static final String OFFSET_COMMIT_TIME = "${kafka.consumer.offset.commit.time}";
     }
 
     public static class IngestionServiceConfluentKafka {
@@ -33,6 +32,7 @@ public class ConsumerConstants {
         public static final String SASL_USERNAME="${kafka.ingestion.confluent.sasl_config.username}";
         public static final String SASL_PASSWORD="${kafka.ingestion.confluent.sasl_config.password}";
         public static final String AVRO_SCHEMA_REGISTRY_URL = "${kafka.ingestion.confluent.consumer.avro.schema.registry.url}";
+        public static final String OFFSET_COMMIT_TIME = "${kafka.ingestion.confluent.consumer.offset.commit.time}";
 
     }
 

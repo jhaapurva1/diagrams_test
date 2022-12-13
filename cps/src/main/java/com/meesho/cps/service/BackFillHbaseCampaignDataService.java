@@ -43,7 +43,7 @@ public class BackFillHbaseCampaignDataService {
     @Autowired
     private UpdatedCampaignCatalogCacheDao updatedCampaignCatalogCacheDao;
 
-    String PRESTO_TABLE_NAME = Constants.PrismEventNames.HBASE_PRESTO_TABLE_NAME;
+    //String PRESTO_TABLE_NAME = Constants.PrismEventNames.HBASE_PRESTO_TABLE_NAME;
 
     public static Map<String, Object> processDetails = new HashMap<>();
 
@@ -59,7 +59,7 @@ public class BackFillHbaseCampaignDataService {
 
         try {
             Integer batchLimit = hbaseCampaignDataBackfillRequest.getBatchSize();
-            List<CampaignCatalogReconciledMetricsPrestoData> campaignCatalogReconciledMetricsPrestoDataList = getFeedFromSource(hbaseCampaignDataBackfillRequest.getEventDate(), hbaseCampaignDataBackfillRequest.getDumpId(), batchLimit, offset);
+            List<CampaignCatalogReconciledMetricsPrestoData> campaignCatalogReconciledMetricsPrestoDataList = getFeedFromSource(hbaseCampaignDataBackfillRequest.getEventDate(), hbaseCampaignDataBackfillRequest.getDumpId(), batchLimit, offset, hbaseCampaignDataBackfillRequest.getPrestoTableName());
             if (CollectionUtils.isEmpty(campaignCatalogReconciledMetricsPrestoDataList)) {
                 log.info("{} : backFill Completed", offset);
                 processDetails.put("Status", "COMPLETED- no data");
@@ -91,10 +91,10 @@ public class BackFillHbaseCampaignDataService {
                         }
                         if (campaignIdtoCampaignBudgetUtilizedMap.containsKey(campaignCatalogReconciledMetricsPrestoData.getCampaignId())) {
                             double budgetUtilized = campaignIdtoCampaignBudgetUtilizedMap.get(campaignCatalogReconciledMetricsPrestoData.getCampaignId());
-                            budgetUtilized = budgetUtilized + campaignCatalogReconciledMetricsPrestoData.getBudgetUtilized();
+                            budgetUtilized = budgetUtilized + campaignCatalogReconciledMetricsPrestoData.getBudgetUtilised();
                             campaignIdtoCampaignBudgetUtilizedMap.put(campaignCatalogReconciledMetricsPrestoData.getCampaignId(), budgetUtilized);
                         } else {
-                            campaignIdtoCampaignBudgetUtilizedMap.put(campaignCatalogReconciledMetricsPrestoData.getCampaignId(), campaignCatalogReconciledMetricsPrestoData.getBudgetUtilized());
+                            campaignIdtoCampaignBudgetUtilizedMap.put(campaignCatalogReconciledMetricsPrestoData.getCampaignId(), campaignCatalogReconciledMetricsPrestoData.getBudgetUtilised());
                         }
                         if(hbaseCampaignDataBackfillRequest.getBackfillCampaignCatalogDateMetrics()) {
                             CampaignCatalogDate campaignCatalogDate = new CampaignCatalogDate();
@@ -113,7 +113,7 @@ public class BackFillHbaseCampaignDataService {
                 totalProcessed += campaignCatalogReconciledMetricsPrestoDataList.size();
                 offset = totalProcessed;
                 processDetails.put("totalProcessed", totalProcessed);
-                campaignCatalogReconciledMetricsPrestoDataList = getFeedFromSource(hbaseCampaignDataBackfillRequest.getEventDate(), hbaseCampaignDataBackfillRequest.getDumpId(), batchLimit, offset);
+                campaignCatalogReconciledMetricsPrestoDataList = getFeedFromSource(hbaseCampaignDataBackfillRequest.getEventDate(), hbaseCampaignDataBackfillRequest.getDumpId(), batchLimit, offset, hbaseCampaignDataBackfillRequest.getPrestoTableName());
             }
             processDetails.put("Campaign Catalog Date Metrics Updation Status", "COMPLETED");
             log.info("{} : Processing Campaign Catalog Date Metrics Completed : {}", offset, processDetails);
@@ -132,7 +132,7 @@ public class BackFillHbaseCampaignDataService {
     }
 
 
-    public List<CampaignCatalogReconciledMetricsPrestoData> getFeedFromSource(String eventDate, String dumpId, int batchLimit, int offset) {
+    public List<CampaignCatalogReconciledMetricsPrestoData> getFeedFromSource(String eventDate, String dumpId, int batchLimit, int offset, String prestoTableName) {
 
         final LinkedHashMap<String, PrismSortOrder> sortOrderMap = new LinkedHashMap<>();
         sortOrderMap.put("dump_id", PrismSortOrder.ASCENDING);
@@ -140,7 +140,7 @@ public class BackFillHbaseCampaignDataService {
         String filter = String.format("dump_id = '%s' and event_date = '%s'", dumpId, eventDate);
 
         PrismDW prismDW = PrismDW.getInstance();
-        EngineResponse prismEngineResponse = prismDW.fetchOffset(PRESTO_TABLE_NAME,
+        EngineResponse prismEngineResponse = prismDW.fetchOffset(prestoTableName,
                 Collections.singletonList("*"), filter, null, null, sortOrderMap, batchLimit, offset, CampaignCatalogReconciledMetricsPrestoData.class, FetchType.JDBC);
 
         List<CampaignCatalogReconciledMetricsPrestoData> prismEngineResponseList = new ArrayList<>();

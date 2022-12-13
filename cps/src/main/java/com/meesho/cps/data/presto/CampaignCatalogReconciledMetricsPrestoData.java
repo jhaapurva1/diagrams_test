@@ -34,8 +34,8 @@ public class CampaignCatalogReconciledMetricsPrestoData {
     @DataLakeColumn(name ="wishlist_count")
     private Long wishlistCount;
 
-    @DataLakeColumn(name ="budget_utilized")
-    private Double budgetUtilized;
+    @DataLakeColumn(name ="budget_utilised")
+    private Double budgetUtilised;
 
     @DataLakeColumn(name ="dump_id")
     private String dumpId;

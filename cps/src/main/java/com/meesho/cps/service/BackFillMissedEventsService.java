@@ -30,7 +30,7 @@ public class BackFillMissedEventsService {
     @Autowired
     private PrismService prismService;
 
-    String PRESTO_TABLE_NAME = "scrap.events_missing_on_13aug";
+    //String PRESTO_TABLE_NAME = "scrap.events_missing_on_13aug";
     String FIELD_TO_FILTER = "event_id";
 
     public static Set<String> allProcessedIds = new HashSet<>();
@@ -61,7 +61,7 @@ public class BackFillMissedEventsService {
                 return processDetails;
             }
 
-            List<AdInteractionPrismEventPrestoData> adInteractionPrismEvents = getFeedFromSource(missedEventsBackfillRequest.getLastProcessedEventId(), batchLimit, missedEventsBackfillRequest.getDumpId());
+            List<AdInteractionPrismEventPrestoData> adInteractionPrismEvents = getFeedFromSource(missedEventsBackfillRequest.getLastProcessedEventId(), batchLimit, missedEventsBackfillRequest.getDumpId(), missedEventsBackfillRequest.getPrestoTableName());
 
             adInteractionPrismEvents = adInteractionPrismEvents.stream().filter(value -> !allProcessedIds.contains(value.getEventId())).collect(Collectors.toList());
 
@@ -145,14 +145,14 @@ public class BackFillMissedEventsService {
         });
     }
 
-    public List<AdInteractionPrismEventPrestoData> getFeedFromSource(String lastProcessedEventId, int limit, String dumpId) {
+    public List<AdInteractionPrismEventPrestoData> getFeedFromSource(String lastProcessedEventId, int limit, String dumpId, String prestoTableName) {
         final LinkedHashMap<String, PrismSortOrder> sortOrderMap = new LinkedHashMap<>();
         sortOrderMap.put(FIELD_TO_FILTER, PrismSortOrder.ASCENDING);
 
-        String filter = String.format(" %s > '%s' and event_name <> 'ad_click' and dump_id = '%s'", FIELD_TO_FILTER, lastProcessedEventId, dumpId);
+        String filter = String.format(" %s > '%s' and dump_id = '%s'", FIELD_TO_FILTER, lastProcessedEventId, dumpId);
 
         PrismDW prismDW = PrismDW.getInstance();
-        EngineResponse prismEngineResponse =  prismDW.fetchOffset(PRESTO_TABLE_NAME,
+        EngineResponse prismEngineResponse =  prismDW.fetchOffset(prestoTableName,
                 Collections.singletonList("*"), filter, null, null,
                 sortOrderMap, limit, 0, AdInteractionPrismEventPrestoData.class, FetchType.JDBC);
 
