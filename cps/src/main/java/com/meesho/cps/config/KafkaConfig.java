@@ -48,9 +48,6 @@ public class KafkaConfig {
     @Value(ProducerConstants.PayoutServiceKafka.PAYOUT_BOOTSTRAP_SERVERS)
     private String payoutServers;
 
-    @Value(ConsumerConstants.CommonKafka.AVRO_SCHEMA_REGISTRY_URL)
-    private String avroSchemaRegistryUrl;
-
     @Value(ConsumerConstants.IngestionServiceConfluentKafka.AVRO_SCHEMA_REGISTRY_URL)
     private String confluentAvroSchemaRegistryUrl;
 
@@ -60,23 +57,8 @@ public class KafkaConfig {
     @Value(ConsumerConstants.IngestionServiceConfluentKafka.SASL_PASSWORD)
     private String ingestionConfluentKafkaSaslPassword;
 
-    @Value(ConsumerConstants.IngestionServiceKafka.BOOTSTRAP_SERVERS)
-    private String ingestionBootstrapServers;
-
     @Value(ConsumerConstants.IngestionServiceConfluentKafka.OFFSET_COMMIT_TIME)
     private String offsetCommitTimeIngestionKafka;
-
-    private ConsumerFactory<String, String> ingestionKafkaConsumerFactory() {
-        Map<String, Object> configs = new HashMap<>();
-        configs.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, ingestionBootstrapServers);
-        configs.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
-        configs.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
-        configs.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        //configs.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        configs.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, KafkaAvroDeserializer.class);
-        configs.put(KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, avroSchemaRegistryUrl);
-        return new DefaultKafkaConsumerFactory<>(configs);
-    }
 
     private ConsumerFactory<String, String> ingestionConfluentKafkaConsumerFactory() {
         String confluent_jaas_config = String.format(
@@ -98,19 +80,6 @@ public class KafkaConfig {
         return new DefaultKafkaConsumerFactory<>(configs);
     }
 
-    @Bean(name = ConsumerConstants.IngestionServiceKafka.CONTAINER_FACTORY)
-    public ConcurrentKafkaListenerContainerFactory<String, String> ingestionKafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, String> concurrentKafkaListenerContainerFactory =
-                new ConcurrentKafkaListenerContainerFactory<>();
-        concurrentKafkaListenerContainerFactory.setConsumerFactory(ingestionKafkaConsumerFactory());
-        concurrentKafkaListenerContainerFactory.setBatchListener(false);
-        concurrentKafkaListenerContainerFactory.getContainerProperties().setAckMode(ContainerProperties.AckMode.BATCH);
-
-        log.info("ingestion kafka consumer created with configs {}",
-                concurrentKafkaListenerContainerFactory.getConsumerFactory().getConfigurationProperties());
-        return concurrentKafkaListenerContainerFactory;
-    }
-
     @Bean(name = ConsumerConstants.IngestionServiceConfluentKafka.CONTAINER_FACTORY)
     public ConcurrentKafkaListenerContainerFactory<String, String> ingestionConfluentKafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, String> concurrentKafkaListenerContainerFactory =
@@ -119,21 +88,8 @@ public class KafkaConfig {
         concurrentKafkaListenerContainerFactory.setBatchListener(false);
         concurrentKafkaListenerContainerFactory.getContainerProperties().setAckMode(ContainerProperties.AckMode.TIME);
         concurrentKafkaListenerContainerFactory.getContainerProperties().setAckTime(Long.valueOf(offsetCommitTimeIngestionKafka));
-        
+
         log.info("ingestion confluent kafka consumer created with configs {}",
-                concurrentKafkaListenerContainerFactory.getConsumerFactory().getConfigurationProperties());
-        return concurrentKafkaListenerContainerFactory;
-    }
-
-    @Bean(name = ConsumerConstants.IngestionServiceKafka.BATCH_CONTAINER_FACTORY)
-    public ConcurrentKafkaListenerContainerFactory<String, String> ingestionBatchKafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, String> concurrentKafkaListenerContainerFactory =
-                new ConcurrentKafkaListenerContainerFactory<>();
-        concurrentKafkaListenerContainerFactory.setConsumerFactory(ingestionKafkaConsumerFactory());
-        concurrentKafkaListenerContainerFactory.setBatchListener(true);
-        concurrentKafkaListenerContainerFactory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
-
-        log.info("ingestion kafka consumer created with configs {}",
                 concurrentKafkaListenerContainerFactory.getConsumerFactory().getConfigurationProperties());
         return concurrentKafkaListenerContainerFactory;
     }
