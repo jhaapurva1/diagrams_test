@@ -9,21 +9,14 @@ public class ConsumerConstants {
 
     public static class CommonKafka {
         public static final String BOOTSTRAP_SERVERS = "${kafka.common.bootstrap.servers}";
-        public static final String AVRO_SCHEMA_REGISTRY_URL = "${kafka.ingestion.consumer.avro.schema.registry.url}";
         public static final String CONTAINER_FACTORY = "commonKafkaListenerContainerFactory";
     }
 
     public static class AdServiceKafka {
         public static final String BOOTSTRAP_SERVERS = "${kafka.ad.service.bootstrap.servers}";
-        public static final String AVRO_SCHEMA_REGISTRY_URL = "${kafka.ingestion.consumer.avro.schema.registry.url}";
         public static final String CONTAINER_FACTORY = "adServiceKafkaListenerContainerFactory";
     }
 
-    public static class IngestionServiceKafka {
-        public static final String BOOTSTRAP_SERVERS = "${kafka.ingestion.bootstrap.servers}";
-        public static final String CONTAINER_FACTORY = "ingestionKafkaListenerContainerFactory";
-        public static final String BATCH_CONTAINER_FACTORY = "ingestionBatchKafkaListenerContainerFactory";
-    }
 
     public static class IngestionServiceConfluentKafka {
         public static final String BOOTSTRAP_SERVERS = "${kafka.ingestion.confluent.bootstrap.servers}";
@@ -57,9 +50,7 @@ public class ConsumerConstants {
     }
 
     public static class IngestionInteractionEventsConsumer {
-        public static final String ID = "${kafka.ingestion.interaction.event.consumer.id}";
         public static final String CONFLUENT_CONSUMER_ID = "${kafka.ingestion.interaction.event.consumer.confluent.id}";
-        public static final String TOPICS = "${kafka.ingestion.interaction.event.consumer.topics}";
         public static final String DEAD_QUEUE_TOPIC = "${kafka.ingestion.interaction.event.consumer.dead.queue.topic}";
         public static final String AUTO_START = "${kafka.ingestion.interaction.event.consumer.start}";
         public static final String CONCURRENCY = "${kafka.ingestion.interaction.event.consumer.concurrency}";
@@ -92,15 +83,12 @@ public class ConsumerConstants {
     }
 
     public static class IngestionViewEventsConsumer {
-        public static final String ID = "${kafka.ingestion.view.event.consumer.id}";
         public static final String CONFLUENT_CONSUMER_ID = "${kafka.ingestion.view.event.consumer.confluent.id}";
-        public static final String TOPICS = "${kafka.ingestion.view.event.consumer.topics}";
         public static final String DEAD_QUEUE_TOPIC = "${kafka.ingestion.view.event.consumer.dead.queue.topic}";
         public static final String AUTO_START = "${kafka.ingestion.view.event.consumer.start}";
         public static final String CONCURRENCY = "${kafka.ingestion.view.event.consumer.concurrency}";
         public static final String MAX_POLL_INTERVAL_MS = "${kafka.ingestion.view.event.consumer.max.poll.interval.ms}";
         public static final String BATCH_SIZE = "${kafka.ingestion.view.event.consumer.batch.size}";
-        public static final String BATCH_INTERVAL_MS = "${kafka.ingestion.view.event.consumer.batch.interval.ms}";
     }
 
     public static class DelayedRetryConsumer {
