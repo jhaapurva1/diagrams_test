@@ -12,8 +12,21 @@ excludedModules:
 team: supplier-ads
 bu: supply
 deployArgo: true
-deployment_order:
-  - campaign-performance
+environment:
+  prd:
+    deployment_order:
+      - campaign-performance
+      - campaign-performance-scheduler
+  dev:
+    deployment_order:
+      - campaign-performance-scheduler
+  int:
+    deployment_order:
+      - campaign-performance
+  ftr:
+    deployment_order:
+      - campaign-performance
+      - campaign-performance-scheduler
 branch_params:
   develop.*:
     push_to_jfrog: true
