@@ -1,5 +1,6 @@
 package com.meesho.cps.service;
 
+import com.meesho.ad.client.data.AdsMetadata;
 import com.meesho.ad.client.response.CampaignCatalogMetadataResponse;
 import com.meesho.ad.client.response.CampaignDetails;
 import com.meesho.ads.lib.helper.TelegrafMetricsHelper;
@@ -140,8 +141,7 @@ public class CatalogInteractionEventServiceTest {
         properties.setScreen("fsdf");
         properties.setOrigin("sdfdf");
         properties.setId(4L);
-        properties.setCampaignId(3L);
-        properties.setCpc(new BigDecimal(4));
+        properties.setAdsMetadata(AdsMetadata.builder().campaignId(3l).cpc(new BigDecimal(4).doubleValue()).build().encrypt("default"));
         adInteractionEvent.setProperties(properties);
         adInteractionEvent.setUserId("1");
         return adInteractionEvent;
