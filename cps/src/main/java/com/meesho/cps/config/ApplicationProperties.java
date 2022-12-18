@@ -132,6 +132,9 @@ public class ApplicationProperties {
     @Value("${fetch.active_campaign.es.scroll.timeout.minutes}")
     private Integer fetchActiveCampaignsEsScrollTimeoutMinutes;
 
+    @Value("${encryption.key.ads_metadata}")
+    private String adsMetadataEncryptionKey;
+
     @PostConstruct
     public void init() {
         SchedulerProperty.SchedulerPropertyBuilder schedulerPropertyBuilder = SchedulerProperty.builder();
