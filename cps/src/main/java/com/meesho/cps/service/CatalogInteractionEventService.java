@@ -2,8 +2,10 @@ package com.meesho.cps.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
+import com.meesho.ad.client.data.AdsMetadata;
 import com.meesho.ad.client.response.CampaignCatalogMetadataResponse;
 import com.meesho.ad.client.response.CampaignDetails;
+import com.meesho.ad.client.response.CatalogAdAttributesResponse;
 import com.meesho.ads.lib.helper.TelegrafMetricsHelper;
 import com.meesho.ads.lib.utils.DateTimeUtils;
 import com.meesho.cps.config.ApplicationProperties;
@@ -29,6 +31,7 @@ import com.meesho.cps.transformer.PrismEventTransformer;
 import com.meesho.instrumentation.annotation.DigestLogger;
 import com.meesho.instrumentation.enums.MetricType;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -37,10 +40,7 @@ import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import static com.meesho.cps.constants.TelegrafConstants.*;
 
@@ -106,9 +106,13 @@ public class CatalogInteractionEventService {
         String userId = adInteractionEvent.getUserId();
         Long catalogId = adInteractionEvent.getProperties().getId();
         Long productId = adInteractionEvent.getProperties().getProductId();
+        AdsMetadata adsMetadataObject = AdsMetadata.decrypt(adInteractionEvent.getProperties().getAdsMetadata(), applicationProperties.getAdsMetadataEncryptionKey());
+        Long campaignId = adsMetadataObject.getCampaignId();
+        BigDecimal cpc = Objects.isNull(adsMetadataObject.getCpc()) ? null : BigDecimal.valueOf(adsMetadataObject.getCpc());
 
         AdInteractionPrismEvent adInteractionPrismEvent =
                 PrismEventTransformer.getAdInteractionPrismEvent(adInteractionEvent, userId, catalogId, productId);
+
 
         String feedType = null;
         if(Objects.nonNull(adInteractionEvent.getProperties())){
@@ -117,8 +121,15 @@ public class CatalogInteractionEventService {
             feedType = OriginScreenREMapper.getFeedType(origin, screen);
         }
 
+        List<Long> catalogIds = null;
+        List<Long> campaignIds = null;
+        if (Objects.isNull(cpc) || Objects.isNull(campaignId)) {
+            catalogIds = new ArrayList<>(Collections.singletonList(catalogId));
+        } else {
+            campaignIds = new ArrayList<>(Collections.singletonList(campaignId));
+        }
 
-        CampaignCatalogMetadataResponse campaignCatalogMetadataResponse = adService.getCampaignCatalogMetadata(Lists.newArrayList(catalogId), userId, feedType);
+        CampaignCatalogMetadataResponse campaignCatalogMetadataResponse = adService.getCampaignCatalogMetadata(catalogIds, campaignIds, userId, feedType);
         List<CampaignCatalogMetadataResponse.CatalogMetadata> catalogMetadataList = campaignCatalogMetadataResponse.getCampaignDetailsList();
         List<CampaignCatalogMetadataResponse.SupplierMetadata> supplierMetadataList = campaignCatalogMetadataResponse.getSupplierDetailsList();
 
@@ -136,11 +147,12 @@ public class CatalogInteractionEventService {
 
         CampaignDetails catalogMetadata = catalogMetadataList.get(0).getCampaignDetails();
         CampaignCatalogMetadataResponse.SupplierMetadata supplierMetadata = supplierMetadataList.get(0);
-        Long campaignId = catalogMetadata.getCampaignId();
         BigDecimal totalBudget = catalogMetadata.getBudget();
         Integer billVersion = catalogMetadata.getBillVersion();
-        BigDecimal cpc = catalogMetadata.getCpc();
         CampaignType campaignType = CampaignType.fromValue(catalogMetadata.getCampaignType());
+        campaignId = catalogMetadata.getCampaignId();
+        cpc = Objects.isNull(cpc) ? catalogMetadata.getCpc() : cpc;
+
         adInteractionPrismEvent.setCampaignId(campaignId);
         LocalDate eventDate = campaignHelper.getLocalDateForDailyCampaignFromLocalDateTime(
                 DateTimeUtils.getCurrentLocalDateTimeInIST());
@@ -175,8 +187,8 @@ public class CatalogInteractionEventService {
         String screen = adInteractionEvent.getProperties().getScreen();
         //Perform deduplication
         if (billHandler.performWindowDeDuplication()) {
-            Long id = Objects.nonNull(productId)?productId:catalogId;
-            AdUserInteractionType type = Objects.nonNull(productId)? AdUserInteractionType.PRODUCT_ID: AdUserInteractionType.CATALOG_ID;
+            Long id = Objects.nonNull(productId) ? productId : catalogId;
+            AdUserInteractionType type = Objects.nonNull(productId) ? AdUserInteractionType.PRODUCT_ID : AdUserInteractionType.CATALOG_ID;
             Long previousInteractionTime = userCatalogInteractionCacheDao.get(userId, id, origin, screen, type);
             if (!checkIfInteractionNeedsToBeConsidered(previousInteractionTime, interactionTime)) {
                 log.warn("Ignoring click event since window hasn't passed or wrong ordering," +
@@ -251,7 +263,7 @@ public class CatalogInteractionEventService {
     }
 
     public void incrementInteractionCount(Long campaignId, Long catalogId, LocalDate date, String eventName) {
-        log.info("campaignId {}, catalogId {}, date{}, eventName {}" , campaignId, catalogId, date, eventName);
+        log.info("campaignId {}, catalogId {}, date{}, eventName {}", campaignId, catalogId, date, eventName);
         // CAUTION: Please do not change the order of cases here since action is the combination of multiple cases
         switch (eventName) {
             case ConsumerConstants.IngestionInteractionEvents.ANONYMOUS_AD_SHARED_EVENT_NAME:

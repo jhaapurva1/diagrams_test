@@ -65,6 +65,9 @@ public class AdInteractionEvent {
         @JsonProperty("app_version_code")
         private Integer appVersionCode;
 
+        @JsonProperty("ads_metadata")
+        private String adsMetadata;
+
     }
 
 }
