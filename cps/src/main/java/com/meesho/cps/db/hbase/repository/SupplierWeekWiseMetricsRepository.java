@@ -120,10 +120,6 @@ public class SupplierWeekWiseMetricsRepository {
     }
 
     public BigDecimal incrementBudgetUtilised(Long supplierId, LocalDate weekStartDate, BigDecimal interactionMultiplier) {
-        if (Objects.isNull(this.get(supplierId, weekStartDate))) {
-            this.put(SupplierWeekWiseMetrics.builder().supplierId(supplierId).budgetUtilised(BigDecimal.ZERO)
-                    .weekStartDate(weekStartDate).build());
-        }
         try (Table table = getTable()) {
             long value = table.incrementColumnValue(
                     Bytes.toBytes(SupplierWeekWiseMetrics.generateRowKey(supplierId, weekStartDate)),

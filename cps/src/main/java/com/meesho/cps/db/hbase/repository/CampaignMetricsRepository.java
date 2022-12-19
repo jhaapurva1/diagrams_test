@@ -108,9 +108,6 @@ public class CampaignMetricsRepository {
     }
 
     public BigDecimal incrementBudgetUtilised(Long campaignId, BigDecimal interactionMultiplier) {
-        if (Objects.isNull(this.get(campaignId))) {
-            this.put(CampaignMetrics.builder().campaignId(campaignId).budgetUtilised(BigDecimal.ZERO).build());
-        }
         try (Table table = getTable()) {
             long value =
                     table.incrementColumnValue(Bytes.toBytes(CampaignMetrics.generateRowKey(campaignId)), COLUMN_FAMILY,

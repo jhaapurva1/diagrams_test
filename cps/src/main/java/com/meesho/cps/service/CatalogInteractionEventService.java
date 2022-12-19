@@ -1,15 +1,16 @@
 package com.meesho.cps.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Lists;
 import com.meesho.ad.client.data.AdsMetadata;
 import com.meesho.ad.client.response.CampaignCatalogMetadataResponse;
 import com.meesho.ad.client.response.CampaignDetails;
-import com.meesho.ad.client.response.CatalogAdAttributesResponse;
 import com.meesho.ads.lib.helper.TelegrafMetricsHelper;
 import com.meesho.ads.lib.utils.DateTimeUtils;
 import com.meesho.cps.config.ApplicationProperties;
 import com.meesho.cps.constants.*;
+import com.meesho.cps.data.entity.hbase.CampaignDatewiseMetrics;
+import com.meesho.cps.data.entity.hbase.CampaignMetrics;
+import com.meesho.cps.data.entity.hbase.SupplierWeekWiseMetrics;
 import com.meesho.cps.data.entity.kafka.AdInteractionEvent;
 import com.meesho.cps.data.entity.kafka.AdInteractionPrismEvent;
 import com.meesho.cps.data.entity.kafka.BudgetExhaustedEvent;
@@ -31,7 +32,6 @@ import com.meesho.cps.transformer.PrismEventTransformer;
 import com.meesho.instrumentation.annotation.DigestLogger;
 import com.meesho.instrumentation.enums.MetricType;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -109,6 +109,9 @@ public class CatalogInteractionEventService {
         AdsMetadata adsMetadataObject = AdsMetadata.decrypt(adInteractionEvent.getProperties().getAdsMetadata(), applicationProperties.getAdsMetadataEncryptionKey());
         Long campaignId = adsMetadataObject.getCampaignId();
         BigDecimal cpc = Objects.isNull(adsMetadataObject.getCpc()) ? null : BigDecimal.valueOf(adsMetadataObject.getCpc());
+        if (Objects.nonNull(cpc) && BigDecimal.ZERO.equals(cpc)) {
+            cpc = null;
+        }
 
         AdInteractionPrismEvent adInteractionPrismEvent =
                 PrismEventTransformer.getAdInteractionPrismEvent(adInteractionEvent, userId, catalogId, productId);
@@ -146,17 +149,6 @@ public class CatalogInteractionEventService {
         }
 
         CampaignDetails catalogMetadata = catalogMetadataList.get(0).getCampaignDetails();
-        if (Objects.nonNull(catalogMetadata.getIsBudgetExhausted()) && catalogMetadata.getIsBudgetExhausted()) {
-            log.error("Budget exhausted for catalogId {}", catalogId);
-            adInteractionPrismEvent.setStatus(AdInteractionStatus.INVALID);
-            adInteractionPrismEvent.setReason(AdInteractionInvalidReason.BUDGET_EXHAUSTED);
-            publishPrismEvent(adInteractionPrismEvent);
-            telegrafMetricsHelper.increment(INTERACTION_EVENT_KEY, INTERACTION_EVENT_TAGS,
-                    adInteractionEvent.getEventName(), adInteractionEvent.getProperties().getScreen(), adInteractionEvent.getProperties().getOrigin(),
-                    AdInteractionStatus.INVALID.name(), AdInteractionInvalidReason.BUDGET_EXHAUSTED.name());
-            return;
-        }
-
         CampaignCatalogMetadataResponse.SupplierMetadata supplierMetadata = supplierMetadataList.get(0);
 
         BigDecimal totalBudget = catalogMetadata.getBudget();
@@ -186,6 +178,17 @@ public class CatalogInteractionEventService {
             telegrafMetricsHelper.increment(INTERACTION_EVENT_KEY, INTERACTION_EVENT_TAGS,
                     adInteractionEvent.getEventName(), adInteractionEvent.getProperties().getScreen(), adInteractionEvent.getProperties().getOrigin(),
                     AdInteractionStatus.INVALID.name(), AdInteractionInvalidReason.NON_BILLABLE_INTERACTION.name());
+            return;
+        }
+
+        if (initialiseAndCheckIsBudgetExhausted(catalogMetadata, weekStartDate, eventDate, weeklyBudgetUtilisationLimit)) {
+            log.error("Budget exhausted for catalogId {}", catalogId);
+            adInteractionPrismEvent.setStatus(AdInteractionStatus.INVALID);
+            adInteractionPrismEvent.setReason(AdInteractionInvalidReason.BUDGET_EXHAUSTED);
+            publishPrismEvent(adInteractionPrismEvent);
+            telegrafMetricsHelper.increment(INTERACTION_EVENT_KEY, INTERACTION_EVENT_TAGS,
+                    adInteractionEvent.getEventName(), adInteractionEvent.getProperties().getScreen(), adInteractionEvent.getProperties().getOrigin(),
+                    AdInteractionStatus.INVALID.name(), AdInteractionInvalidReason.BUDGET_EXHAUSTED.name());
             return;
         }
 
@@ -256,6 +259,48 @@ public class CatalogInteractionEventService {
         int cpcNormalised = cpc.multiply(BigDecimal.valueOf(100)).intValue();
         telegrafMetricsHelper.increment(INTERACTION_EVENT_CPC_KEY, cpcNormalised, INTERACTION_EVENT_CPC_TAGS,
                 adInteractionEvent.getEventName(), adInteractionEvent.getProperties().getScreen(), adInteractionEvent.getProperties().getOrigin());
+    }
+
+    private boolean initialiseAndCheckIsBudgetExhausted(CampaignDetails campaignDetails, LocalDate weekStartDate, LocalDate eventDate, BigDecimal weeklyBudgetUtilisationLimit) {
+        BigDecimal supplierWeeklyBudgetUtilised = this.getAndInitialiseSupplierWeeklyUtilisedBudget(campaignDetails.getSupplierId(), weekStartDate);
+        if (supplierWeeklyBudgetUtilised.compareTo(weeklyBudgetUtilisationLimit) >= 0) {
+            return true;
+        }
+        BigDecimal campaignBudgetUtilised = this.getAndInitialiseCampaignBudgetUtilised(campaignDetails, eventDate);
+        return campaignBudgetUtilised.compareTo(campaignDetails.getBudget()) >= 0;
+    }
+
+    private BigDecimal getAndInitialiseCampaignBudgetUtilised(CampaignDetails campaignDetails, LocalDate eventDate) {
+        CampaignType campaignType = CampaignType.fromValue(campaignDetails.getCampaignType());
+        BigDecimal budgetUtilised = BigDecimal.ZERO;
+        if (CampaignType.DAILY_BUDGET.equals(campaignType)) {
+            CampaignDatewiseMetrics campaignDatewiseMetrics = campaignDatewiseMetricsRepository.get(campaignDetails.getCampaignId(), eventDate);
+            if (Objects.isNull(campaignDatewiseMetrics)) {
+                campaignDatewiseMetricsRepository.put(CampaignDatewiseMetrics.builder().campaignId(campaignDetails.getCampaignId()).date(eventDate).budgetUtilised(BigDecimal.ZERO).build());
+            } else {
+                budgetUtilised = campaignDatewiseMetrics.getBudgetUtilised();
+            }
+        } else {
+            CampaignMetrics campaignMetrics = campaignMetricsRepository.get(campaignDetails.getCampaignId());
+            if (Objects.isNull(campaignMetrics)) {
+                campaignMetricsRepository.put(CampaignMetrics.builder().campaignId(campaignDetails.getCampaignId()).budgetUtilised(BigDecimal.ZERO).build());
+            } else {
+                budgetUtilised = campaignMetrics.getBudgetUtilised();
+            }
+        }
+        return budgetUtilised;
+    }
+
+    private BigDecimal getAndInitialiseSupplierWeeklyUtilisedBudget(Long supplierId, LocalDate weekStartDate) {
+        BigDecimal budgetUtilised = BigDecimal.ZERO;
+        SupplierWeekWiseMetrics supplierWeekWiseMetrics = supplierWeekWiseMetricsRepository.get(supplierId, weekStartDate);
+        if (Objects.isNull(supplierWeekWiseMetrics)) {
+            supplierWeekWiseMetricsRepository.put(SupplierWeekWiseMetrics.builder().supplierId(supplierId).budgetUtilised(BigDecimal.ZERO)
+                    .weekStartDate(weekStartDate).build());
+        } else {
+            budgetUtilised = supplierWeekWiseMetrics.getBudgetUtilised();
+        }
+        return budgetUtilised;
     }
 
     private void publishPrismEvent(AdInteractionPrismEvent adInteractionPrismEvent) {
