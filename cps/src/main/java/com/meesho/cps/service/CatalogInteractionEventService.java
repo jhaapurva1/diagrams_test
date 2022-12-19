@@ -181,7 +181,7 @@ public class CatalogInteractionEventService {
             return;
         }
 
-        if (initialiseAndCheckIsBudgetExhausted(catalogMetadata, weekStartDate, eventDate, weeklyBudgetUtilisationLimit)) {
+        if (initialiseAndCheckIsBudgetExhausted(catalogMetadata, weekStartDate, eventDate, weeklyBudgetUtilisationLimit, catalogId)) {
             log.error("Budget exhausted for catalogId {}", catalogId);
             adInteractionPrismEvent.setStatus(AdInteractionStatus.INVALID);
             adInteractionPrismEvent.setReason(AdInteractionInvalidReason.BUDGET_EXHAUSTED);
@@ -225,26 +225,13 @@ public class CatalogInteractionEventService {
         BigDecimal budgetUtilised = modifyAndGetBudgetUtilised(cpc, campaignId, catalogId, eventDate, campaignType);
 
         if (budgetUtilised.compareTo(totalBudget) >= 0) {
-            BudgetExhaustedEvent budgetExhaustedEvent = BudgetExhaustedEvent.builder().catalogId(catalogId).campaignId(campaignId).build();
-            try {
-                kafkaService.sendMessage(budgetExhaustedTopic, String.valueOf(campaignId),
-                        objectMapper.writeValueAsString(budgetExhaustedEvent));
-            } catch (Exception e) {
-                log.error("Exception while sending budgetExhausted event {}", budgetExhaustedEvent, e);
-            }
+            sendBudgetExhaustedEvent(campaignId, catalogId);
         }
 
         //update supplier weekly budget utilised
         BigDecimal supplierWeeklyBudgetUtilised = modifyAndGetSupplierWeeklyBudgetUtilised(supplierId, weekStartDate, cpc);
         if (Objects.nonNull(weeklyBudgetUtilisationLimit) && supplierWeeklyBudgetUtilised.compareTo(weeklyBudgetUtilisationLimit) >= 0) {
-            SupplierWeeklyBudgetExhaustedEvent supplierWeeklyBudgetExhaustedEvent =
-                    SupplierWeeklyBudgetExhaustedEvent.builder().supplierId(supplierId).catalogId(catalogId).build();
-            try {
-                kafkaService.sendMessage(suppliersWeeklyBudgetExhaustedTopic, String.valueOf(supplierId),
-                        objectMapper.writeValueAsString(supplierWeeklyBudgetExhaustedEvent));
-            } catch (Exception e) {
-                log.error("Exception while sending supplierWeeklyBudgetExhausted event {}", supplierWeeklyBudgetExhaustedEvent, e);
-            }
+            sendSupplierBudgetExhaustedEvent(supplierId, catalogId);
         }
 
         adInteractionPrismEvent.setStatus(AdInteractionStatus.VALID);
@@ -261,13 +248,39 @@ public class CatalogInteractionEventService {
                 adInteractionEvent.getEventName(), adInteractionEvent.getProperties().getScreen(), adInteractionEvent.getProperties().getOrigin());
     }
 
-    private boolean initialiseAndCheckIsBudgetExhausted(CampaignDetails campaignDetails, LocalDate weekStartDate, LocalDate eventDate, BigDecimal weeklyBudgetUtilisationLimit) {
+    private void sendBudgetExhaustedEvent(Long campaignId, Long catalogId) {
+        BudgetExhaustedEvent budgetExhaustedEvent = BudgetExhaustedEvent.builder().catalogId(catalogId).campaignId(campaignId).build();
+        try {
+            kafkaService.sendMessage(budgetExhaustedTopic, String.valueOf(campaignId),
+                    objectMapper.writeValueAsString(budgetExhaustedEvent));
+        } catch (Exception e) {
+            log.error("Exception while sending budgetExhausted event {}", budgetExhaustedEvent, e);
+        }
+    }
+
+    private void sendSupplierBudgetExhaustedEvent(Long supplierId, Long catalogId) {
+        SupplierWeeklyBudgetExhaustedEvent supplierWeeklyBudgetExhaustedEvent =
+                SupplierWeeklyBudgetExhaustedEvent.builder().supplierId(supplierId).catalogId(catalogId).build();
+        try {
+            kafkaService.sendMessage(suppliersWeeklyBudgetExhaustedTopic, String.valueOf(supplierId),
+                    objectMapper.writeValueAsString(supplierWeeklyBudgetExhaustedEvent));
+        } catch (Exception e) {
+            log.error("Exception while sending supplierWeeklyBudgetExhausted event {}", supplierWeeklyBudgetExhaustedEvent, e);
+        }
+    }
+
+    private boolean initialiseAndCheckIsBudgetExhausted(CampaignDetails campaignDetails, LocalDate weekStartDate, LocalDate eventDate, BigDecimal weeklyBudgetUtilisationLimit, Long catalogId) {
         BigDecimal supplierWeeklyBudgetUtilised = this.getAndInitialiseSupplierWeeklyUtilisedBudget(campaignDetails.getSupplierId(), weekStartDate);
         if (supplierWeeklyBudgetUtilised.compareTo(weeklyBudgetUtilisationLimit) >= 0) {
+            sendSupplierBudgetExhaustedEvent(campaignDetails.getSupplierId(), catalogId);
             return true;
         }
         BigDecimal campaignBudgetUtilised = this.getAndInitialiseCampaignBudgetUtilised(campaignDetails, eventDate);
-        return campaignBudgetUtilised.compareTo(campaignDetails.getBudget()) >= 0;
+        if (campaignBudgetUtilised.compareTo(campaignDetails.getBudget()) >= 0) {
+            sendBudgetExhaustedEvent(campaignDetails.getCampaignId(), catalogId);
+            return true;
+        }
+        return false;
     }
 
     private BigDecimal getAndInitialiseCampaignBudgetUtilised(CampaignDetails campaignDetails, LocalDate eventDate) {
