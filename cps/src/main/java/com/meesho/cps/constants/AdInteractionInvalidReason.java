@@ -5,5 +5,5 @@ package com.meesho.cps.constants;
  * 03/08/21
  */
 public enum AdInteractionInvalidReason {
-    DUPLICATE, CAMPAIGN_INACTIVE, NON_BILLABLE_INTERACTION;
+    DUPLICATE, CAMPAIGN_INACTIVE, NON_BILLABLE_INTERACTION, BUDGET_EXHAUSTED;
 }

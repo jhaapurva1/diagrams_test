@@ -146,7 +146,19 @@ public class CatalogInteractionEventService {
         }
 
         CampaignDetails catalogMetadata = catalogMetadataList.get(0).getCampaignDetails();
+        if (Objects.nonNull(catalogMetadata.getIsBudgetExhausted()) && catalogMetadata.getIsBudgetExhausted()) {
+            log.error("Budget exhausted for catalogId {}", catalogId);
+            adInteractionPrismEvent.setStatus(AdInteractionStatus.INVALID);
+            adInteractionPrismEvent.setReason(AdInteractionInvalidReason.BUDGET_EXHAUSTED);
+            publishPrismEvent(adInteractionPrismEvent);
+            telegrafMetricsHelper.increment(INTERACTION_EVENT_KEY, INTERACTION_EVENT_TAGS,
+                    adInteractionEvent.getEventName(), adInteractionEvent.getProperties().getScreen(), adInteractionEvent.getProperties().getOrigin(),
+                    AdInteractionStatus.INVALID.name(), AdInteractionInvalidReason.BUDGET_EXHAUSTED.name());
+            return;
+        }
+
         CampaignCatalogMetadataResponse.SupplierMetadata supplierMetadata = supplierMetadataList.get(0);
+
         BigDecimal totalBudget = catalogMetadata.getBudget();
         Integer billVersion = catalogMetadata.getBillVersion();
         CampaignType campaignType = CampaignType.fromValue(catalogMetadata.getCampaignType());
