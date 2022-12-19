@@ -115,13 +115,6 @@ public class CampaignDatewiseMetricsRepository {
     }
 
     public BigDecimal incrementBudgetUtilised(Long campaignId, LocalDate date, BigDecimal interactionMultiplier) {
-        if (Objects.isNull(this.get(campaignId, date))) {
-            this.put(CampaignDatewiseMetrics.builder()
-                    .campaignId(campaignId)
-                    .date(date)
-                    .budgetUtilised(BigDecimal.ZERO)
-                    .build());
-        }
         try (Table table = getTable()) {
             long value =
                     table.incrementColumnValue(Bytes.toBytes(CampaignDatewiseMetrics.generateRowKey(campaignId, date)),
