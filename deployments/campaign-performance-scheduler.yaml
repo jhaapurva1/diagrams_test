@@ -14,7 +14,7 @@ environment:
     as_enabled: false
     as_min: 1
     as_max: 1
-    cpu_request: 500m
+    cpu_request: 1
     memory_limit: 4G
     memory_request: 2G
     deploymentStrategy: recreate
@@ -35,7 +35,7 @@ environment:
     as_enabled: false
     as_min: 1
     as_max: 1
-    cpu_request: 500m
+    cpu_request: 1
     memory_limit: 4G
     memory_request: 2G
     deploymentStrategy: recreate
@@ -56,7 +56,7 @@ environment:
     as_enabled: false
     as_min: 1
     as_max: 1
-    cpu_request: 500m
+    cpu_request: 1
     memory_limit: 4G
     memory_request: 2G
     deploymentStrategy: recreate
@@ -77,9 +77,6 @@ environment:
     as_enabled: false
     as_min: 1
     as_max: 1
-    as_trigger_metric: cpu
-    as_trigger_type: Utilization
-    as_trigger_value: 50
     cpu_limit: 4
     cpu_request: 3
     memory_limit: 12G

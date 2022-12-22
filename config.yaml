@@ -5,7 +5,6 @@ maintainer: akhil.gupta
 skip_sonar: false
 build_tool: docker
 dockerBuildVersion: maven-3.3-jdk-8
-notify_channel: supplier-ads-ci-alerts
 arch: amd64
 excludedModules:
   - cps-client
@@ -19,14 +18,17 @@ environment:
       - campaign-performance-scheduler
   dev:
     deployment_order:
+      - campaign-performance
       - campaign-performance-scheduler
   int:
     deployment_order:
       - campaign-performance
+      - campaign-performance-scheduler
   ftr:
     deployment_order:
       - campaign-performance
       - campaign-performance-scheduler
+notify_channel: supplier-ads-ci-alerts
 branch_params:
   develop.*:
     push_to_jfrog: true
