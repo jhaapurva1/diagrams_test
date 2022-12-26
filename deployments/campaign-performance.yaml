@@ -76,11 +76,10 @@ environment:
   prd:
     as_enabled: true
     as_min: 2
-    as_max: 6
+    as_max: 12
     as_trigger_metric: cpu
     as_trigger_type: Utilization
     as_trigger_value: 50
-    cpu_limit: 4
     cpu_request: 3
     memory_limit: 12G
     memory_request: 10G
