@@ -10,7 +10,7 @@
 
     <groupId>com.meesho</groupId>
     <artifactId>cps</artifactId>
-    <version>0.0.89-RELEASE</version>
+    <version>0.0.90-RELEASE</version>
     <name>cps</name>
     <description>Campaign Performance Service</description>
     <properties>
