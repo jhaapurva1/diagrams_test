@@ -7,7 +7,6 @@
         <artifactId>campaign-performance-service</artifactId>
         <version>0.0.93-RELEASE</version>
     </parent>
-
     <groupId>com.meesho</groupId>
     <artifactId>cps</artifactId>
     <version>0.0.93-RELEASE</version>
