@@ -85,7 +85,7 @@ environment:
     memory_limit: 12G
     memory_request: 10G
     deploymentStrategy: rollingUpdate
-    maxSurge: 20%
+    maxSurge: 1
     appMetrics: true
     deployment_args:
       - -Dspring.profiles.active=prd
