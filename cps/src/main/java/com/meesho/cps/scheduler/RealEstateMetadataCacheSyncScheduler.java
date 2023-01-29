@@ -30,4 +30,9 @@ public class RealEstateMetadataCacheSyncScheduler extends AbstractScheduler {
         return realEstateMetadataCacheDao.syncUpdatedEntities(Country.valueOf(country));
     }
 
+    @Override
+    public Long process(int limit, ZonedDateTime startTime, int processBatchSize) throws Exception {
+        return null;
+    }
+
 }

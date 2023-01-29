@@ -21,6 +21,7 @@ public class ConsumerConstants {
     public static class IngestionServiceConfluentKafka {
         public static final String BOOTSTRAP_SERVERS = "${kafka.ingestion.confluent.bootstrap.servers}";
         public static final String CONTAINER_FACTORY = "confluentIngestionContainerFactory";
+        public static final String MANUAL_ACK_CONTAINER_FACTORY = "manualAckConfluentIngestionContainerFactory";
         public static final String BATCH_CONTAINER_FACTORY = "ingestionBatchConfluentKafkaListenerContainerFactory";
         public static final String SASL_USERNAME="${kafka.ingestion.confluent.sasl_config.username}";
         public static final String SASL_PASSWORD="${kafka.ingestion.confluent.sasl_config.password}";
@@ -36,6 +37,10 @@ public class ConsumerConstants {
         public static final String ANONYMOUS_AD_CLICK_EVENT_NAME = "anonymous_ad_click";
         public static final String ANONYMOUS_AD_SHARED_EVENT_NAME= "anonymous_ad_shared";
         public static final String ANONYMOUS_AD_WISHLISTED_EVENT_NAME = "anonymous_ad_wishlisted";
+    }
+
+    public static class AdWidgetRealEstates {
+        public static final String TEXT_SEARCH = "catalog_search_results";
     }
 
     public static class CampaignUpdateConsumer {
@@ -98,6 +103,40 @@ public class ConsumerConstants {
         public static final String CONCURRENCY = "${kafka.delayed_retry.event.consumer.concurrency}";
         public static final String MAX_POLL_INTERVAL_MS = "${kafka.delayed_retry.event.consumer.max.poll.interval.ms}";
         public static final String BATCH_SIZE = "${kafka.delayed_retry.event.consumer.batch.size}";
+    }
+
+    public static class AdWidgetViewEventConsumer {
+
+        public static final String CONSUMER_GROUP_ID = "cps.adWidgetViewEventConsumerGroup";
+
+        public static final String CONSUMER_ID = "${kafka.display_ad.widget.view.event.consumer.id}";
+
+        public static final String TOPIC = "${kafka.display_ad.widget.view.event.consumer.topic}";
+
+        public static final String AUTO_START = "${kafka.display_ad.widget.view.event.consumer.start}";
+
+        public static final String CONCURRENCY = "${kafka.display_ad.widget.view.event.consumer.concurrency}";
+
+        public static final String MAX_POLL_INTERVAL_MS = "${kafka.display_ad.widget.view.event.consumer.max.poll.interval.ms}";
+
+        public static final String BATCH_SIZE = "${kafka.display_ad.widget.view.event.consumer.batch.size}";
+    }
+
+    public static class AdWidgetClickEventConsumer {
+
+        public static final String CONSUMER_GROUP_ID = "cps.adWidgetClickEventConsumerGroup";
+
+        public static final String CONSUMER_ID = "${kafka.display_ad.widget.click.event.consumer.id}";
+
+        public static final String TOPIC = "${kafka.display_ad.widget.click.event.consumer.topic}";
+
+        public static final String AUTO_START = "${kafka.display_ad.widget.click.event.consumer.start}";
+
+        public static final String CONCURRENCY = "${kafka.display_ad.widget.click.event.consumer.concurrency}";
+
+        public static final String MAX_POLL_INTERVAL_MS = "${kafka.display_ad.widget.click.event.consumer.max.poll.interval.ms}";
+
+        public static final String BATCH_SIZE = "${kafka.display_ad.widget.click.event.consumer.batch.size}";
     }
 
 }
