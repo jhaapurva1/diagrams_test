@@ -13,6 +13,10 @@ public class TelegrafConstants {
     public static final String INTERACTION_EVENT_CPC_KEY = SERVICE_NAME + "InteractionEventCPC";
     public static final String VIEW_INCREMENTS = SERVICE_NAME + "ViewIncrements";
 
+    public static final String WIDGET_VIEW_EVENT_KEY = SERVICE_NAME + "WidgetViewEvent";
+
+    public static final String WIDGET_CLICK_EVENT_KEY = SERVICE_NAME + "WidgetclickEvent";
+
     // tags placeholder
     public static final String INTERACTION_EVENT_TAGS = "eventName=%s,screen=%s,origin=%s,status=%s,reason=%s";
     public static final String VIEW_EVENT_TAGS = "eventName=%s,screen=%s,origin=%s,status=%s,reason=%s";

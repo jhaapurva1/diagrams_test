@@ -94,6 +94,19 @@ public class KafkaConfig {
         return concurrentKafkaListenerContainerFactory;
     }
 
+    @Bean(name = ConsumerConstants.IngestionServiceConfluentKafka.MANUAL_ACK_CONTAINER_FACTORY)
+    public ConcurrentKafkaListenerContainerFactory<String, String> ingestionConfluentKafkaListenerContainerFactoryManualAck() {
+        ConcurrentKafkaListenerContainerFactory<String, String> concurrentKafkaListenerContainerFactory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        concurrentKafkaListenerContainerFactory.setConsumerFactory(ingestionConfluentKafkaConsumerFactory());
+        concurrentKafkaListenerContainerFactory.setBatchListener(false);
+        concurrentKafkaListenerContainerFactory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
+
+        log.info("ingestion confluent kafka consumer created with configs {}",
+                concurrentKafkaListenerContainerFactory.getConsumerFactory().getConfigurationProperties());
+        return concurrentKafkaListenerContainerFactory;
+    }
+
     @Bean(name = ConsumerConstants.IngestionServiceConfluentKafka.BATCH_CONTAINER_FACTORY)
     public ConcurrentKafkaListenerContainerFactory<String, String> ingestionBatchConfluentKafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, String> concurrentKafkaListenerContainerFactory =
