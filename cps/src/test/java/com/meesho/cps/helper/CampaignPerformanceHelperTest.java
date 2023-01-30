@@ -18,10 +18,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author shubham.aggarwal
@@ -85,4 +82,76 @@ public class CampaignPerformanceHelperTest {
         Assert.assertFalse(campaignPerformanceHelper.beforeResetTimeOfDailyBudgetForCampaign(dateTime));
     }
 
+    @Test
+    public void testForWhenDifferenceBetweenCurrentDateAndRequestEndDateEqualToZeroAndStartDateEqualToEndDate() {
+        LocalDate startDate = LocalDate.now();
+        LocalDate endDate = LocalDate.now();
+        List<LocalDate> hBaseQueryDates = campaignPerformanceHelper.getDatesForHBaseQuery(startDate, endDate);
+
+        Assert.assertEquals(1, hBaseQueryDates.size());
+        Assert.assertTrue(hBaseQueryDates.contains(endDate));
+    }
+
+    @Test
+    public void testForWhenDifferenceBetweenCurrentDateAndRequestEndDateEqualToZeroAndStartDateNotEqualToEndDateAndCurrentTimeIsLessThanOrEqualToMinutesToQueryPreviousDayDataFromHbase() {
+        LocalDate startDate = LocalDate.now().minusDays(1);
+        LocalDate endDate = LocalDate.now();
+
+        Mockito.doReturn(getCurrentMinutesOfTheDay() + 10).when(applicationProperties).getMinutesToQueryPreviousDayDataFromHbase();
+        List<LocalDate> hBaseQueryDates = campaignPerformanceHelper.getDatesForHBaseQuery(startDate, endDate);
+
+        Assert.assertEquals(2, hBaseQueryDates.size());
+        Assert.assertTrue(hBaseQueryDates.contains(endDate));
+        Assert.assertTrue(hBaseQueryDates.contains(endDate.minusDays(1)));
+    }
+
+    @Test
+    public void testForWhenDifferenceBetweenCurrentDateAndRequestEndDateEqualToZeroAndStartDateNotEqualToEndDateAndCurrentTimeGreaterThanMinutesToQueryPreviousDayDataFromHbase() {
+        LocalDate startDate = LocalDate.now().minusDays(1);
+        LocalDate endDate = LocalDate.now();
+
+        Mockito.doReturn(getCurrentMinutesOfTheDay() - 10).when(applicationProperties).getMinutesToQueryPreviousDayDataFromHbase();
+        List<LocalDate> hBaseQueryDates = campaignPerformanceHelper.getDatesForHBaseQuery(startDate, endDate);
+
+        Assert.assertEquals(1, hBaseQueryDates.size());
+        Assert.assertTrue(hBaseQueryDates.contains(endDate));
+    }
+
+    @Test
+    public void testForWhenDifferenceBetweenCurrentDateAndRequestEndDateEqualToOneAndCurrentTimeLessThanOrEqualToMinutesToQueryPreviousDayDataFromHbase() {
+        LocalDate startDate = LocalDate.now().minusDays(2);
+        LocalDate endDate = LocalDate.now().minusDays(1);
+
+        Mockito.doReturn(getCurrentMinutesOfTheDay() + 10).when(applicationProperties).getMinutesToQueryPreviousDayDataFromHbase();
+        List<LocalDate> hBaseQueryDates = campaignPerformanceHelper.getDatesForHBaseQuery(startDate, endDate);
+
+        Assert.assertEquals(1, hBaseQueryDates.size());
+        Assert.assertTrue(hBaseQueryDates.contains(endDate));
+    }
+
+    @Test
+    public void testForWhenDifferenceBetweenCurrentDateAndRequestEndDateEqualToOneAndCurrentTimeGreaterThanMinutesToQueryPreviousDayDataFromHbase() {
+        LocalDate startDate = LocalDate.now().minusDays(2);
+        LocalDate endDate = LocalDate.now().minusDays(1);
+
+        Mockito.doReturn(getCurrentMinutesOfTheDay() - 10).when(applicationProperties).getMinutesToQueryPreviousDayDataFromHbase();
+        List<LocalDate> hBaseQueryDates = campaignPerformanceHelper.getDatesForHBaseQuery(startDate, endDate);
+
+        Assert.assertEquals(0, hBaseQueryDates.size());
+    }
+
+    @Test
+    public void testForWhenDifferenceBetweenCurrentDateAndRequestEndDateGreaterThanOne() {
+        LocalDate startDate = LocalDate.now().minusDays(3);
+        LocalDate endDate = LocalDate.now().minusDays(2);
+
+        List<LocalDate> hBaseQueryDates = campaignPerformanceHelper.getDatesForHBaseQuery(startDate, endDate);
+
+        Assert.assertEquals(0, hBaseQueryDates.size());
+    }
+
+    private int getCurrentMinutesOfTheDay() {
+        Calendar now = Calendar.getInstance();
+        return now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE);
+    }
 }
