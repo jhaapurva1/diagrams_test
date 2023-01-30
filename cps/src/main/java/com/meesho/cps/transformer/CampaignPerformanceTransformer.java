@@ -106,7 +106,8 @@ public class CampaignPerformanceTransformer {
 
     public CampaignPerformanceResponse getCampaignPerformanceResponse(EsCampaignCatalogAggregateResponse monthWiseResponse,
                                                                       EsCampaignCatalogAggregateResponse dateWiseResponse,
-                                                                      List<Long> campaignIds) {
+                                                                      List<Long> campaignIds,
+                                                                      Map<Long, PerformancePojo> campaignIdToHBaseMetricsMap) {
 
         Terms dateWiseTerms = Optional.ofNullable(dateWiseResponse.getAggregations())
                 .map(ag -> (Terms) ag.get(Constants.ESConstants.BY_CAMPAIGN)).orElse(null);
@@ -125,21 +126,30 @@ public class CampaignPerformanceTransformer {
                     .map(Terms.Bucket::getAggregations).orElse(null), Optional.ofNullable(campaignLevelAggregationsMonthWise)
                     .map(Terms.Bucket::getAggregations).orElse(null));
 
-            campaignDetailsList.add(CampaignPerformanceResponse.CampaignDetails.builder().campaignId(campaignId)
-                    .budgetUtilised(pp.getTotalBudgetUtilised().setScale(2, RoundingMode.HALF_UP))
-                    .totalClicks(pp.getTotalClicks() + pp.getTotalShares() + pp.getTotalWishlist())
-                    .totalViews(pp.getTotalViews())
-                    .revenue(pp.getTotalRevenue().setScale(2, RoundingMode.HALF_UP))
-                    .orderCount(pp.getTotalOrders())
-                    .roi(CalculationUtils.getRoi(pp.getTotalRevenue(), pp.getTotalBudgetUtilised()))
-                    .conversionRate(CalculationUtils.getConversionRate(pp.getTotalOrders(), pp.getTotalClicks())).build());
+            if (Objects.nonNull(campaignIdToHBaseMetricsMap)) {
+                PerformancePojo hBaseMetrics = campaignIdToHBaseMetricsMap.get(campaignId);
+                if (Objects.nonNull(hBaseMetrics)) {
+                    aggregateESAndHBaseData(pp, hBaseMetrics);
+                }
+            }
+            campaignDetailsList.add(CampaignPerformanceResponse.CampaignDetails.builder()
+                .campaignId(campaignId)
+                .budgetUtilised(pp.getTotalBudgetUtilised().setScale(2, RoundingMode.HALF_UP))
+                .totalClicks(pp.getTotalClicks() + pp.getTotalShares() + pp.getTotalWishlist())
+                .totalViews(pp.getTotalViews())
+                .revenue(pp.getTotalRevenue().setScale(2, RoundingMode.HALF_UP))
+                .orderCount(pp.getTotalOrders())
+                .roi(CalculationUtils.getRoi(pp.getTotalRevenue(), pp.getTotalBudgetUtilised()))
+                .conversionRate(CalculationUtils.getConversionRate(pp.getTotalOrders(), pp.getTotalClicks()))
+                .build());
         }
         return CampaignPerformanceResponse.builder().campaigns(campaignDetailsList).build();
     }
 
     public CampaignCatalogPerformanceResponse getCampaignCatalogPerformanceResponse(EsCampaignCatalogAggregateResponse monthWiseResponse,
                                                                                     EsCampaignCatalogAggregateResponse dateWiseResponse,
-                                                                                    Long campaignId, List<Long> catalogIds) {
+                                                                                    Long campaignId, List<Long> catalogIds,
+                                                                                    Map<Long, PerformancePojo> catalogIdToHBaseMetricsMap) {
 
         Terms dateWiseTerms = Optional.ofNullable(dateWiseResponse.getAggregations())
                 .map(ag -> (Terms) ag.get(Constants.ESConstants.BY_CATALOG)).orElse(null);
@@ -153,29 +163,37 @@ public class CampaignPerformanceTransformer {
             Terms.Bucket campaignLevelAggregationsMonthWise = Optional.ofNullable(monthWiseTerms)
                     .map(t -> t.getBucketByKey(catalogId.toString())).orElse(null);
 
-            // add only if at least one level aggregation present
-            if(campaignLevelAggregationsDateWise == null && campaignLevelAggregationsMonthWise == null) {
-                continue;
-            }
-
             PerformancePojo pp = getPerformancePojoFromAggregations(Optional.ofNullable(campaignLevelAggregationsDateWise)
                     .map(Terms.Bucket::getAggregations).orElse(null), Optional.ofNullable(campaignLevelAggregationsMonthWise)
                     .map(Terms.Bucket::getAggregations).orElse(null));
 
-            catalogDetailsList.add(CampaignCatalogPerformanceResponse.CatalogDetails.builder().campaignId(campaignId)
-                    .budgetUtilised(pp.getTotalBudgetUtilised().setScale(2, RoundingMode.HALF_UP))
-                    .totalClicks(pp.getTotalClicks() + pp.getTotalShares() + pp.getTotalWishlist())
-                    .totalViews(pp.getTotalViews())
-                    .revenue(pp.getTotalRevenue().setScale(2, RoundingMode.HALF_UP))
-                    .orderCount(pp.getTotalOrders())
-                    .roi(CalculationUtils.getRoi(pp.getTotalRevenue(), pp.getTotalBudgetUtilised()))
-                    .conversionRate(CalculationUtils.getConversionRate(pp.getTotalOrders(), pp.getTotalClicks())).catalogId(catalogId).build());
+            CampaignCatalogPerformanceResponse.CatalogDetails catalogDetails;
+
+
+            if (Objects.nonNull(catalogIdToHBaseMetricsMap)) {
+                PerformancePojo hBaseMetrics = catalogIdToHBaseMetricsMap.get(catalogId);
+                if (Objects.nonNull(hBaseMetrics)) {
+                    aggregateESAndHBaseData(pp, hBaseMetrics);
+                }
+            }
+            catalogDetailsList.add(CampaignCatalogPerformanceResponse.CatalogDetails.builder()
+                .campaignId(campaignId)
+                .budgetUtilised(pp.getTotalBudgetUtilised().setScale(2, RoundingMode.HALF_UP))
+                .totalClicks(pp.getTotalClicks() + pp.getTotalShares() + pp.getTotalWishlist())
+                .totalViews(pp.getTotalViews())
+                .revenue(pp.getTotalRevenue().setScale(2, RoundingMode.HALF_UP))
+                .orderCount(pp.getTotalOrders())
+                .roi(CalculationUtils.getRoi(pp.getTotalRevenue(), pp.getTotalBudgetUtilised()))
+                .conversionRate(CalculationUtils.getConversionRate(pp.getTotalOrders(), pp.getTotalClicks()))
+                .catalogId(catalogId)
+                .build());
         }
         return CampaignCatalogPerformanceResponse.builder().catalogs(catalogDetailsList).build();
     }
 
     public CampaignPerformanceDatewiseResponse getCampaignPerformanceDateWiseResponse(
-            Long campaignId, EsCampaignCatalogAggregateResponse dateWiseResponse) {
+            Long campaignId, EsCampaignCatalogAggregateResponse dateWiseResponse,
+            Map<LocalDate, PerformancePojo> dateToHBaseMetricsMap) {
         Terms dateWiseTerms = Optional.ofNullable(dateWiseResponse.getAggregations())
                 .map(ag -> (Terms) ag.get(Constants.ESConstants.BY_DATE)).orElse(null);
 
@@ -205,6 +223,23 @@ public class CampaignPerformanceTransformer {
             dateCatalogsMap.put(LocalDate.parse(dw.getKeyAsString()), graphDetails);
         });
 
+        if (Objects.nonNull(dateToHBaseMetricsMap)) {
+            for (Map.Entry<LocalDate, PerformancePojo> entry : dateToHBaseMetricsMap.entrySet()) {
+                PerformancePojo performancePojo = entry.getValue();
+                if (!performancePojo.hasValues()) {
+                    continue;
+                }
+                dateCatalogsMap.put(entry.getKey(),
+                    CampaignPerformanceDatewiseResponse.GraphDetails.builder()
+                        .views(performancePojo.getTotalViews())
+                        .clicks(performancePojo.getTotalClicks()
+                            + performancePojo.getTotalShares()
+                            + performancePojo.getTotalWishlist())
+                        .orders(performancePojo.getTotalOrders())
+                        .build());
+            }
+        }
+
         return CampaignPerformanceDatewiseResponse.builder()
                 .campaignId(campaignId)
                 .dateCatalogsMap(dateCatalogsMap)
@@ -229,6 +264,17 @@ public class CampaignPerformanceTransformer {
         return PerformancePojo.builder().totalOrders(totalOrders).totalShares(totalShares).totalRevenue(totalRevenue)
                 .totalWishlist(totalWishlist).totalClicks(totalClicks).totalBudgetUtilised(totalBudgetUtilised)
                 .totalViews(totalViews).build();
+    }
+
+    private void aggregateESAndHBaseData(PerformancePojo performancePojo,
+                                         PerformancePojo hBaseMetrics) {
+        performancePojo.setTotalOrders(performancePojo.getTotalOrders() + hBaseMetrics.getTotalOrders());
+        performancePojo.setTotalShares(performancePojo.getTotalShares() + hBaseMetrics.getTotalShares());
+        performancePojo.setTotalRevenue(performancePojo.getTotalRevenue().add(hBaseMetrics.getTotalRevenue()));
+        performancePojo.setTotalWishlist(performancePojo.getTotalWishlist() + hBaseMetrics.getTotalWishlist());
+        performancePojo.setTotalClicks(performancePojo.getTotalClicks() + hBaseMetrics.getTotalClicks());
+        performancePojo.setTotalBudgetUtilised(performancePojo.getTotalBudgetUtilised().add(hBaseMetrics.getTotalBudgetUtilised()));
+        performancePojo.setTotalViews(performancePojo.getTotalViews() + hBaseMetrics.getTotalViews());
     }
 
     public FetchActiveCampaignsResponse getFetchActiveCampaignsResponse(SearchResponse searchResponse) throws JsonProcessingException {

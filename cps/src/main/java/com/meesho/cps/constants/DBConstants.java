@@ -44,6 +44,7 @@ public class DBConstants {
         public static final String CLIENT_PAUSE = "${hbase.client.pause}";
         public static final String CLIENT_RETRIES = "${hbase.client.retries}";
         public static final String RPC_TIMEOUT = "${hbase.rpc.timeout}";
+        public static final String BATCH_SIZE = "${hbase.campaign.catalog.date.metrics.batch.size}";
     }
 
     public static class Redis {

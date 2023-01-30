@@ -27,4 +27,9 @@ public class PerformancePojo {
 
     private Integer totalOrders;
 
+    public boolean hasValues() {
+        return !(this.totalClicks.equals(0L) && this.totalWishlist.equals(0L) && this.totalShares.equals(0L) &&
+                 this.totalViews.equals(0L) && this.totalBudgetUtilised.equals(BigDecimal.ZERO) &&
+                 this.totalRevenue.equals(BigDecimal.ZERO) && totalOrders.equals(0));
+    }
 }

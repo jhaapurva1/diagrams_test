@@ -5,13 +5,18 @@ import com.meesho.ads.lib.utils.EncodingUtils;
 import com.meesho.cps.config.ApplicationProperties;
 import com.meesho.cps.constants.Constants;
 import com.meesho.cps.constants.DBConstants;
+import com.meesho.cps.data.entity.hbase.CampaignCatalogDateMetrics;
 import com.meesho.cps.data.internal.ElasticFiltersRequest;
+import com.meesho.cps.data.internal.PerformancePojo;
+import com.meesho.cpsclient.request.CampaignCatalogPerformanceRequest;
+import com.meesho.cpsclient.request.CampaignPerformanceRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -149,4 +154,64 @@ public class CampaignPerformanceHelper {
         return cursor;
     }
 
+    public List<LocalDate> getDatesForHBaseQuery(LocalDate startDate, LocalDate endDate) {
+        List<LocalDate> hBaseQueryDates = new ArrayList<>(2);
+        int differenceBetweenCurrentDateAndRequestEndDate = LocalDate.now().compareTo(endDate);
+        Calendar now = Calendar.getInstance();
+        int minutesPassedForCurrentDay = ((now.get(Calendar.HOUR_OF_DAY) * 60) + now.get(Calendar.MINUTE));
+
+        if (differenceBetweenCurrentDateAndRequestEndDate == 0) {
+            hBaseQueryDates.add(endDate);
+            if (startDate.isEqual(endDate)) {
+                return hBaseQueryDates;
+            }
+            if (minutesPassedForCurrentDay <= applicationProperties.getMinutesToQueryPreviousDayDataFromHbase()) {
+                hBaseQueryDates.add(endDate.minusDays(1));
+            }
+        } else if (differenceBetweenCurrentDateAndRequestEndDate == 1
+                && minutesPassedForCurrentDay <= applicationProperties.getMinutesToQueryPreviousDayDataFromHbase()) {
+            hBaseQueryDates.add(endDate);
+        }
+
+        return hBaseQueryDates;
+    }
+
+    public void addDatesToRequest(CampaignPerformanceRequest campaignPerformanceRequest) {
+        campaignPerformanceRequest.setStartDate(applicationProperties.getCampaignDatewiseMetricsReferenceDate());
+        campaignPerformanceRequest.setEndDate(LocalDate.now());
+    }
+
+    public void addDatesToRequest(CampaignCatalogPerformanceRequest campaignPerformanceRequest) {
+        campaignPerformanceRequest.setStartDate(applicationProperties.getCampaignDatewiseMetricsReferenceDate());
+        campaignPerformanceRequest.setEndDate(LocalDate.now());
+    }
+
+    public PerformancePojo getAggregatedCampaignCatalogDateMetrics(List<CampaignCatalogDateMetrics> campaignCatalogDateMetricsList) {
+        long clickCount = 0L;
+        long sharesCount = 0L;
+        long wishlistCount = 0L;
+        long viewCount = 0L;
+        BigDecimal budgetUtilised = BigDecimal.ZERO;
+        int orders = 0;
+        BigDecimal revenue = BigDecimal.ZERO;
+        for (CampaignCatalogDateMetrics campaignCatalogDateMetrics : campaignCatalogDateMetricsList) {
+            clickCount += Optional.ofNullable(campaignCatalogDateMetrics.getClickCount()).orElse(0L);
+            sharesCount += Optional.ofNullable(campaignCatalogDateMetrics.getSharesCount()).orElse(0L);
+            wishlistCount += Optional.ofNullable(campaignCatalogDateMetrics.getWishlistCount()).orElse(0L);
+            viewCount += Optional.ofNullable(campaignCatalogDateMetrics.getViewCount()).orElse(0L);
+            budgetUtilised = budgetUtilised.add(Optional.ofNullable(campaignCatalogDateMetrics.getBudgetUtilised())
+                                                        .orElse(BigDecimal.ZERO));
+            orders += Optional.ofNullable(campaignCatalogDateMetrics.getOrders()).orElse(0);
+            revenue = revenue.add(Optional.ofNullable(campaignCatalogDateMetrics.getRevenue()).orElse(BigDecimal.ZERO));
+        }
+        return PerformancePojo.builder()
+                .totalClicks(clickCount)
+                .totalShares(sharesCount)
+                .totalWishlist(wishlistCount)
+                .totalViews(viewCount)
+                .totalBudgetUtilised(budgetUtilised)
+                .totalOrders(orders)
+                .totalRevenue(revenue)
+                .build();
+    }
 }
