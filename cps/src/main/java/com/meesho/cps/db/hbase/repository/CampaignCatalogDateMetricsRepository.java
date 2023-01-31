@@ -110,7 +110,7 @@ public class CampaignCatalogDateMetricsRepository {
             Result result = table.get(get);
             if (result.isEmpty())
                 return null;
-            return mapper(result, campaignId, catalogId, null);
+            return mapper(result, campaignId, catalogId, new HashMap<>());
         } catch (IOException e) {
             throw new HbaseException(e.getMessage());
         }
@@ -296,7 +296,7 @@ public class CampaignCatalogDateMetricsRepository {
             List<CampaignCatalogDateMetrics> campaignCatalogMetricsList = new ArrayList<>();
             resultScanner.forEach(result -> {
                 if(!result.isEmpty()){
-                    campaignCatalogMetricsList.add(mapper(result, campaignId, catalogId, null));
+                    campaignCatalogMetricsList.add(mapper(result, campaignId, catalogId, new HashMap<>()));
                 }
             });
             return campaignCatalogMetricsList;
@@ -315,7 +315,7 @@ public class CampaignCatalogDateMetricsRepository {
             List<CampaignCatalogDateMetrics> campaignCatalogMetricsList = new ArrayList<>();
             resultScanner.forEach(result -> {
                 if(!result.isEmpty()){
-                    campaignCatalogMetricsList.add(mapper(result, campaignId, null, null));
+                    campaignCatalogMetricsList.add(mapper(result, campaignId, null, new HashMap<>()));
                 }
             });
             return campaignCatalogMetricsList;
