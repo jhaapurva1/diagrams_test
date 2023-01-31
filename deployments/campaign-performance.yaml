@@ -14,9 +14,9 @@ environment:
     as_enabled: true
     as_min: 1
     as_max: 1
-    cpu_request: 500m
-    memory_limit: 4G
-    memory_request: 2G
+    cpu_request: 100m
+    memory_limit: 500M
+    memory_request: 200M
     deploymentStrategy: rollingUpdate
     appMetrics: true
     deployment_args:
@@ -35,9 +35,9 @@ environment:
     as_enabled: true
     as_min: 1
     as_max: 1
-    cpu_request: 500m
-    memory_limit: 4G
-    memory_request: 2G
+    cpu_request: 100m
+    memory_limit: 500M
+    memory_request: 200M
     deploymentStrategy: rollingUpdate
     appMetrics: true
     deployment_args:
@@ -56,9 +56,9 @@ environment:
     as_enabled: true
     as_min: 1
     as_max: 1
-    cpu_request: 500m
-    memory_limit: 4G
-    memory_request: 2G
+    cpu_request: 100m
+    memory_limit: 500M
+    memory_request: 200M
     deploymentStrategy: rollingUpdate
     appMetrics: true
     deployment_args:
