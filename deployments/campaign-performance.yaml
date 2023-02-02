@@ -14,8 +14,9 @@ environment:
     as_enabled: true
     as_min: 1
     as_max: 1
+    cpu_limit: 1
     cpu_request: 100m
-    memory_limit: 500M
+    memory_limit: 1G
     memory_request: 200M
     deploymentStrategy: rollingUpdate
     appMetrics: true
@@ -35,8 +36,9 @@ environment:
     as_enabled: true
     as_min: 1
     as_max: 1
+    cpu_limit: 1
     cpu_request: 100m
-    memory_limit: 500M
+    memory_limit: 1G
     memory_request: 200M
     deploymentStrategy: rollingUpdate
     appMetrics: true
@@ -56,8 +58,9 @@ environment:
     as_enabled: true
     as_min: 1
     as_max: 1
+    cpu_limit: 1
     cpu_request: 100m
-    memory_limit: 500M
+    memory_limit: 1G
     memory_request: 200M
     deploymentStrategy: rollingUpdate
     appMetrics: true
