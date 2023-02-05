@@ -9,7 +9,6 @@ import com.meesho.cps.constants.AdInteractionStatus;
 import com.meesho.cps.constants.ConsumerConstants;
 import com.meesho.cps.data.entity.kafka.AdWidgetViewEvent;
 import com.meesho.cps.helper.AdWidgetValidationHelper;
-import com.meesho.cps.helper.ValidationHelper;
 import com.meesho.cps.service.WidgetViewEventService;
 import com.meesho.instrumentation.annotation.DigestLogger;
 import com.meesho.instrumentation.enums.MetricType;
@@ -38,7 +37,6 @@ public class AdWidgetViewEventListener extends BaseManualAcknowledgeKafkaListene
     ObjectMapper objectMapper;
 
     @KafkaListener(id = ConsumerConstants.AdWidgetViewEventConsumer.CONSUMER_ID,
-            groupId = ConsumerConstants.AdWidgetViewEventConsumer.CONSUMER_GROUP_ID,
             containerFactory = ConsumerConstants.IngestionServiceConfluentKafka.MANUAL_ACK_CONTAINER_FACTORY,
             topics = ConsumerConstants.AdWidgetViewEventConsumer.TOPIC,
             autoStartup = ConsumerConstants.AdWidgetViewEventConsumer.AUTO_START,
@@ -56,11 +54,12 @@ public class AdWidgetViewEventListener extends BaseManualAcknowledgeKafkaListene
 
     @Override
     public void consume(AdWidgetViewEvent adWidgetViewEvent) throws DataValidationException {
+        log.info("Consuming ad widget click event: {}", adWidgetViewEvent);
         if (!AdWidgetValidationHelper.isValidAdWidgetViewEvent(adWidgetViewEvent)) {
             log.error("Invalid event {}", adWidgetViewEvent);
             telegrafMetricsHelper.increment(WIDGET_VIEW_EVENT_KEY, INTERACTION_EVENT_TAGS, adWidgetViewEvent.getEventName(), NAN, NAN,
                     AdInteractionStatus.INVALID.name(), NAN);
-            throw new DataValidationException("Invalid ad widget views event");
+            return;
         }
         try {
             log.info("Processing ad widget view event: {}", objectMapper.writeValueAsString(adWidgetViewEvent));

@@ -5,6 +5,7 @@ import com.meesho.ad.client.response.CampaignDetails;
 import com.meesho.cps.config.ApplicationProperties;
 import com.meesho.cps.constants.CampaignType;
 import com.meesho.cps.constants.Constants;
+import com.meesho.cps.constants.ConsumerConstants;
 import com.meesho.cps.data.entity.hbase.CampaignDatewiseMetrics;
 import com.meesho.cps.data.entity.hbase.CampaignMetrics;
 import com.meesho.cps.data.entity.hbase.SupplierWeekWiseMetrics;
@@ -31,7 +32,7 @@ import java.util.Objects;
 
 @Service
 @Slf4j
-public class ClickAttributionHelper {
+public class InteractionEventAttributionHelper {
     @Autowired
     PrismService prismService;
 
@@ -164,5 +165,24 @@ public class ClickAttributionHelper {
     public BigDecimal modifyAndGetSupplierWeeklyBudgetUtilised(Long supplierId, LocalDate weekStartDate, BigDecimal cpc) {
         log.info("modifyAndGetSupplierWeeklyBudgetUtilised: {} {} {}", supplierId, weekStartDate, cpc);
         return supplierWeekWiseMetricsRepository.incrementBudgetUtilised(supplierId, weekStartDate, cpc);
+    }
+
+    public void incrementInteractionCount(Long campaignId, Long catalogId, LocalDate date, String eventName) {
+        log.info("campaignId {}, catalogId {}, date{}, eventName {}", campaignId, catalogId, date, eventName);
+        // CAUTION: Please do not change the order of cases here since action is the combination of multiple cases
+        switch (eventName) {
+            case ConsumerConstants.IngestionInteractionEvents.ANONYMOUS_AD_SHARED_EVENT_NAME:
+            case ConsumerConstants.IngestionInteractionEvents.AD_SHARED_EVENT_NAME:
+                campaignCatalogDateMetricsRepository.incrementSharesCount(campaignId, catalogId, date);
+                break;
+            case ConsumerConstants.IngestionInteractionEvents.ANONYMOUS_AD_WISHLISTED_EVENT_NAME:
+            case ConsumerConstants.IngestionInteractionEvents.AD_WISHLISTED_EVENT_NAME:
+                campaignCatalogDateMetricsRepository.incrementWishlistCount(campaignId, catalogId, date);
+                break;
+            case ConsumerConstants.IngestionInteractionEvents.ANONYMOUS_AD_CLICK_EVENT_NAME:
+            case ConsumerConstants.IngestionInteractionEvents.AD_CLICK_EVENT_NAME:
+                campaignCatalogDateMetricsRepository.incrementClickCount(campaignId, catalogId, date);
+                break;
+        }
     }
 }

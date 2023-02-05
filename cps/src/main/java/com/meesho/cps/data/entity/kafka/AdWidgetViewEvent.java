@@ -47,10 +47,10 @@ public class AdWidgetViewEvent {
         @JsonProperty("widget_ids")
         private List<Long> widgetIds;
 
-        @JsonProperty("catalog_id")
+        @JsonProperty("catalog_ids")
         private List<Long> catalogIds;
 
-        @JsonProperty("campaign_id")
+        @JsonProperty("campaign_ids")
         private List<Long> campaignIds;
 
         @JsonProperty("widget_group_ids")

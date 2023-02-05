@@ -13,11 +13,9 @@ import com.meesho.cps.db.redis.dao.UpdatedCampaignCatalogCacheDao;
 import com.meesho.cps.db.redis.dao.UserCatalogInteractionCacheDao;
 import com.meesho.cps.exception.ExternalRequestFailedException;
 import com.meesho.cps.factory.AdBillFactory;
-import com.meesho.cps.helper.AdWidgetValidationHelper;
 import com.meesho.cps.helper.CampaignPerformanceHelper;
-import com.meesho.cps.helper.ClickAttributionHelper;
+import com.meesho.cps.helper.InteractionEventAttributionHelper;
 import com.meesho.cps.service.external.AdService;
-import com.meesho.cps.service.external.PrismService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -56,7 +54,7 @@ public class WidgetClickEventServiceTest {
     CampaignPerformanceHelper campaignHelper;
 
     @Mock
-    ClickAttributionHelper clickAttributionHelper;
+    InteractionEventAttributionHelper interactionEventAttributionHelper;
 
     @Mock
     CampaignCatalogDateMetricsRepository campaignCatalogDateMetricsRepository;
@@ -75,10 +73,10 @@ public class WidgetClickEventServiceTest {
         Mockito.doReturn(DateTimeUtils.getCurrentLocalDateTimeInIST().toLocalDate()).when(campaignHelper)
                 .getLocalDateForDailyCampaignFromLocalDateTime(any());
         Mockito.doNothing().when(telegrafMetricsHelper).increment(any(), any(), any());
-        Mockito.doNothing().when(clickAttributionHelper).publishPrismEvent(any());
+        Mockito.doNothing().when(interactionEventAttributionHelper).publishPrismEvent(any());
         Mockito.doNothing().when(campaignCatalogDateMetricsRepository).incrementClickCount(any(), any(), any());
-        Mockito.doNothing().when(clickAttributionHelper).sendBudgetExhaustedEvent(any(), any());
-        Mockito.doNothing().when(clickAttributionHelper).sendSupplierBudgetExhaustedEvent(any(), any());
+        Mockito.doNothing().when(interactionEventAttributionHelper).sendBudgetExhaustedEvent(any(), any());
+        Mockito.doNothing().when(interactionEventAttributionHelper).sendSupplierBudgetExhaustedEvent(any(), any());
         Mockito.doNothing().when(updatedCampaignCatalogCacheDao).add(any());
         Mockito.doReturn(1L).when(userCatalogInteractionCacheDao).get(any(), any(), any(), any(), any());
         Mockito.doNothing().when(userCatalogInteractionCacheDao).set(any(), any(), any(), any(), any(), any());
@@ -135,7 +133,7 @@ public class WidgetClickEventServiceTest {
     public void testHandleBillVersionOneBudgetExhaustedBeforeEventProcessing() throws ExternalRequestFailedException {
         Mockito.doReturn(clickBillHandler).when(adBillFactory).getBillHandlerForBillVersion(1);
         Mockito.doReturn(getSampleCatalogMetadataResponse(1)).when(adService).getCampaignCatalogMetadata(any(), any(), any(), any());
-        Mockito.doReturn(true).when(clickAttributionHelper).initialiseAndCheckIsBudgetExhausted(any(), any(), any(), any(), any());
+        Mockito.doReturn(true).when(interactionEventAttributionHelper).initialiseAndCheckIsBudgetExhausted(any(), any(), any(), any(), any());
         widgetClickEventService.handle(getAdWidgetClickEvent());
     }
 
@@ -143,50 +141,50 @@ public class WidgetClickEventServiceTest {
     public void testHandleBillVersionOneBudgetExceededTotalBudget() throws ExternalRequestFailedException {
         Mockito.doReturn(clickBillHandler).when(adBillFactory).getBillHandlerForBillVersion(1);
         Mockito.doReturn(getSampleCatalogMetadataResponse(1)).when(adService).getCampaignCatalogMetadata(any(), any(), any(), any());
-        Mockito.doReturn(false).when(clickAttributionHelper).initialiseAndCheckIsBudgetExhausted(any(), any(), any(), any(), any());
-        Mockito.doReturn(BigDecimal.valueOf(1000)).when(clickAttributionHelper).modifyAndGetBudgetUtilised(any(), any(), any(), any(), any());
-        Mockito.doReturn(BigDecimal.valueOf(10)).when(clickAttributionHelper).modifyAndGetSupplierWeeklyBudgetUtilised(any(), any(), any());
+        Mockito.doReturn(false).when(interactionEventAttributionHelper).initialiseAndCheckIsBudgetExhausted(any(), any(), any(), any(), any());
+        Mockito.doReturn(BigDecimal.valueOf(1000)).when(interactionEventAttributionHelper).modifyAndGetBudgetUtilised(any(), any(), any(), any(), any());
+        Mockito.doReturn(BigDecimal.valueOf(10)).when(interactionEventAttributionHelper).modifyAndGetSupplierWeeklyBudgetUtilised(any(), any(), any());
         widgetClickEventService.handle(getAdWidgetClickEvent());
-        Mockito.verify(clickAttributionHelper, times(1)).sendBudgetExhaustedEvent(any(), any());
-        Mockito.verify(clickAttributionHelper, times(0)).sendSupplierBudgetExhaustedEvent(any(), any());
+        Mockito.verify(interactionEventAttributionHelper, times(1)).sendBudgetExhaustedEvent(any(), any());
+        Mockito.verify(interactionEventAttributionHelper, times(0)).sendSupplierBudgetExhaustedEvent(any(), any());
     }
 
     @Test
     public void testHandleBillVersionOneBudgetExceededSupplierWeeklyBudget() throws ExternalRequestFailedException {
         Mockito.doReturn(clickBillHandler).when(adBillFactory).getBillHandlerForBillVersion(1);
         Mockito.doReturn(getSampleCatalogMetadataResponse(1)).when(adService).getCampaignCatalogMetadata(any(), any(), any(), any());
-        Mockito.doReturn(false).when(clickAttributionHelper).initialiseAndCheckIsBudgetExhausted(any(), any(), any(), any(), any());
-        Mockito.doReturn(BigDecimal.valueOf(10)).when(clickAttributionHelper).modifyAndGetBudgetUtilised(any(), any(), any(), any(), any());
-        Mockito.doReturn(BigDecimal.valueOf(110)).when(clickAttributionHelper).modifyAndGetSupplierWeeklyBudgetUtilised(any(), any(), any());
+        Mockito.doReturn(false).when(interactionEventAttributionHelper).initialiseAndCheckIsBudgetExhausted(any(), any(), any(), any(), any());
+        Mockito.doReturn(BigDecimal.valueOf(10)).when(interactionEventAttributionHelper).modifyAndGetBudgetUtilised(any(), any(), any(), any(), any());
+        Mockito.doReturn(BigDecimal.valueOf(110)).when(interactionEventAttributionHelper).modifyAndGetSupplierWeeklyBudgetUtilised(any(), any(), any());
         widgetClickEventService.handle(getAdWidgetClickEvent());
-        Mockito.verify(clickAttributionHelper, times(1)).sendSupplierBudgetExhaustedEvent(any(), any());
-        Mockito.verify(clickAttributionHelper, times(0)).sendBudgetExhaustedEvent(any(), any());
+        Mockito.verify(interactionEventAttributionHelper, times(1)).sendSupplierBudgetExhaustedEvent(any(), any());
+        Mockito.verify(interactionEventAttributionHelper, times(0)).sendBudgetExhaustedEvent(any(), any());
     }
 
     @Test
     public void testHandleBillVersionOneBudgetExceededTotalBudgetAndSupplierWeeklyBudget() throws ExternalRequestFailedException {
         Mockito.doReturn(clickBillHandler).when(adBillFactory).getBillHandlerForBillVersion(1);
         Mockito.doReturn(getSampleCatalogMetadataResponse(1)).when(adService).getCampaignCatalogMetadata(any(), any(), any(), any());
-        Mockito.doReturn(false).when(clickAttributionHelper).initialiseAndCheckIsBudgetExhausted(any(), any(), any(), any(), any());
-        Mockito.doReturn(BigDecimal.valueOf(1000)).when(clickAttributionHelper).modifyAndGetBudgetUtilised(any(), any(), any(), any(), any());
-        Mockito.doReturn(BigDecimal.valueOf(110)).when(clickAttributionHelper).modifyAndGetSupplierWeeklyBudgetUtilised(any(), any(), any());
+        Mockito.doReturn(false).when(interactionEventAttributionHelper).initialiseAndCheckIsBudgetExhausted(any(), any(), any(), any(), any());
+        Mockito.doReturn(BigDecimal.valueOf(1000)).when(interactionEventAttributionHelper).modifyAndGetBudgetUtilised(any(), any(), any(), any(), any());
+        Mockito.doReturn(BigDecimal.valueOf(110)).when(interactionEventAttributionHelper).modifyAndGetSupplierWeeklyBudgetUtilised(any(), any(), any());
         widgetClickEventService.handle(getAdWidgetClickEvent());
-        Mockito.verify(clickAttributionHelper, times(1)).sendSupplierBudgetExhaustedEvent(any(), any());
-        Mockito.verify(clickAttributionHelper, times(1)).sendBudgetExhaustedEvent(any(), any());
+        Mockito.verify(interactionEventAttributionHelper, times(1)).sendSupplierBudgetExhaustedEvent(any(), any());
+        Mockito.verify(interactionEventAttributionHelper, times(1)).sendBudgetExhaustedEvent(any(), any());
     }
 
     @Test
     public void testHandleBillVersionOneBudgetNotExceeded() throws ExternalRequestFailedException {
         Mockito.doReturn(clickBillHandler).when(adBillFactory).getBillHandlerForBillVersion(1);
         Mockito.doReturn(getSampleCatalogMetadataResponse(1)).when(adService).getCampaignCatalogMetadata(any(), any(), any(), any());
-        Mockito.doReturn(false).when(clickAttributionHelper).initialiseAndCheckIsBudgetExhausted(any(), any(), any(), any(), any());
-        Mockito.doReturn(BigDecimal.valueOf(100)).when(clickAttributionHelper).modifyAndGetBudgetUtilised(any(), any(), any(), any(), any());
-        Mockito.doReturn(BigDecimal.valueOf(10)).when(clickAttributionHelper).modifyAndGetSupplierWeeklyBudgetUtilised(any(), any(), any());
+        Mockito.doReturn(false).when(interactionEventAttributionHelper).initialiseAndCheckIsBudgetExhausted(any(), any(), any(), any(), any());
+        Mockito.doReturn(BigDecimal.valueOf(100)).when(interactionEventAttributionHelper).modifyAndGetBudgetUtilised(any(), any(), any(), any(), any());
+        Mockito.doReturn(BigDecimal.valueOf(10)).when(interactionEventAttributionHelper).modifyAndGetSupplierWeeklyBudgetUtilised(any(), any(), any());
         AdWidgetClickEvent adWidgetClickEvent = getAdWidgetClickEvent();
         widgetClickEventService.handle(adWidgetClickEvent);
-        Mockito.verify(clickAttributionHelper, times(0)).sendSupplierBudgetExhaustedEvent(any(), any());
-        Mockito.verify(clickAttributionHelper, times(0)).sendBudgetExhaustedEvent(any(), any());
-        Mockito.verify(clickAttributionHelper, times(1)).publishPrismEvent(any());
+        Mockito.verify(interactionEventAttributionHelper, times(0)).sendSupplierBudgetExhaustedEvent(any(), any());
+        Mockito.verify(interactionEventAttributionHelper, times(0)).sendBudgetExhaustedEvent(any(), any());
+        Mockito.verify(interactionEventAttributionHelper, times(1)).publishPrismEvent(any());
         Mockito.verify(telegrafMetricsHelper, times(1)).increment(INTERACTION_EVENT_KEY, INTERACTION_EVENT_TAGS,
                 adWidgetClickEvent.getEventName(), adWidgetClickEvent.getProperties().getScreen(), adWidgetClickEvent.getProperties().getOrigin(),
                 AdInteractionStatus.VALID.name(), NAN);
@@ -198,7 +196,7 @@ public class WidgetClickEventServiceTest {
     public void testHandleBillVersionTwoBudgetExhaustedBeforeEventProcessing() throws ExternalRequestFailedException {
         Mockito.doReturn(interactionBillHandler).when(adBillFactory).getBillHandlerForBillVersion(2);
         Mockito.doReturn(getSampleCatalogMetadataResponse(2)).when(adService).getCampaignCatalogMetadata(any(), any(), any(), any());
-        Mockito.doReturn(true).when(clickAttributionHelper).initialiseAndCheckIsBudgetExhausted(any(), any(), any(), any(), any());
+        Mockito.doReturn(true).when(interactionEventAttributionHelper).initialiseAndCheckIsBudgetExhausted(any(), any(), any(), any(), any());
         widgetClickEventService.handle(getAdWidgetClickEvent());
     }
 
@@ -206,16 +204,16 @@ public class WidgetClickEventServiceTest {
     public void testHandleBillVersionTwoDuplicateEvent() throws ExternalRequestFailedException {
         Mockito.doReturn(interactionBillHandler).when(adBillFactory).getBillHandlerForBillVersion(2);
         Mockito.doReturn(getSampleCatalogMetadataResponse(2)).when(adService).getCampaignCatalogMetadata(any(), any(), any(), any());
-        Mockito.doReturn(false).when(clickAttributionHelper).initialiseAndCheckIsBudgetExhausted(any(), any(), any(), any(), any());
+        Mockito.doReturn(false).when(interactionEventAttributionHelper).initialiseAndCheckIsBudgetExhausted(any(), any(), any(), any(), any());
         Mockito.doReturn(true).when(interactionBillHandler).performWindowDeDuplication();
-        Mockito.doReturn(false).when(clickAttributionHelper).checkIfInteractionNeedsToBeConsidered(any(), any());
+        Mockito.doReturn(false).when(interactionEventAttributionHelper).checkIfInteractionNeedsToBeConsidered(any(), any());
         AdWidgetClickEvent adWidgetClickEvent = getAdWidgetClickEvent();
         widgetClickEventService.handle(adWidgetClickEvent);
-        Mockito.verify(clickAttributionHelper, times(0)).sendBudgetExhaustedEvent(any(), any());
-        Mockito.verify(clickAttributionHelper, times(0)).sendSupplierBudgetExhaustedEvent(any(), any());
+        Mockito.verify(interactionEventAttributionHelper, times(0)).sendBudgetExhaustedEvent(any(), any());
+        Mockito.verify(interactionEventAttributionHelper, times(0)).sendSupplierBudgetExhaustedEvent(any(), any());
         Mockito.verify(interactionBillHandler, times(1)).performWindowDeDuplication();
-        Mockito.verify(clickAttributionHelper, times(1)).checkIfInteractionNeedsToBeConsidered(any(), any());
-        Mockito.verify(clickAttributionHelper, times(1)).publishPrismEvent(any());
+        Mockito.verify(interactionEventAttributionHelper, times(1)).checkIfInteractionNeedsToBeConsidered(any(), any());
+        Mockito.verify(interactionEventAttributionHelper, times(1)).publishPrismEvent(any());
         Mockito.verify(telegrafMetricsHelper, times(1)).increment(INTERACTION_EVENT_KEY, INTERACTION_EVENT_TAGS,
                 adWidgetClickEvent.getEventName(), adWidgetClickEvent.getProperties().getScreen(), adWidgetClickEvent.getProperties().getOrigin(),
                 AdInteractionStatus.INVALID.name(), AdInteractionInvalidReason.DUPLICATE.name());
@@ -225,18 +223,18 @@ public class WidgetClickEventServiceTest {
     public void testHandleBillVersionTwoSendBudgetExhaustedEvents() throws ExternalRequestFailedException {
         Mockito.doReturn(interactionBillHandler).when(adBillFactory).getBillHandlerForBillVersion(2);
         Mockito.doReturn(getSampleCatalogMetadataResponse(2)).when(adService).getCampaignCatalogMetadata(any(), any(), any(), any());
-        Mockito.doReturn(false).when(clickAttributionHelper).initialiseAndCheckIsBudgetExhausted(any(), any(), any(), any(), any());
-        Mockito.doReturn(BigDecimal.valueOf(1000)).when(clickAttributionHelper).modifyAndGetBudgetUtilised(any(), any(), any(), any(), any());
-        Mockito.doReturn(BigDecimal.valueOf(110)).when(clickAttributionHelper).modifyAndGetSupplierWeeklyBudgetUtilised(any(), any(), any());
+        Mockito.doReturn(false).when(interactionEventAttributionHelper).initialiseAndCheckIsBudgetExhausted(any(), any(), any(), any(), any());
+        Mockito.doReturn(BigDecimal.valueOf(1000)).when(interactionEventAttributionHelper).modifyAndGetBudgetUtilised(any(), any(), any(), any(), any());
+        Mockito.doReturn(BigDecimal.valueOf(110)).when(interactionEventAttributionHelper).modifyAndGetSupplierWeeklyBudgetUtilised(any(), any(), any());
         Mockito.doReturn(true).when(interactionBillHandler).performWindowDeDuplication();
-        Mockito.doReturn(true).when(clickAttributionHelper).checkIfInteractionNeedsToBeConsidered(any(), any());
+        Mockito.doReturn(true).when(interactionEventAttributionHelper).checkIfInteractionNeedsToBeConsidered(any(), any());
         AdWidgetClickEvent adWidgetClickEvent = getAdWidgetClickEvent();
         widgetClickEventService.handle(adWidgetClickEvent);
-        Mockito.verify(clickAttributionHelper, times(1)).sendBudgetExhaustedEvent(any(), any());
-        Mockito.verify(clickAttributionHelper, times(1)).sendSupplierBudgetExhaustedEvent(any(), any());
+        Mockito.verify(interactionEventAttributionHelper, times(1)).sendBudgetExhaustedEvent(any(), any());
+        Mockito.verify(interactionEventAttributionHelper, times(1)).sendSupplierBudgetExhaustedEvent(any(), any());
         Mockito.verify(interactionBillHandler, times(1)).performWindowDeDuplication();
-        Mockito.verify(clickAttributionHelper, times(1)).checkIfInteractionNeedsToBeConsidered(any(), any());
-        Mockito.verify(clickAttributionHelper, times(1)).publishPrismEvent(any());
+        Mockito.verify(interactionEventAttributionHelper, times(1)).checkIfInteractionNeedsToBeConsidered(any(), any());
+        Mockito.verify(interactionEventAttributionHelper, times(1)).publishPrismEvent(any());
         Mockito.verify(telegrafMetricsHelper, times(1)).increment(INTERACTION_EVENT_KEY, INTERACTION_EVENT_TAGS,
                 adWidgetClickEvent.getEventName(), adWidgetClickEvent.getProperties().getScreen(), adWidgetClickEvent.getProperties().getOrigin(),
                 AdInteractionStatus.VALID.name(), NAN);

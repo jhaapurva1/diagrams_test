@@ -63,9 +63,6 @@ public class WidgetViewEventService {
                     AdInteractionInvalidReason.NOT_AD_WIDGET));
             return;
         }
-        MDC.put(com.meesho.ads.lib.constants.Constants.GUID, UUID.randomUUID().toString());
-        String countryCode = "IN";
-        org.slf4j.MDC.put(Constants.COUNTRY_CODE, Country.getValueDefaultCountryFromEnv(countryCode).getCountryCode());
 
         Map<Long, AdViewEventMetadataResponse.CatalogCampaignMetadata> catalogMetadataMap;
         try {
@@ -85,7 +82,9 @@ public class WidgetViewEventService {
         }
 
         if (CollectionUtils.isEmpty(catalogMetadataMap)) {
-            // No active campaign found for catalogs
+            statsdMetricManager.incrementCounter(WIDGET_VIEW_EVENT_KEY, String.format(VIEW_EVENT_TAGS,
+                    adWidgetViewEvent.getEventName(), adWidgetViewEvent.getProperties().getScreens(), adWidgetViewEvent.getProperties().getOrigins(), INVALID,
+                    AdInteractionInvalidReason.CAMPAIGN_INACTIVE));
             return;
         }
 
@@ -99,7 +98,6 @@ public class WidgetViewEventService {
             campaignCatalogViewCountMap.set(new HashMap<>());
             startTime.set(System.currentTimeMillis());
         }
-        MDC.clear();
     }
 
     private void updateCampaignCatalogViewCounts(AdWidgetViewEvent adWidgetViewEvent,

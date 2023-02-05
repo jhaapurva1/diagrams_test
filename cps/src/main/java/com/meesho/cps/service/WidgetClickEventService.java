@@ -1,26 +1,14 @@
 package com.meesho.cps.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.meesho.ad.client.response.CampaignCatalogMetadataResponse;
 import com.meesho.ad.client.response.CampaignDetails;
 import com.meesho.ads.lib.helper.TelegrafMetricsHelper;
 import com.meesho.ads.lib.utils.DateTimeUtils;
-import com.meesho.ads.lib.utils.Utils;
-import com.meesho.commons.utils.DateUtils;
 import com.meesho.cps.config.ApplicationProperties;
 import com.meesho.cps.constants.*;
-import com.meesho.cps.data.entity.hbase.CampaignDatewiseMetrics;
-import com.meesho.cps.data.entity.hbase.CampaignMetrics;
-import com.meesho.cps.data.entity.hbase.SupplierWeekWiseMetrics;
 import com.meesho.cps.data.entity.kafka.AdInteractionPrismEvent;
 import com.meesho.cps.data.entity.kafka.AdWidgetClickEvent;
-import com.meesho.cps.data.entity.kafka.BudgetExhaustedEvent;
-import com.meesho.cps.data.entity.kafka.SupplierWeeklyBudgetExhaustedEvent;
 import com.meesho.cps.data.internal.CampaignCatalogDate;
-import com.meesho.cps.db.hbase.repository.CampaignCatalogDateMetricsRepository;
-import com.meesho.cps.db.hbase.repository.CampaignDatewiseMetricsRepository;
-import com.meesho.cps.db.hbase.repository.CampaignMetricsRepository;
-import com.meesho.cps.db.hbase.repository.SupplierWeekWiseMetricsRepository;
 import com.meesho.cps.db.redis.dao.UpdatedCampaignCatalogCacheDao;
 import com.meesho.cps.db.redis.dao.UserCatalogInteractionCacheDao;
 import com.meesho.cps.enums.FeedType;
@@ -28,21 +16,16 @@ import com.meesho.cps.exception.ExternalRequestFailedException;
 import com.meesho.cps.factory.AdBillFactory;
 import com.meesho.cps.helper.AdWidgetValidationHelper;
 import com.meesho.cps.helper.CampaignPerformanceHelper;
-import com.meesho.cps.helper.ClickAttributionHelper;
-import com.meesho.cps.helper.ValidationHelper;
+import com.meesho.cps.helper.InteractionEventAttributionHelper;
 import com.meesho.cps.service.external.AdService;
-import com.meesho.cps.service.external.PrismService;
 import com.meesho.cps.transformer.PrismEventTransformer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.*;
 
 import static com.meesho.cps.constants.TelegrafConstants.*;
@@ -62,19 +45,13 @@ public class WidgetClickEventService {
     TelegrafMetricsHelper telegrafMetricsHelper;
 
     @Autowired
-    PrismService prismService;
-
-    @Autowired
     private CampaignPerformanceHelper campaignHelper;
 
     @Autowired
-    private ClickAttributionHelper clickAttributionHelper;
+    private InteractionEventAttributionHelper interactionEventAttributionHelper;
 
     @Autowired
     private AdBillFactory adBillFactory;
-
-    @Autowired
-    private CampaignCatalogDateMetricsRepository campaignCatalogDateMetricsRepository;
 
     @Autowired
     private UpdatedCampaignCatalogCacheDao updatedCampaignCatalogCacheDao;
@@ -83,8 +60,7 @@ public class WidgetClickEventService {
     private UserCatalogInteractionCacheDao userCatalogInteractionCacheDao;
 
     public void handle(AdWidgetClickEvent adWidgetClickEvent) throws ExternalRequestFailedException {
-        // TODO: remove log line before pushing
-        log.info("processing widget click event: {}", adWidgetClickEvent);
+        log.debug("processing widget click event: {}", adWidgetClickEvent);
 
         // check if valid ad-widget event
         if (!adWidgetClickEvent.getProperties().getIsAdWidget()
@@ -115,7 +91,7 @@ public class WidgetClickEventService {
 
         CampaignCatalogMetadataResponse campaignCatalogMetadataResponse =
                 adService.getCampaignCatalogMetadata(catalogIds, campaignIds, userId, feedType);
-        log.info("campaign catalog metadata: {}", campaignCatalogMetadataResponse);
+        log.debug("campaign catalog metadata: {}", campaignCatalogMetadataResponse);
         List<CampaignCatalogMetadataResponse.CatalogMetadata> catalogMetadataList = campaignCatalogMetadataResponse.getCampaignDetailsList();
         List<CampaignCatalogMetadataResponse.SupplierMetadata> supplierMetadataList = campaignCatalogMetadataResponse.getSupplierDetailsList();
 
@@ -125,7 +101,7 @@ public class WidgetClickEventService {
             log.error("No active ad on catalogId {}", catalogId);
             adInteractionPrismEvent.setStatus(AdInteractionStatus.INVALID);
             adInteractionPrismEvent.setReason(AdInteractionInvalidReason.CAMPAIGN_INACTIVE);
-            clickAttributionHelper.publishPrismEvent(adInteractionPrismEvent);
+            interactionEventAttributionHelper.publishPrismEvent(adInteractionPrismEvent);
             telegrafMetricsHelper.increment(INTERACTION_EVENT_KEY, INTERACTION_EVENT_TAGS,
                     adWidgetClickEvent.getEventName(), adWidgetClickEvent.getProperties().getScreen(), adWidgetClickEvent.getProperties().getOrigin(),
                     AdInteractionStatus.INVALID.name(), AdInteractionInvalidReason.CAMPAIGN_INACTIVE.name());
@@ -153,13 +129,11 @@ public class WidgetClickEventService {
 
         BillHandler billHandler = adBillFactory.getBillHandlerForBillVersion(billVersion);
 
-        //TODO : Check if event is valid for the bill version of campaign
-
-        if (clickAttributionHelper.initialiseAndCheckIsBudgetExhausted(catalogMetadata, weekStartDate, eventDate, weeklyBudgetUtilisationLimit, catalogId)) {
+        if (interactionEventAttributionHelper.initialiseAndCheckIsBudgetExhausted(catalogMetadata, weekStartDate, eventDate, weeklyBudgetUtilisationLimit, catalogId)) {
             log.error("Budget exhausted for catalogId {}", catalogId);
             adInteractionPrismEvent.setStatus(AdInteractionStatus.INVALID);
             adInteractionPrismEvent.setReason(AdInteractionInvalidReason.BUDGET_EXHAUSTED);
-            clickAttributionHelper.publishPrismEvent(adInteractionPrismEvent);
+            interactionEventAttributionHelper.publishPrismEvent(adInteractionPrismEvent);
             telegrafMetricsHelper.increment(INTERACTION_EVENT_KEY, INTERACTION_EVENT_TAGS,
                     adWidgetClickEvent.getEventName(), adWidgetClickEvent.getProperties().getScreen(), adWidgetClickEvent.getProperties().getOrigin(),
                     AdInteractionStatus.INVALID.name(), AdInteractionInvalidReason.BUDGET_EXHAUSTED.name());
@@ -168,7 +142,7 @@ public class WidgetClickEventService {
 
         //Perform deduplication
         if(performDedup(billHandler, adWidgetClickEvent, adInteractionPrismEvent, userId, interactionTime)) {
-            clickAttributionHelper.publishPrismEvent(adInteractionPrismEvent);
+            interactionEventAttributionHelper.publishPrismEvent(adInteractionPrismEvent);
             telegrafMetricsHelper.increment(INTERACTION_EVENT_KEY, INTERACTION_EVENT_TAGS,
                     adWidgetClickEvent.getEventName(), adWidgetClickEvent.getProperties().getScreen(), adWidgetClickEvent.getProperties().getOrigin(),
                     AdInteractionStatus.INVALID.name(), AdInteractionInvalidReason.DUPLICATE.name());
@@ -176,26 +150,27 @@ public class WidgetClickEventService {
         }
 
         //Update campaign catalog date metrics
-        log.info("campaignId {}, catalogId {}, date{}, eventName {}", campaignId, catalogId, eventDate, "AdWidgetClickEvent");
-        campaignCatalogDateMetricsRepository.incrementClickCount(campaignId, catalogId, eventDate);
+        log.debug("campaignId {}, catalogId {}, date{}, eventName {}", campaignId, catalogId, eventDate, "AdWidgetClickEvent");
+        interactionEventAttributionHelper.incrementInteractionCount(campaignId, catalogId, eventDate,
+                ConsumerConstants.IngestionInteractionEvents.AD_CLICK_EVENT_NAME);
 
         // Update budget utilised
-        BigDecimal budgetUtilised = clickAttributionHelper.modifyAndGetBudgetUtilised(cpc, campaignId, catalogId, eventDate, campaignType);
+        BigDecimal budgetUtilised = interactionEventAttributionHelper.modifyAndGetBudgetUtilised(cpc, campaignId, catalogId, eventDate, campaignType);
         if (budgetUtilised.compareTo(totalBudget) >= 0) {
-            clickAttributionHelper.sendBudgetExhaustedEvent(campaignId, catalogId);
+            interactionEventAttributionHelper.sendBudgetExhaustedEvent(campaignId, catalogId);
         }
 
         //update supplier weekly budget utilised
-        BigDecimal supplierWeeklyBudgetUtilised = clickAttributionHelper.modifyAndGetSupplierWeeklyBudgetUtilised(supplierId, weekStartDate, cpc);
+        BigDecimal supplierWeeklyBudgetUtilised = interactionEventAttributionHelper.modifyAndGetSupplierWeeklyBudgetUtilised(supplierId, weekStartDate, cpc);
         if (Objects.nonNull(weeklyBudgetUtilisationLimit) && supplierWeeklyBudgetUtilised.compareTo(weeklyBudgetUtilisationLimit) >= 0) {
-            clickAttributionHelper.sendSupplierBudgetExhaustedEvent(supplierId, catalogId);
+            interactionEventAttributionHelper.sendSupplierBudgetExhaustedEvent(supplierId, catalogId);
         }
 
         updatedCampaignCatalogCacheDao.add(Arrays.asList(new CampaignCatalogDate(campaignId, catalogId, eventDate.toString())));
 
         // publish instrumentation event and metrics
         adInteractionPrismEvent.setStatus(AdInteractionStatus.VALID);
-        clickAttributionHelper.publishPrismEvent(adInteractionPrismEvent);
+        interactionEventAttributionHelper.publishPrismEvent(adInteractionPrismEvent);
 
         telegrafMetricsHelper.increment(INTERACTION_EVENT_KEY, INTERACTION_EVENT_TAGS,
                 adWidgetClickEvent.getEventName(), adWidgetClickEvent.getProperties().getScreen(), adWidgetClickEvent.getProperties().getOrigin(),
@@ -208,9 +183,11 @@ public class WidgetClickEventService {
 
     private boolean performDedup(BillHandler billHandler, AdWidgetClickEvent adWidgetClickEvent,
                               AdInteractionPrismEvent adInteractionPrismEvent, String userId, Long interactionTime) {
-        log.info("perform dedup: {} {} {} {} {}", billHandler, adWidgetClickEvent, adWidgetClickEvent, userId, interactionTime);
+        log.debug("perform dedup: {} {} {} {} {}", billHandler, adWidgetClickEvent, adWidgetClickEvent, userId, interactionTime);
 
-        // Populating the ORIGIN and SCREEN as per the product requirements: https://docs.google.com/spreadsheets/d/1WOY4CGfMnn5aGgA8kAYLQfU12t6C8dztpF2UhgGKY2E/edit?usp=sharing
+        // Populating the ORIGIN and SCREEN as per the product requirements:
+        // https://docs.google.com/spreadsheets/d/1WOY4CGfMnn5aGgA8kAYLQfU12t6C8dztpF2UhgGKY2E/edit?usp=sharing
+        // Set Screen for mid feed to have the slot position
         if(adWidgetClickEvent.getProperties().getWidgetGroupPosition() > 1) {
             adWidgetClickEvent.getProperties().setScreen(Constants.AdWidgets.SCREEN_MID_FEED_SEARCH);
         } else {
@@ -226,7 +203,7 @@ public class WidgetClickEventService {
             Long id = adWidgetClickEvent.getProperties().getCatalogId();
             AdUserInteractionType type = AdUserInteractionType.CATALOG_ID;
                 Long previousInteractionTime = userCatalogInteractionCacheDao.get(userId, id, origin, screen, type);
-            if (!clickAttributionHelper.checkIfInteractionNeedsToBeConsidered(previousInteractionTime, interactionTime)) {
+            if (!interactionEventAttributionHelper.checkIfInteractionNeedsToBeConsidered(previousInteractionTime, interactionTime)) {
                 log.warn("Ignoring click event since window hasn't passed or wrong ordering," +
                         " event : {}, previousInteractionTime {}", adWidgetClickEvent, previousInteractionTime);
                 adInteractionPrismEvent.setStatus(AdInteractionStatus.INVALID);

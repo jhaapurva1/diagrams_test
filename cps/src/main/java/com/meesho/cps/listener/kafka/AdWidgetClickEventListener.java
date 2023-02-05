@@ -3,14 +3,11 @@ package com.meesho.cps.listener.kafka;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.meesho.ads.lib.exception.DataValidationException;
 import com.meesho.ads.lib.helper.TelegrafMetricsHelper;
-import com.meesho.ads.lib.listener.kafka.BaseKafkaListener;
 import com.meesho.ads.lib.listener.kafka.BaseManualAcknowledgeKafkaListener;
 import com.meesho.cps.constants.AdInteractionStatus;
 import com.meesho.cps.constants.ConsumerConstants;
-import com.meesho.cps.data.entity.kafka.AdInteractionEvent;
 import com.meesho.cps.data.entity.kafka.AdWidgetClickEvent;
 import com.meesho.cps.helper.AdWidgetValidationHelper;
-import com.meesho.cps.helper.ValidationHelper;
 import com.meesho.cps.service.CatalogInteractionEventService;
 import com.meesho.cps.service.WidgetClickEventService;
 import com.meesho.instrumentation.annotation.DigestLogger;
@@ -21,7 +18,6 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
 
@@ -42,7 +38,6 @@ public class AdWidgetClickEventListener extends BaseManualAcknowledgeKafkaListen
     WidgetClickEventService widgetClickEventService;
 
     @KafkaListener(id = ConsumerConstants.AdWidgetClickEventConsumer.CONSUMER_ID,
-            groupId = ConsumerConstants.AdWidgetClickEventConsumer.CONSUMER_GROUP_ID,
             containerFactory = ConsumerConstants.IngestionServiceConfluentKafka.MANUAL_ACK_CONTAINER_FACTORY,
             topics = ConsumerConstants.AdWidgetClickEventConsumer.TOPIC,
             autoStartup = ConsumerConstants.AdWidgetClickEventConsumer.AUTO_START,
@@ -55,18 +50,16 @@ public class AdWidgetClickEventListener extends BaseManualAcknowledgeKafkaListen
             })
     @DigestLogger(metricType = MetricType.METHOD, tagSet = "consumer=AdWidgetClickEventListener")
     public void listenGenericRecord(ConsumerRecord<String, GenericRecord> consumerRecord, Acknowledgment acknowledgment) {
-        log.error("Ad widget Click listener: listening to an event");
         super.listenGenericRecord(consumerRecord, acknowledgment);
     }
 
     @Override
     public void consume(AdWidgetClickEvent adWidgetClickEvent) throws DataValidationException {
-        log.error("Received ad widget click event: {}", adWidgetClickEvent);
+        log.info("Consuming ad widget click event: {}", adWidgetClickEvent);
         if (!AdWidgetValidationHelper.isValidAdWidgetClickEvent(adWidgetClickEvent)) {
             log.error("Invalid event {}", adWidgetClickEvent);
             telegrafMetricsHelper.increment(WIDGET_CLICK_EVENT_KEY, INTERACTION_EVENT_TAGS, adWidgetClickEvent.getEventName(), NAN,NAN,
                     AdInteractionStatus.INVALID.name(), NAN);
-            //throw new DataValidationException("Invalid event");
             return;
         }
         log.info("Processing interaction event for userId {}, catalogId {}, " + "appVersionCode : {}",

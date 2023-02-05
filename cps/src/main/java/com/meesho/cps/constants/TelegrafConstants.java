@@ -15,7 +15,7 @@ public class TelegrafConstants {
 
     public static final String WIDGET_VIEW_EVENT_KEY = SERVICE_NAME + "WidgetViewEvent";
 
-    public static final String WIDGET_CLICK_EVENT_KEY = SERVICE_NAME + "WidgetclickEvent";
+    public static final String WIDGET_CLICK_EVENT_KEY = SERVICE_NAME + "WidgetClickEvent";
 
     // tags placeholder
     public static final String INTERACTION_EVENT_TAGS = "eventName=%s,screen=%s,origin=%s,status=%s,reason=%s";

@@ -3,6 +3,7 @@ package com.meesho.cps.helper;
 import com.meesho.cps.constants.ConsumerConstants;
 import com.meesho.cps.data.entity.kafka.AdWidgetClickEvent;
 import com.meesho.cps.data.entity.kafka.AdWidgetViewEvent;
+import org.apache.commons.collections.CollectionUtils;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -19,10 +20,10 @@ public class AdWidgetValidationHelper {
                 Objects.nonNull(adWidgetViewEvent.getEventId()) &&
                 Objects.nonNull(adWidgetViewEvent.getEventTimestamp()) &&
                 Objects.nonNull(adWidgetViewEvent.getUserId()) &&
-                Objects.nonNull(adWidgetViewEvent.getProperties().getCampaignIds()) &&
-                Objects.nonNull(adWidgetViewEvent.getProperties().getCatalogIds()) &&
+                CollectionUtils.isNotEmpty(adWidgetViewEvent.getProperties().getCampaignIds()) &&
+                CollectionUtils.isNotEmpty(adWidgetViewEvent.getProperties().getCatalogIds()) &&
                 Objects.nonNull(adWidgetViewEvent.getProperties().getAppVersionCode()) &&
-                Objects.nonNull(adWidgetViewEvent.getProperties().getPrimaryRealEstates());
+                CollectionUtils.isNotEmpty(adWidgetViewEvent.getProperties().getPrimaryRealEstates());
     }
 
     public static Boolean isValidWidgetRealEstate(String primaryRealEstate) {
