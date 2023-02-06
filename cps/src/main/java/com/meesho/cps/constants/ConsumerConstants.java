@@ -107,8 +107,6 @@ public class ConsumerConstants {
 
     public static class AdWidgetViewEventConsumer {
 
-        public static final String CONSUMER_GROUP_ID = "cps.adWidgetViewEventConsumerGroup";
-
         public static final String CONSUMER_ID = "${kafka.display_ad.widget.view.event.consumer.id}";
 
         public static final String TOPIC = "${kafka.display_ad.widget.view.event.consumer.topic}";
@@ -123,8 +121,6 @@ public class ConsumerConstants {
     }
 
     public static class AdWidgetClickEventConsumer {
-
-        public static final String CONSUMER_GROUP_ID = "cps.adWidgetClickEventConsumerGroup";
 
         public static final String CONSUMER_ID = "${kafka.display_ad.widget.click.event.consumer.id}";
 
