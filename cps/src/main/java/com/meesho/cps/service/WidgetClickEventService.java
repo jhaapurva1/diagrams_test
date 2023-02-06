@@ -187,13 +187,14 @@ public class WidgetClickEventService {
 
         // Populating the ORIGIN and SCREEN as per the product requirements:
         // https://docs.google.com/spreadsheets/d/1WOY4CGfMnn5aGgA8kAYLQfU12t6C8dztpF2UhgGKY2E/edit?usp=sharing
-        // Set Screen for mid feed to have the slot position
-        if(adWidgetClickEvent.getProperties().getWidgetGroupPosition() > 1) {
-            adWidgetClickEvent.getProperties().setScreen(Constants.AdWidgets.SCREEN_MID_FEED_SEARCH);
+        if(Objects.nonNull(adWidgetClickEvent.getProperties().getWidgetGroupPosition()) &&
+                adWidgetClickEvent.getProperties().getWidgetGroupPosition() > 1) {
+            adWidgetClickEvent.getProperties().setScreen(String.format(Constants.AdWidgets.SCREEN_MID_FEED_SEARCH,
+                    adWidgetClickEvent.getProperties().getWidgetGroupPosition()));
         } else {
             adWidgetClickEvent.getProperties().setScreen(Constants.AdWidgets.SCREEN_TOP_OF_SEARCH);
         }
-        adWidgetClickEvent.getProperties().setOrigin(Constants.DefaultRealEstateMetaData.ORIGIN);
+        adWidgetClickEvent.getProperties().setOrigin(Constants.AdWidgets.ORIGIN_SEARCH);
         String origin = adWidgetClickEvent.getProperties().getOrigin();
         String screen = adWidgetClickEvent.getProperties().getScreen();
         adInteractionPrismEvent.setOrigin(origin);
