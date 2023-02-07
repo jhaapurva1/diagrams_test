@@ -22,7 +22,6 @@ import java.util.List;
  */
 @Slf4j
 @Component
-@EnableScheduling
 public class CampaignPerformanceScheduler extends PrestoFeedIngestionScheduler<CampaignPerformancePrestoData> {
 
     private static final String QUERY = "SELECT * FROM " + DBConstants.Redshift.Tables.CAMPAIGN_PERFORMANCE_METRICS +

@@ -108,6 +108,19 @@ public class KafkaConfig {
         return concurrentKafkaListenerContainerFactory;
     }
 
+    @Bean(name = ConsumerConstants.PrestoKafka.CONTAINER_FACTORY)
+    public ConcurrentKafkaListenerContainerFactory<String, String> prestoKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, String> concurrentKafkaListenerContainerFactory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        concurrentKafkaListenerContainerFactory.setConsumerFactory(adServiceKafkaConsumerFactory());
+        concurrentKafkaListenerContainerFactory.setBatchListener(false);
+        concurrentKafkaListenerContainerFactory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
+
+        log.info("Presto kafka consumer created with configs {}",
+                concurrentKafkaListenerContainerFactory.getConsumerFactory().getConfigurationProperties());
+        return concurrentKafkaListenerContainerFactory;
+    }
+
     private ConsumerFactory<String, String> commonKafkaConsumerFactory() {
         Map<String, Object> configs = new HashMap<>();
         configs.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, commonBootstrapServers);
