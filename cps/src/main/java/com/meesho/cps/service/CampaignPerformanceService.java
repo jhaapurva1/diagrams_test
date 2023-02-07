@@ -11,6 +11,7 @@ import com.meesho.cps.data.entity.hbase.CampaignMetrics;
 import com.meesho.cps.data.entity.hbase.SupplierWeekWiseMetrics;
 import com.meesho.cps.data.internal.ElasticFiltersRequest;
 import com.meesho.cps.data.internal.FetchCampaignCatalogsESRequest;
+import com.meesho.cps.data.internal.PerformancePojo;
 import com.meesho.cps.db.elasticsearch.ElasticSearchRepository;
 import com.meesho.cps.db.hbase.repository.CampaignCatalogDateMetricsRepository;
 import com.meesho.cps.db.hbase.repository.CampaignDatewiseMetricsRepository;
@@ -33,6 +34,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -95,47 +97,81 @@ public class CampaignPerformanceService {
     }
 
     public CampaignPerformanceResponse getCampaignPerformanceMetrics(CampaignPerformanceRequest request) throws IOException {
-        ElasticFiltersRequest elasticFiltersRequestMonthWise = ElasticFiltersRequest.builder()
-                .campaignIds(request.getCampaignIds())
-                .aggregationBuilders(campaignPerformanceHelper.createBucketAggregations(
-                        Constants.ESConstants.BY_CAMPAIGN, DBConstants.ElasticSearch.CAMPAIGN_ID,
-                        request.getCampaignIds().size()))
-                .build();
+        if (!request.isDateRangePresent()) {
+            campaignPerformanceHelper.addDatesToRequest(request);
+        }
+        Map<Long, PerformancePojo> campaignIdToHBaseMetricsMap = null;
+        List<LocalDate> hBaseQueryDates = campaignPerformanceHelper
+            .getDatesForHBaseQuery(request.getStartDate(), request.getEndDate());
+        boolean isHBaseQueryRequired = !hBaseQueryDates.isEmpty();
 
+        if (isHBaseQueryRequired) {
+            List<CampaignCatalogDateMetrics> campaignCatalogDateMetricsList = campaignCatalogMetricsRepository
+                .get(request.getCampaignDetails().stream().collect(Collectors.toMap(
+                    CampaignPerformanceRequest.CampaignDetails::getCampaignId,
+                    CampaignPerformanceRequest.CampaignDetails::getCatalogIds)),
+                    hBaseQueryDates);
+            campaignIdToHBaseMetricsMap = campaignCatalogDateMetricsList.stream().collect(Collectors.groupingBy(CampaignCatalogDateMetrics::getCampaignId))
+                .entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, entry -> campaignPerformanceHelper.getAggregatedCampaignCatalogDateMetrics(entry.getValue())));
+        }
+
+        request.setEndDate(request.getEndDate().minusDays(hBaseQueryDates.size()));
         EsCampaignCatalogAggregateResponse monthWiseResponse = new EsCampaignCatalogAggregateResponse();
         EsCampaignCatalogAggregateResponse dateWiseResponse = new EsCampaignCatalogAggregateResponse();
+        List<Long> campaignIds = request.getCampaignDetails().stream()
+            .map(CampaignPerformanceRequest.CampaignDetails::getCampaignId).collect(Collectors.toList());
+        boolean isESQueryRequired = !request.getEndDate().isBefore(request.getStartDate());
 
-        if (!request.isDateRangePresent()) {
-            elasticFiltersRequestMonthWise.setRangeFilters(campaignPerformanceHelper.addTillDateRangeFilter());
-            monthWiseResponse = elasticSearchRepository.fetchEsCampaignCatalogsMonthWise(elasticFiltersRequestMonthWise);
-        } else {
-            if(CommonUtils.shouldQueryMonthWiseIndex(request.getStartDate(), request.getEndDate())) {
+        if (isESQueryRequired) {
+            ElasticFiltersRequest elasticFiltersRequestMonthWise = ElasticFiltersRequest.builder()
+                    .campaignIds(campaignIds)
+                    .aggregationBuilders(campaignPerformanceHelper.createBucketAggregations(
+                            Constants.ESConstants.BY_CAMPAIGN, DBConstants.ElasticSearch.CAMPAIGN_ID,
+                            campaignIds.size()))
+                    .build();
+
+            if (CommonUtils.shouldQueryMonthWiseIndex(request.getStartDate(), request.getEndDate())) {
                 elasticFiltersRequestMonthWise.setRangeFilters(campaignPerformanceHelper.addMonthWiseRangeFilter(request.getStartDate(), request.getEndDate()));
                 monthWiseResponse = elasticSearchRepository.fetchEsCampaignCatalogsMonthWise(elasticFiltersRequestMonthWise);
             }
             elasticFiltersRequestMonthWise.setRangeFilters(campaignPerformanceHelper.addDateWiseRangeFilters(request.getStartDate(), request.getEndDate()));
             dateWiseResponse = elasticSearchRepository.fetchEsCampaignCatalogsDateWise(elasticFiltersRequestMonthWise);
         }
-        return campaignPerformanceTransformer.getCampaignPerformanceResponse(monthWiseResponse, dateWiseResponse, request.getCampaignIds());
+        return campaignPerformanceTransformer.getCampaignPerformanceResponse(monthWiseResponse, dateWiseResponse, campaignIds,
+                campaignIdToHBaseMetricsMap);
     }
 
     public CampaignCatalogPerformanceResponse getCampaignCatalogPerformanceMetrics(CampaignCatalogPerformanceRequest request) throws IOException {
-        ElasticFiltersRequest elasticFiltersRequestMonthWise = ElasticFiltersRequest.builder()
-                .campaignIds(Collections.singletonList(request.getCampaignId()))
-                .catalogIds(request.getCatalogIds())
-                .aggregationBuilders(campaignPerformanceHelper.createBucketAggregations(
-                        Constants.ESConstants.BY_CATALOG, DBConstants.ElasticSearch.CATALOG_ID,
-                        request.getCatalogIds().size()))
-                .build();
+        if (!request.isDateRangePresent()) {
+            campaignPerformanceHelper.addDatesToRequest(request);
+        }
+        Map<Long, PerformancePojo> catalogIdToHBaseMetricsMap = null;
+        List<LocalDate> hBaseQueryDates = campaignPerformanceHelper.getDatesForHBaseQuery
+                (request.getStartDate(), request.getEndDate());
+        boolean isHBaseQueryRequired = !hBaseQueryDates.isEmpty();
 
+        if (isHBaseQueryRequired) {
+            List<CampaignCatalogDateMetrics> campaignCatalogDateMetricsList = campaignCatalogMetricsRepository
+                .get(Collections.singletonMap(request.getCampaignId(), request.getCatalogIds()), hBaseQueryDates);
+            catalogIdToHBaseMetricsMap = campaignCatalogDateMetricsList.stream().collect(Collectors.groupingBy(CampaignCatalogDateMetrics::getCatalogId))
+                .entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, entry -> campaignPerformanceHelper.getAggregatedCampaignCatalogDateMetrics(entry.getValue())));
+        }
+
+        request.setEndDate(request.getEndDate().minusDays(hBaseQueryDates.size()));
         EsCampaignCatalogAggregateResponse monthWiseResponse = new EsCampaignCatalogAggregateResponse();
         EsCampaignCatalogAggregateResponse dateWiseResponse = new EsCampaignCatalogAggregateResponse();
+        boolean isESQueryRequired = !request.getEndDate().isBefore(request.getStartDate());
 
-        if (!request.isDateRangePresent()) {
-            elasticFiltersRequestMonthWise.setRangeFilters(campaignPerformanceHelper.addTillDateRangeFilter());
-            monthWiseResponse = elasticSearchRepository.fetchEsCampaignCatalogsMonthWise(elasticFiltersRequestMonthWise);
-        } else {
-            if(CommonUtils.shouldQueryMonthWiseIndex(request.getStartDate(), request.getEndDate())) {
+        if (isESQueryRequired) {
+            ElasticFiltersRequest elasticFiltersRequestMonthWise = ElasticFiltersRequest.builder()
+                    .campaignIds(Collections.singletonList(request.getCampaignId()))
+                    .catalogIds(request.getCatalogIds())
+                    .aggregationBuilders(campaignPerformanceHelper.createBucketAggregations(
+                            Constants.ESConstants.BY_CATALOG, DBConstants.ElasticSearch.CATALOG_ID,
+                            request.getCatalogIds().size()))
+                    .build();
+
+            if (CommonUtils.shouldQueryMonthWiseIndex(request.getStartDate(), request.getEndDate())) {
                 elasticFiltersRequestMonthWise.setRangeFilters(campaignPerformanceHelper.addMonthWiseRangeFilter(request.getStartDate(), request.getEndDate()));
                 monthWiseResponse = elasticSearchRepository.fetchEsCampaignCatalogsMonthWise(elasticFiltersRequestMonthWise);
             }
@@ -143,7 +179,7 @@ public class CampaignPerformanceService {
             dateWiseResponse = elasticSearchRepository.fetchEsCampaignCatalogsDateWise(elasticFiltersRequestMonthWise);
         }
         return campaignPerformanceTransformer.getCampaignCatalogPerformanceResponse(monthWiseResponse, dateWiseResponse,
-                request.getCampaignId(), request.getCatalogIds());
+                request.getCampaignId(), request.getCatalogIds(), catalogIdToHBaseMetricsMap);
     }
 
     public BudgetUtilisedResponse getBudgetUtilised(BudgetUtilisedRequest request) {
@@ -245,22 +281,38 @@ public class CampaignPerformanceService {
 
     public CampaignPerformanceDatewiseResponse getCampaignCatalogPerfDateWise(
             CampaignCatalogPerfDatawiseRequest request) throws IOException {
+        Map<LocalDate, PerformancePojo> dateToHBaseMetricsMap = null;
+        List<LocalDate> hBaseQueryDates = campaignPerformanceHelper
+                .getDatesForHBaseQuery(request.getStartDate(), request.getEndDate());
+        boolean isHBaseQueryRequired = !hBaseQueryDates.isEmpty();
 
-        ElasticFiltersRequest elasticFiltersRequestDateWise = ElasticFiltersRequest.builder()
-                .campaignIds(Collections.singletonList(request.getCampaignId()))
-                .aggregationBuilders(campaignPerformanceHelper.createGraphBucketAggregations(
-                        Constants.ESConstants.BY_DATE, DBConstants.ElasticSearch.DATE,
-                        (int) ChronoUnit.DAYS.between(request.getStartDate(), request.getEndDate()) + 1))
-                .build();
+        if (isHBaseQueryRequired) {
+            List<CampaignCatalogDateMetrics> campaignCatalogDateMetricsList = campaignCatalogMetricsRepository
+                .get(Collections.singletonMap(request.getCampaignId(), request.getCatalogIds()), hBaseQueryDates);
+            dateToHBaseMetricsMap = campaignCatalogDateMetricsList.stream().collect(Collectors.groupingBy(CampaignCatalogDateMetrics::getDate))
+                .entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, entry -> campaignPerformanceHelper.getAggregatedCampaignCatalogDateMetrics(entry.getValue())));
+        }
 
-        elasticFiltersRequestDateWise.setRangeFilters(Collections.singletonList(ElasticFiltersRequest.RangeFilter
-                .builder().gte(request.getStartDate()).lte(request.getEndDate())
-                .fieldName(DBConstants.ElasticSearch.DATE).format(Constants.ESConstants.DAY_DATE_FORMAT).build()));
-
+        request.setEndDate(request.getEndDate().minusDays(hBaseQueryDates.size()));
         EsCampaignCatalogAggregateResponse dateWiseResponse = new EsCampaignCatalogAggregateResponse();
-        dateWiseResponse = elasticSearchRepository.fetchEsCampaignCatalogsDateWise(elasticFiltersRequestDateWise);
+        boolean isESQueryRequired = !request.getEndDate().isBefore(request.getStartDate());
+
+        if (isESQueryRequired) {
+            ElasticFiltersRequest elasticFiltersRequestDateWise = ElasticFiltersRequest.builder()
+                    .campaignIds(Collections.singletonList(request.getCampaignId()))
+                    .aggregationBuilders(campaignPerformanceHelper.createGraphBucketAggregations(
+                            Constants.ESConstants.BY_DATE, DBConstants.ElasticSearch.DATE,
+                            (int) ChronoUnit.DAYS.between(request.getStartDate(), request.getEndDate()) + 1))
+                    .build();
+
+            elasticFiltersRequestDateWise.setRangeFilters(Collections.singletonList(ElasticFiltersRequest.RangeFilter
+                    .builder().gte(request.getStartDate()).lte(request.getEndDate())
+                    .fieldName(DBConstants.ElasticSearch.DATE).format(Constants.ESConstants.DAY_DATE_FORMAT).build()));
+
+            dateWiseResponse = elasticSearchRepository.fetchEsCampaignCatalogsDateWise(elasticFiltersRequestDateWise);
+        }
 
         return campaignPerformanceTransformer.getCampaignPerformanceDateWiseResponse(request.getCampaignId(),
-                dateWiseResponse);
+                dateWiseResponse, dateToHBaseMetricsMap);
     }
 }

@@ -57,4 +57,8 @@ public class CampaignCatalogDateMetrics {
         return LocalDate.parse(dateString);
     }
 
+    public static Long getCatalogIdFromRowKey(String rowKey) {
+        return Long.parseLong(rowKey.substring(rowKey.indexOf(":") + 1, rowKey.lastIndexOf(":")));
+    }
+
 }

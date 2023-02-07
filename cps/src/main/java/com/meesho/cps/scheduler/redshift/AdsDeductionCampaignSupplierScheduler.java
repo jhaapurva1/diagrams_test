@@ -15,6 +15,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Component;
 
 import java.sql.SQLException;
+import java.time.ZonedDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -59,5 +60,10 @@ public class AdsDeductionCampaignSupplierScheduler extends PrestoFeedIngestionSc
     @Override
     public void putUniqueKeySortOrder(LinkedHashMap<String, PrismSortOrder> sortOrderMap) {
         sortOrderMap.put("transaction_id", PrismSortOrder.ASCENDING);
+    }
+
+    @Override
+    public Long process(int limit, ZonedDateTime startTime, int processBatchSize) throws Exception {
+        return null;
     }
 }

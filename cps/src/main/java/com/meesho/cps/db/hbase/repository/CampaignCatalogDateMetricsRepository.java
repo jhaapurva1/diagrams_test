@@ -13,13 +13,13 @@ import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.meesho.cps.constants.TelegrafConstants.*;
@@ -61,6 +61,9 @@ public class CampaignCatalogDateMetricsRepository {
 
     private static final byte[] COLUMN_DATE = Bytes.toBytes("date");
 
+    @Value(DBConstants.HBase.BATCH_SIZE)
+    private int batchSize;
+
     @Autowired
     private TelegrafMetricsHelper telegrafMetricsHelper;
 
@@ -77,13 +80,15 @@ public class CampaignCatalogDateMetricsRepository {
         }
     }
 
-    private CampaignCatalogDateMetrics mapper(Result result, Long campaignId, Long catalogId) {
+    private CampaignCatalogDateMetrics mapper(Result result, Long campaignId, Long catalogId,
+                                              Map<String, Long> rowKeyToCampaignIdMapping) {
         String rowKey = Bytes.toString(result.getRow());
         LocalDate date = CampaignCatalogDateMetrics.getLocalDateFromRowKey(rowKey);
 
         CampaignCatalogDateMetrics campaignCatalogDateMetrics = new CampaignCatalogDateMetrics();
-        campaignCatalogDateMetrics.setCampaignId(campaignId);
-        campaignCatalogDateMetrics.setCatalogId(catalogId);
+        campaignCatalogDateMetrics.setCampaignId(Optional.ofNullable(campaignId).orElse(rowKeyToCampaignIdMapping.get(rowKey)));
+        campaignCatalogDateMetrics.setCatalogId(Optional.ofNullable(catalogId).orElse(CampaignCatalogDateMetrics
+                .getCatalogIdFromRowKey(rowKey)));
         campaignCatalogDateMetrics.setDate(date);
         campaignCatalogDateMetrics.setClickCount(HbaseUtils.getColumnAsLong(COLUMN_FAMILY, COLUMN_CLICK_COUNT, result));
         campaignCatalogDateMetrics.setSharesCount(
@@ -105,7 +110,36 @@ public class CampaignCatalogDateMetricsRepository {
             Result result = table.get(get);
             if (result.isEmpty())
                 return null;
-            return mapper(result, campaignId, catalogId);
+            return mapper(result, campaignId, catalogId, new HashMap<>());
+        } catch (IOException e) {
+            throw new HbaseException(e.getMessage());
+        }
+    }
+
+    public List<CampaignCatalogDateMetrics> get(Map<Long, List<Long>> campaignIdToListOfCatalogIdsMap, List<LocalDate> dates) {
+        Map<String, Long> rowKeyToCampaignIdMapping = new HashMap<>();
+        List<Get> gets = new ArrayList<>();
+        for (Map.Entry<Long, List<Long>> campaignIdToListOfCatalogIdsEntry : campaignIdToListOfCatalogIdsMap.entrySet()) {
+            Long campaignId = campaignIdToListOfCatalogIdsEntry.getKey();
+            for (Long catalogId : campaignIdToListOfCatalogIdsEntry.getValue()) {
+                for (LocalDate date : dates) {
+                    String rowKey = CampaignCatalogDateMetrics.generateRowKey(campaignId, catalogId, date);
+                    gets.add(new Get(Bytes.toBytes(rowKey)));
+                    rowKeyToCampaignIdMapping.put(rowKey, campaignId);
+                }
+            }
+        }
+        try (Table table = getTable()) {
+            List<CampaignCatalogDateMetrics> campaignCatalogDateMetricsList = new ArrayList<>(gets.size());
+            for (int startIndex = 0; startIndex < gets.size(); startIndex += batchSize) {
+                Result[] results = table.get(gets.subList(startIndex, Math.min(startIndex + batchSize, gets.size())));
+                campaignCatalogDateMetricsList.addAll(
+                    Arrays.stream(Optional.ofNullable(results).orElse(new Result[0]))
+                          .filter(result -> !result.isEmpty())
+                          .map(result -> mapper(result, null, null, rowKeyToCampaignIdMapping))
+                          .collect(Collectors.toList()));
+            }
+            return campaignCatalogDateMetricsList;
         } catch (IOException e) {
             throw new HbaseException(e.getMessage());
         }
@@ -262,7 +296,7 @@ public class CampaignCatalogDateMetricsRepository {
             List<CampaignCatalogDateMetrics> campaignCatalogMetricsList = new ArrayList<>();
             resultScanner.forEach(result -> {
                 if(!result.isEmpty()){
-                    campaignCatalogMetricsList.add(mapper(result, campaignId, catalogId));
+                    campaignCatalogMetricsList.add(mapper(result, campaignId, catalogId, new HashMap<>()));
                 }
             });
             return campaignCatalogMetricsList;
@@ -281,7 +315,7 @@ public class CampaignCatalogDateMetricsRepository {
             List<CampaignCatalogDateMetrics> campaignCatalogMetricsList = new ArrayList<>();
             resultScanner.forEach(result -> {
                 if(!result.isEmpty()){
-                    campaignCatalogMetricsList.add(mapper(result, campaignId, null));
+                    campaignCatalogMetricsList.add(mapper(result, campaignId, null, new HashMap<>()));
                 }
             });
             return campaignCatalogMetricsList;

@@ -135,6 +135,9 @@ public class ApplicationProperties {
     @Value("${encryption.key.ads_metadata}")
     private String adsMetadataEncryptionKey;
 
+    @Value("${minutes_to_query_previous_day_data_from_hbase}")
+    private Integer minutesToQueryPreviousDayDataFromHbase;
+
     @PostConstruct
     public void init() {
         SchedulerProperty.SchedulerPropertyBuilder schedulerPropertyBuilder = SchedulerProperty.builder();

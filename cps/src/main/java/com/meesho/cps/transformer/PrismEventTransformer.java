@@ -6,6 +6,7 @@ import com.meesho.cps.data.entity.elasticsearch.ESDailyIndexDocument;
 import com.meesho.cps.data.entity.hbase.CampaignCatalogDateMetrics;
 import com.meesho.cps.data.entity.kafka.AdInteractionEvent;
 import com.meesho.cps.data.entity.kafka.AdInteractionPrismEvent;
+import com.meesho.cps.data.entity.kafka.AdWidgetClickEvent;
 import com.meesho.cps.data.entity.kafka.DayWisePerformancePrismEvent;
 import com.meesho.cps.utils.DateTimeHelper;
 
@@ -35,6 +36,21 @@ public class PrismEventTransformer {
                 .screen(adInteractionEvent.getProperties().getScreen())
                 .currentTimestamp(DateUtils.toIsoString(ZonedDateTime.now(), Utils.getCountry()))
                 .productId(productId)
+                .build();
+    }
+
+    public static AdInteractionPrismEvent getInteractionEventForWidgetClick(AdWidgetClickEvent adWidgetClickEvent, String userId, Long catalogId) {
+        return AdInteractionPrismEvent.builder().eventId(adWidgetClickEvent.getEventId())
+                .eventName(adWidgetClickEvent.getEventName())
+                .catalogId(catalogId)
+                .userId(userId)
+                .interactionType("catalog") // Check for the interaction type in the presto db table - check an event in logs
+                .eventTimestamp(adWidgetClickEvent.getEventTimestamp())
+                .eventTimeIso(adWidgetClickEvent.getEventTimeIso())
+                .appVersionCode(adWidgetClickEvent.getProperties().getAppVersionCode())
+                .origin(adWidgetClickEvent.getProperties().getOrigin()) // set origin to new value as per product requirements
+                .screen(adWidgetClickEvent.getProperties().getScreen()) // set screen to new value as per product requirements
+                .currentTimestamp(DateUtils.toIsoString(ZonedDateTime.now(), Utils.getCountry()))
                 .build();
     }
 
