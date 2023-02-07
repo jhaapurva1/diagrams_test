@@ -74,4 +74,9 @@ public class CampaignPerformanceESIndexingScheduler extends AbstractScheduler {
         return (long) campaignCatalogDates.size();
     }
 
+    @Override
+    public Long process(int limit, ZonedDateTime startTime, int processBatchSize) throws Exception {
+        return null;
+    }
+
 }

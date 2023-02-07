@@ -14,9 +14,10 @@ environment:
     as_enabled: false
     as_min: 1
     as_max: 1
-    cpu_request: 1
-    memory_limit: 4G
-    memory_request: 2G
+    cpu_limit: 1
+    cpu_request: 100m
+    memory_limit: 1G
+    memory_request: 200M
     deploymentStrategy: recreate
     appMetrics: true
     deployment_args:
@@ -35,9 +36,10 @@ environment:
     as_enabled: false
     as_min: 1
     as_max: 1
-    cpu_request: 1
-    memory_limit: 4G
-    memory_request: 2G
+    cpu_limit: 1
+    cpu_request: 100m
+    memory_limit: 1G
+    memory_request: 200M
     deploymentStrategy: recreate
     appMetrics: true
     deployment_args:
@@ -56,9 +58,10 @@ environment:
     as_enabled: false
     as_min: 1
     as_max: 1
-    cpu_request: 1
-    memory_limit: 4G
-    memory_request: 2G
+    cpu_limit: 1
+    cpu_request: 100m
+    memory_limit: 1G
+    memory_request: 200M
     deploymentStrategy: recreate
     appMetrics: true
     deployment_args:

@@ -86,6 +86,12 @@ public class Constants {
         public static final String SCREEN = "default_screen";
     }
 
+    public static class AdWidgets {
+        public static final String ORIGIN_SEARCH = "search_widget";
+        public static final String SCREEN_TOP_OF_SEARCH = "top_of_search";
+        public static final String SCREEN_MID_FEED_SEARCH = "mid_feed_After_slot_%s";
+    }
+
     public static class DailyBudgetConstants {
         public static final String TIME_FORMAT = "HH:mm:ss";
     }
