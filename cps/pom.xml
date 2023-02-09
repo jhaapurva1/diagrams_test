@@ -128,7 +128,7 @@
         <dependency>
             <groupId>com.meesho</groupId>
             <artifactId>ads-common-lib</artifactId>
-            <version>1.0.3-RELEASE</version>
+            <version>1.0.5-RELEASE</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.meesho</groupId>
