@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Component;
 
+import java.time.ZonedDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -61,5 +62,10 @@ public class CampaignPerformanceScheduler extends PrestoFeedIngestionScheduler<C
         sortOrderMap.put("dt", PrismSortOrder.ASCENDING);
         sortOrderMap.put("campaign_id", PrismSortOrder.ASCENDING);
         sortOrderMap.put("catalog_id", PrismSortOrder.ASCENDING);
+    }
+
+    @Override
+    public Long process(int limit, ZonedDateTime startTime, int processBatchSize) throws Exception {
+        return null;
     }
 }

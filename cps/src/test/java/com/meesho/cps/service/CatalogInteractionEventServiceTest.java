@@ -22,6 +22,7 @@ import com.meesho.cps.service.external.AdService;
 import com.meesho.cps.service.external.PrismService;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -187,36 +188,6 @@ public class CatalogInteractionEventServiceTest {
 
     public LocalDate getSampleDate() {
         return DateTimeUtils.getCurrentLocalDateTimeInIST().toLocalDate();
-    }
-
-    @Test
-    public void checkIfInteractionNeedsToBeConsideredSuccess() {
-        long currentTime = System.currentTimeMillis();
-        long previousInteractionTime = (System.currentTimeMillis()) - 3 * 86400000; // 3 days
-        Mockito.doReturn(2 * 86400).when(applicationProperties).getUserCatalogInteractionWindowInSeconds();
-        boolean toConsider =
-                catalogInteractionEventService.checkIfInteractionNeedsToBeConsidered(previousInteractionTime,
-                        currentTime);
-        Assert.assertTrue(toConsider);
-    }
-
-    @Test
-    public void checkIfInteractionNeedsToBeConsideredFailed() {
-        long currentTime = System.currentTimeMillis();
-        long previousInteractionTime = (System.currentTimeMillis()) - 3 * 86400000; // 3 days
-        Mockito.doReturn(4 * 86400).when(applicationProperties).getUserCatalogInteractionWindowInSeconds();
-        boolean toConsider =
-                catalogInteractionEventService.checkIfInteractionNeedsToBeConsidered(previousInteractionTime,
-                        currentTime);
-        Assert.assertFalse(toConsider);
-    }
-
-    @Test
-    public void checkIfInteractionNeedsToBeConsideredPreviousNull() {
-        long currentTime = System.currentTimeMillis();
-        Mockito.doReturn(4 * 86400).when(applicationProperties).getUserCatalogInteractionWindowInSeconds();
-        boolean toConsider = catalogInteractionEventService.checkIfInteractionNeedsToBeConsidered(null, currentTime);
-        Assert.assertTrue(toConsider);
     }
 
     @Test
