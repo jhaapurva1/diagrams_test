@@ -121,7 +121,7 @@ public class CatalogInteractionEventService {
         Integer billVersion = catalogMetadata.getBillVersion();
         CampaignType campaignType = CampaignType.fromValue(catalogMetadata.getCampaignType());
         campaignId = catalogMetadata.getCampaignId();
-        cpc = Objects.isNull(cpc) ? catalogMetadata.getCpc() : cpc;
+        cpc = Objects.nonNull(catalogMetadata.getCpc()) ? catalogMetadata.getCpc() : cpc;
 
         adInteractionPrismEvent.setCampaignId(campaignId);
         LocalDate eventDate = campaignHelper.getLocalDateForDailyCampaignFromLocalDateTime(
