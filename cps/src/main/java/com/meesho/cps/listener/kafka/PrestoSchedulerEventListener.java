@@ -43,11 +43,6 @@ public class PrestoSchedulerEventListener extends BasePrestoSchedulerEventListen
     }
 
     @Override
-    public KafkaTemplate<String, String> getKafkaTemplate() {
-        return kafkaTemplate;
-    }
-
-    @Override
     public int getMaxImmediateRetries() {
         return maxImmediateRetries;
     }

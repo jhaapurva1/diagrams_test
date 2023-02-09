@@ -183,7 +183,7 @@ public class KafkaConfig {
         return new DefaultKafkaProducerFactory<>(producerConfigs());
     }
 
-    @Bean
+    @Bean(ProducerConstants.AdsCommonLibKafka.ADS_COMMON_LIB_KAFKA_TEMPLATE)
     @Primary
     public KafkaTemplate<String, String> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());

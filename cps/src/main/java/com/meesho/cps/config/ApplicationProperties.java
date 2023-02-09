@@ -151,7 +151,7 @@ public class ApplicationProperties {
 
                 switch (schedulerType) {
                     case CAMPAIGN_PERFORMANCE:
-                        enableCron = false;
+                        enableCron = campaignPerformanceCountryAndCronEnableMap.get(country.getCountryCode());
                         cronitorCode = campaignPerformanceCountryAndCronitorCodeMap.get(country.getCountryCode());
                         cronExpression = campaignPerformanceCountryAndCronExpMap.get(country.getCountryCode());
                         batchSize = campaignPerformanceCountryAndCronBatchSizeMap.get(country.getCountryCode());
