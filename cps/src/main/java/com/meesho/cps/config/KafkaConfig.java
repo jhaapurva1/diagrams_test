@@ -1,5 +1,6 @@
 package com.meesho.cps.config;
 
+import com.meesho.ads.lib.constants.Constants;
 import com.meesho.cps.constants.ConsumerConstants;
 import com.meesho.cps.constants.ProducerConstants;
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
@@ -196,7 +197,7 @@ public class KafkaConfig {
         return new DefaultKafkaProducerFactory<>(producerConfigs());
     }
 
-    @Bean(ProducerConstants.AdsCommonLibKafka.ADS_COMMON_LIB_KAFKA_TEMPLATE)
+    @Bean(Constants.Kafka.ADS_COMMON_LIB_KAFKA_TEMPLATE)
     @Primary
     public KafkaTemplate<String, String> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
