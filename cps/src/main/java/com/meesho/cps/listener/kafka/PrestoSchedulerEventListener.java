@@ -21,9 +21,9 @@ public class PrestoSchedulerEventListener extends BasePrestoSchedulerEventListen
     @Autowired
     private ApplicationProperties applicationProperties;
     @Value(ConsumerConstants.PrestoConsumer.DEAD_QUEUE_TOPIC)
-    String prestoConsumerDeadQueueTopic;
+    private String prestoConsumerDeadQueueTopic;
     @Value(ConsumerConstants.PrestoConsumer.RETRY_TOPIC)
-    String prestoConsumerRetryTopic;
+    private String prestoConsumerRetryTopic;
     @Value(ConsumerConstants.PrestoConsumer.MAX_IMMEDIATE_RETRIES)
     int maxImmediateRetries;
     @KafkaListener(id = ConsumerConstants.PrestoConsumer.ID,
