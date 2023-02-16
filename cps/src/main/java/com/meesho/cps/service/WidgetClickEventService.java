@@ -1,5 +1,6 @@
 package com.meesho.cps.service;
 
+import com.meesho.ad.client.data.AdsMetadata;
 import com.meesho.ad.client.response.CampaignCatalogMetadataResponse;
 import com.meesho.ad.client.response.CampaignDetails;
 import com.meesho.ads.lib.helper.TelegrafMetricsHelper;
@@ -79,6 +80,17 @@ public class WidgetClickEventService {
         Long catalogId = adWidgetClickEvent.getProperties().getCatalogId();
         Long campaignId = adWidgetClickEvent.getProperties().getCampaignId();
 
+        BigDecimal cpc = null;
+        if(Objects.nonNull(adWidgetClickEvent.getProperties().getAdsMetadata())) {
+            AdsMetadata adsMetadataObject = AdsMetadata.decrypt(adWidgetClickEvent.getProperties().getAdsMetadata(), applicationProperties.getAdsMetadataEncryptionKey());
+            campaignId = adsMetadataObject.getCampaignId();
+            cpc = Objects.isNull(adsMetadataObject.getCpc()) ? null : BigDecimal.valueOf(adsMetadataObject.getCpc());
+            if (Objects.nonNull(cpc) && BigDecimal.ZERO.equals(cpc)) {
+                cpc = null;
+            }
+        }
+
+
         AdInteractionPrismEvent adInteractionPrismEvent =
                 PrismEventTransformer.getInteractionEventForWidgetClick(adWidgetClickEvent, userId, catalogId);
 
@@ -115,7 +127,8 @@ public class WidgetClickEventService {
         Integer billVersion = catalogMetadata.getBillVersion();
         CampaignType campaignType = CampaignType.fromValue(catalogMetadata.getCampaignType());
         campaignId = catalogMetadata.getCampaignId();
-        BigDecimal cpc = catalogMetadata.getCpc();
+        cpc = Objects.isNull(cpc) ? catalogMetadata.getCpc() : cpc;
+
         LocalDate eventDate = campaignHelper.getLocalDateForDailyCampaignFromLocalDateTime(
                 DateTimeUtils.getCurrentLocalDateTimeInIST());
         Long supplierId = supplierMetadata.getSupplierId();
