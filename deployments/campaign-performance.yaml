@@ -78,8 +78,8 @@ environment:
       - -XX:GCLogFileSize=9000k
   prd:
     as_enabled: true
-    as_min: 6
-    as_max: 6
+    as_min: 10
+    as_max: 10
     as_trigger_metric: cpu
     as_trigger_type: Utilization
     as_trigger_value: 50
