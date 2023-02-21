@@ -96,8 +96,14 @@ public class AppConfig {
 
                     if (Objects.nonNull(schedulerProperty) && schedulerProperty.getEnableCron()) {
                         taskScheduler.schedule(
-                                () -> scheduler.run(country.getCountryCode(), schedulerProperty.getCronitorCode(),
-                                        schedulerProperty.getBatchSize(), schedulerProperty.getProcessBatchSize()),
+                                () -> {
+                                    try {
+                                        scheduler.run(country.getCountryCode(), schedulerProperty.getCronitorCode(),
+                                                schedulerProperty.getBatchSize(), schedulerProperty.getProcessBatchSize());
+                                    } catch (Exception e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                },
                                 new CronTrigger(schedulerProperty.getCronExpression())
                         );
                     }

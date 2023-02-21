@@ -1,5 +1,6 @@
 package com.meesho.cps.config;
 
+import com.meesho.ads.lib.constants.Constants;
 import com.meesho.cps.constants.ConsumerConstants;
 import com.meesho.cps.constants.ProducerConstants;
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
@@ -121,6 +122,19 @@ public class KafkaConfig {
         return concurrentKafkaListenerContainerFactory;
     }
 
+    @Bean(name = ConsumerConstants.PrestoKafka.CONTAINER_FACTORY)
+    public ConcurrentKafkaListenerContainerFactory<String, String> prestoKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, String> concurrentKafkaListenerContainerFactory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        concurrentKafkaListenerContainerFactory.setConsumerFactory(adServiceKafkaConsumerFactory());
+        concurrentKafkaListenerContainerFactory.setBatchListener(false);
+        concurrentKafkaListenerContainerFactory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
+
+        log.info("Presto kafka consumer created with configs {}",
+                concurrentKafkaListenerContainerFactory.getConsumerFactory().getConfigurationProperties());
+        return concurrentKafkaListenerContainerFactory;
+    }
+
     private ConsumerFactory<String, String> commonKafkaConsumerFactory() {
         Map<String, Object> configs = new HashMap<>();
         configs.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, commonBootstrapServers);
@@ -183,7 +197,7 @@ public class KafkaConfig {
         return new DefaultKafkaProducerFactory<>(producerConfigs());
     }
 
-    @Bean
+    @Bean(Constants.Kafka.ADS_COMMON_LIB_KAFKA_TEMPLATE)
     @Primary
     public KafkaTemplate<String, String> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
