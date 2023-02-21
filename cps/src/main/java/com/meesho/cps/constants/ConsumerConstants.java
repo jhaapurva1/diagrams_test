@@ -30,6 +30,10 @@ public class ConsumerConstants {
 
     }
 
+    public static class PrestoKafka {
+        public static final String CONTAINER_FACTORY = "prestoKafkaListenerContainerFactory";
+    }
+
     public static class IngestionInteractionEvents {
         public static final String AD_CLICK_EVENT_NAME= "ad_click";
         public static final String AD_SHARED_EVENT_NAME = "ad_shared";
@@ -94,6 +98,18 @@ public class ConsumerConstants {
         public static final String CONCURRENCY = "${kafka.ingestion.view.event.consumer.concurrency}";
         public static final String MAX_POLL_INTERVAL_MS = "${kafka.ingestion.view.event.consumer.max.poll.interval.ms}";
         public static final String BATCH_SIZE = "${kafka.ingestion.view.event.consumer.batch.size}";
+    }
+
+    public static class PrestoConsumer {
+        public static final String ID = "${kafka.presto.scheduler.event.consumer.id}";
+        public static final String TOPIC = "${kafka.presto.scheduler.event.consumer.topic}";
+        public static final String DEAD_QUEUE_TOPIC = "${kafka.presto.scheduler.event.consumer.dead.queue.topic}";
+        public static final String RETRY_TOPIC = "${kafka.presto.scheduler.event.consumer.retry.topic}";
+        public static final String AUTO_START = "${kafka.presto.scheduler.event.consumer.start}";
+        public static final String CONCURRENCY = "${kafka.presto.scheduler.event.consumer.concurrency}";
+        public static final String MAX_IMMEDIATE_RETRIES = "${kafka.presto.scheduler.event.consumer.max.immediate.retries}";
+        public static final String MAX_POLL_INTERVAL_MS = "${kafka.presto.scheduler.event.consumer.max.poll.interval.ms}";
+        public static final String BATCH_SIZE = "${kafka.presto.scheduler.event.consumer.batch.size}";
     }
 
     public static class DelayedRetryConsumer {
