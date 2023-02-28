@@ -2,7 +2,6 @@ package com.meesho.cps.service;
 
 import com.meesho.ad.client.response.SupplierCampaignCatalogMetaDataResponse;
 import com.meesho.ad.client.data.AdsMetadata;
-import com.meesho.ad.client.response.CampaignCatalogMetadataResponse;
 import com.meesho.ad.client.response.CampaignDetails;
 import com.meesho.ads.lib.helper.TelegrafMetricsHelper;
 import com.meesho.ads.lib.utils.DateTimeUtils;
@@ -122,7 +121,7 @@ public class WidgetClickEventService {
         Integer billVersion = campaignDetails.getBillVersion();
         CampaignType campaignType = CampaignType.fromValue(campaignDetails.getCampaignType());
         campaignId = campaignDetails.getCampaignId();
-        BigDecimal cpc = campaignDetails.getCpc();
+        cpc = campaignDetails.getCpc();
         if (Objects.isNull(cpc)) {
             log.error("can not process widget interaction event due to null cpc.  {} - {}", campaignId, catalogId);
             adInteractionPrismEvent.setStatus(AdInteractionStatus.INVALID);
