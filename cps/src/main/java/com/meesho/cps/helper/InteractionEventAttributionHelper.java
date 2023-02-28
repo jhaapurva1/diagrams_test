@@ -9,8 +9,10 @@ import com.meesho.cps.constants.ConsumerConstants;
 import com.meesho.cps.data.entity.hbase.CampaignDatewiseMetrics;
 import com.meesho.cps.data.entity.hbase.CampaignMetrics;
 import com.meesho.cps.data.entity.hbase.SupplierWeekWiseMetrics;
+import com.meesho.cps.data.entity.internal.BudgetUtilisedData;
 import com.meesho.cps.data.entity.kafka.AdInteractionPrismEvent;
 import com.meesho.cps.data.entity.kafka.BudgetExhaustedEvent;
+import com.meesho.cps.data.entity.kafka.CatalogBudgetExhaustEvent;
 import com.meesho.cps.data.entity.kafka.SupplierWeeklyBudgetExhaustedEvent;
 import com.meesho.cps.db.hbase.repository.CampaignCatalogDateMetricsRepository;
 import com.meesho.cps.db.hbase.repository.CampaignDatewiseMetricsRepository;
@@ -21,6 +23,7 @@ import com.meesho.cps.service.external.PrismService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -63,6 +66,9 @@ public class InteractionEventAttributionHelper {
     @Value(Constants.Kafka.SUPPLIER_WEEKLY_BUDGET_EXHAUSTED_TOPIC)
     private String suppliersWeeklyBudgetExhaustedTopic;
 
+    @Value(Constants.Kafka.CATALOG_BUDGET_EXHAUSTED_TOPIC)
+    private String catalogBudgetExhaustedTopic;
+
 
     public void publishPrismEvent(AdInteractionPrismEvent adInteractionPrismEvent) {
         log.info("publishPrismEvent: {}", adInteractionPrismEvent);
@@ -100,7 +106,8 @@ public class InteractionEventAttributionHelper {
         log.info("get and initialize campaign budget: {} {}", campaignDetails, eventDate);
         CampaignType campaignType = CampaignType.fromValue(campaignDetails.getCampaignType());
         BigDecimal budgetUtilised = BigDecimal.ZERO;
-        if (CampaignType.DAILY_BUDGET.equals(campaignType)) {
+        if (CampaignType.DAILY_BUDGET.equals(campaignType)
+                || CampaignType.SMART_CAMPAIGN.equals(campaignType)) {
             CampaignDatewiseMetrics campaignDatewiseMetrics = campaignDatewiseMetricsRepository.get(campaignDetails.getCampaignId(), eventDate);
             if (Objects.isNull(campaignDatewiseMetrics)) {
                 campaignDatewiseMetricsRepository.put(CampaignDatewiseMetrics.builder().campaignId(campaignDetails.getCampaignId()).date(eventDate).budgetUtilised(BigDecimal.ZERO).build());
@@ -141,6 +148,16 @@ public class InteractionEventAttributionHelper {
         }
     }
 
+    public void sendCatalogBudgetExhaustEvent(Long campaignId, Long catalogId) {
+        CatalogBudgetExhaustEvent catalogBudgetExhaustEvent = CatalogBudgetExhaustEvent.builder().campaignId(campaignId).catalogId(catalogId).build();
+        try {
+            kafkaService.sendMessage(catalogBudgetExhaustedTopic, String.valueOf(catalogId),
+                    objectMapper.writeValueAsString(catalogBudgetExhaustEvent));
+        } catch (Exception e) {
+            log.error("Exception while sending catalogBudgetExhausted event {}", catalogBudgetExhaustEvent, e);
+        }
+    }
+
     public void sendSupplierBudgetExhaustedEvent(Long supplierId, Long catalogId) {
         SupplierWeeklyBudgetExhaustedEvent supplierWeeklyBudgetExhaustedEvent =
                 SupplierWeeklyBudgetExhaustedEvent.builder().supplierId(supplierId).catalogId(catalogId).build();
@@ -152,14 +169,19 @@ public class InteractionEventAttributionHelper {
         }
     }
 
-    public BigDecimal modifyAndGetBudgetUtilised(BigDecimal cpc, Long campaignId, Long catalogId, LocalDate date,
-                                                 CampaignType campaignType) {
+    public BudgetUtilisedData modifyAndGetBudgetUtilised(BigDecimal cpc, Long campaignId, Long catalogId, LocalDate date,
+                                                                   CampaignType campaignType) {
         log.info("modifyAndGetBudgetUtilised: {} {} {} {} {} {}", cpc, campaignId, catalogId, date, campaignType);
-        campaignCatalogDateMetricsRepository.incrementBudgetUtilised(campaignId, catalogId, date, cpc);
-        if (CampaignType.DAILY_BUDGET.equals(campaignType)) {
-            return campaignDatewiseMetricsRepository.incrementBudgetUtilised(campaignId, date, cpc);
+        BigDecimal catalogBudgetUtilised = campaignCatalogDateMetricsRepository.incrementBudgetUtilised(campaignId, catalogId, date, cpc);
+        BigDecimal campaignBudgetUtilised = null;
+        if (CampaignType.DAILY_BUDGET.equals(campaignType)
+                || CampaignType.SMART_CAMPAIGN.equals(campaignType)) {
+            campaignBudgetUtilised = campaignDatewiseMetricsRepository.incrementBudgetUtilised(campaignId, date, cpc);
         }
-        return campaignMetricsRepository.incrementBudgetUtilised(campaignId, cpc);
+        else {
+            campaignBudgetUtilised = campaignMetricsRepository.incrementBudgetUtilised(campaignId, cpc);
+        }
+        return BudgetUtilisedData.builder().catalogBudgetUtilised(catalogBudgetUtilised).campaignBudgetUtilised(campaignBudgetUtilised).build();
     }
 
     public BigDecimal modifyAndGetSupplierWeeklyBudgetUtilised(Long supplierId, LocalDate weekStartDate, BigDecimal cpc) {

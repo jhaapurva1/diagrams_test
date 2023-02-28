@@ -4,9 +4,11 @@ import com.google.common.collect.Lists;
 import com.meesho.ad.client.request.AdViewEventMetadataRequest;
 import com.meesho.ad.client.request.CampaignCatalogMetadataRequest;
 import com.meesho.ad.client.request.CampaignMetadataRequest;
+import com.meesho.ad.client.request.SupplierCampaignCatalogMetaDataRequest;
 import com.meesho.ad.client.response.AdViewEventMetadataResponse;
 import com.meesho.ad.client.response.CampaignCatalogMetadataResponse;
 import com.meesho.ad.client.response.CampaignDetails;
+import com.meesho.ad.client.response.SupplierCampaignCatalogMetaDataResponse;
 import com.meesho.ad.client.response.CampaignMetadataResponse;
 import com.meesho.ad.client.service.AdsCatalogService;
 import com.meesho.baseclient.pojos.ServiceRequest;
@@ -54,7 +56,7 @@ public class AdService {
             @Qualifier("adServiceViewCampaignCatalogCache") Cache<Long, AdViewEventMetadataResponse.CatalogCampaignMetadata> adsViewCampaignCatalogCache) {
         this.adViewCampaignCatalogCache = adsViewCampaignCatalogCache;
         this.applicationProperties = applicationProperties;
-        this.adsCatalogService = new AdsCatalogService(adServiceClientConfig.getRestConfig(), restTemplate);
+        this.adsCatalogService = new AdsCatalogService(adServiceClientConfig.getRestConfig(), restTemplate, null);
     }
 
     private void putAllCampaignCatalogMetadata(
@@ -95,6 +97,36 @@ public class AdService {
         }
 
         return allCatalogCampaignCatalogMetadata;
+    }
+
+    public SupplierCampaignCatalogMetaDataResponse getSupplierCampaignCatalogMetadata(Long catalogId, Long campaignId, String userId, String feedType) throws ExternalRequestFailedException {
+        SupplierCampaignCatalogMetaDataRequest request = SupplierCampaignCatalogMetaDataRequest.builder()
+                .campaignId(campaignId)
+                .catalogId(catalogId)
+                .feedType(feedType)
+                .userId(userId)
+                .build();
+
+        ServiceResponse<SupplierCampaignCatalogMetaDataResponse> response = null;
+        try {
+            response = adsCatalogService.fetchSupplierCampaignCatalogMetaData(ServiceRequest.of(request));
+        } catch (Exception e) {
+            log.error("fetch supplierCampaignCatalogMetadata call failed", e);
+            throw new ExternalRequestFailedException(e.getMessage());
+        }
+
+        if (HttpStatus.OK.value() != response.getHttpStatus()) {
+            log.error("getSupplierCampaignCatalogMetadata call failed with status code {}," +
+                    " message {}", response.getHttpStatus(), response.getMessage());
+            throw new ExternalRequestFailedException("non 2xx response");
+        }
+
+        if (Objects.isNull(response.getResponse()) || Objects.isNull(response.getResponse().getCatalogMetadata())) {
+            log.error("getSupplierCampaignCatalogMetadata invalid response, response {}", response.getResponse());
+            throw new ExternalRequestFailedException("null catalogMetaData");
+        }
+
+        return response.getResponse();
     }
 
     /**

@@ -275,11 +275,12 @@ public class CampaignCatalogDateMetricsRepository {
         }
     }
 
-    public void incrementBudgetUtilised(Long campaignId, Long catalogId, LocalDate date, BigDecimal interactionMultiplier) {
+    public BigDecimal incrementBudgetUtilised(Long campaignId, Long catalogId, LocalDate date, BigDecimal interactionMultiplier) {
         try (Table table = getTable()) {
-            table.incrementColumnValue(Bytes.toBytes(CampaignCatalogDateMetrics.generateRowKey(campaignId, catalogId,
+            long value = table.incrementColumnValue(Bytes.toBytes(CampaignCatalogDateMetrics.generateRowKey(campaignId, catalogId,
                     date)), COLUMN_FAMILY, COLUMN_BUDGET_UTILISED,
                     interactionMultiplier.multiply(BigDecimal.valueOf(MULTIPLIER)).longValue());
+            return BigDecimal.valueOf(value).divide(BigDecimal.valueOf(MULTIPLIER));
         } catch (IOException e) {
             log.error("Error in incrementing budget utilised for campaignId {} and catalogId {}", campaignId, catalogId,
                     e);

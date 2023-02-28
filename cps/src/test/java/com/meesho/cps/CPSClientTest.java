@@ -35,7 +35,7 @@ public class CPSClientTest {
                 .build()))
             .build();
 
-        CPSClientService cpsClientService = new CPSClientService(restConfig, restTemplate);
+        CPSClientService cpsClientService = new CPSClientService(restConfig, restTemplate, null);
         ServiceResponse<SupplierPerformanceResponse> supplierPerformanceResponseServiceResponse =
                 cpsClientService.getSupplierPerformance(ServiceRequest.of(request));
         SupplierPerformanceResponse supplierPerformanceResponse =
