@@ -6,7 +6,7 @@ import com.meesho.baseclient.pojos.ServiceResponse;
 import com.meesho.baseclient.pojos.ServiceRestConfig;
 import com.meesho.cpsclient.request.*;
 import com.meesho.cpsclient.response.*;
-import lombok.RequiredArgsConstructor;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.client.RestTemplate;
@@ -15,7 +15,7 @@ import org.springframework.web.client.RestTemplate;
  * @author shubham.aggarwal
  * 27/07/21
  */
-@RequiredArgsConstructor
+
 public class CPSClientService extends BaseHTTPHandler {
 
     private static final String GET_SUPPLIER_PERFORMANCE = "/api/v1/supplier/performance";
@@ -28,6 +28,12 @@ public class CPSClientService extends BaseHTTPHandler {
 
     private final ServiceRestConfig serviceRestConfig;
     private final RestTemplate restTemplate;
+
+    public CPSClientService(ServiceRestConfig serviceRestConfig, RestTemplate restTemplate, Environment env) {
+        super(env);
+        this.restTemplate = restTemplate;
+        this.serviceRestConfig = serviceRestConfig;
+    }
 
     public HttpHeaders getHeaders(ServiceRequest<?> serviceRequest) {
         HttpHeaders headers = super.getHeaders(serviceRequest);

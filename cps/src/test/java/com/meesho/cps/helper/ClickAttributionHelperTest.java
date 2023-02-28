@@ -9,6 +9,7 @@ import com.meesho.cps.constants.Constants;
 import com.meesho.cps.data.entity.hbase.CampaignDatewiseMetrics;
 import com.meesho.cps.data.entity.hbase.CampaignMetrics;
 import com.meesho.cps.data.entity.hbase.SupplierWeekWiseMetrics;
+import com.meesho.cps.data.entity.internal.BudgetUtilisedData;
 import com.meesho.cps.data.entity.kafka.AdInteractionPrismEvent;
 import com.meesho.cps.db.hbase.repository.CampaignCatalogDateMetricsRepository;
 import com.meesho.cps.db.hbase.repository.CampaignDatewiseMetricsRepository;
@@ -24,6 +25,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.data.util.Pair;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
@@ -69,7 +71,7 @@ public class ClickAttributionHelperTest {
         Mockito.doReturn(null).when(kafkaService).sendMessage("campaignBudgetExhaustedTopic", String.valueOf(1L), "");
         Mockito.doReturn("").when(objectMapper).writeValueAsString(any());
         Mockito.doReturn(BigDecimal.valueOf(100)).when(campaignDatewiseMetricsRepository).incrementBudgetUtilised(any(), any(), any());
-        Mockito.doNothing().when(campaignCatalogDateMetricsRepository).incrementBudgetUtilised(any(), any(), any(), any());
+        Mockito.doReturn(BigDecimal.valueOf(50)).when(campaignCatalogDateMetricsRepository).incrementBudgetUtilised(any(), any(), any(), any());
         Mockito.doReturn(BigDecimal.valueOf(1000)).when(campaignMetricsRepository).incrementBudgetUtilised(any(), any());
         Mockito.doReturn(BigDecimal.valueOf(200)).when(supplierWeekWiseMetricsRepository).incrementBudgetUtilised(any(), any(), any());
         ReflectionTestUtils.setField(interactionEventAttributionHelper, "budgetExhaustedTopic", "campaignBudgetExhaustedTopic");
@@ -147,20 +149,22 @@ public class ClickAttributionHelperTest {
 
     @Test
     public void testModifyAndGetBudgetUtilizedDailyBudget() {
-        BigDecimal budget = interactionEventAttributionHelper.modifyAndGetBudgetUtilised(BigDecimal.ONE, 1L, 1L, LocalDate.now(), CampaignType.DAILY_BUDGET);
+        BudgetUtilisedData budgetUtilised = interactionEventAttributionHelper.modifyAndGetBudgetUtilised(BigDecimal.ONE, 1L, 1L, LocalDate.now(), CampaignType.DAILY_BUDGET);
         Mockito.verify(campaignCatalogDateMetricsRepository, Mockito.times(1)).incrementBudgetUtilised(any(), any(), any(), any());
         Mockito.verify(campaignDatewiseMetricsRepository, Mockito.times(1)).incrementBudgetUtilised(any(), any(), any());
         Mockito.verify(campaignMetricsRepository, Mockito.times(0)).incrementBudgetUtilised(any(), any());
-        Assert.assertEquals(BigDecimal.valueOf(100), budget);
+        Assert.assertEquals(BigDecimal.valueOf(100), budgetUtilised.getCampaignBudgetUtilised());
+        Assert.assertEquals(BigDecimal.valueOf(50), budgetUtilised.getCatalogBudgetUtilised());
     }
 
     @Test
     public void testModifyAndGetBudgetUtilizedTotalBudget() {
-        BigDecimal budget = interactionEventAttributionHelper.modifyAndGetBudgetUtilised(BigDecimal.ONE, 1L, 1L, LocalDate.now(), CampaignType.TOTAL_BUDGET);
+        BudgetUtilisedData budgetUtilised = interactionEventAttributionHelper.modifyAndGetBudgetUtilised(BigDecimal.ONE, 1L, 1L, LocalDate.now(), CampaignType.TOTAL_BUDGET);
         Mockito.verify(campaignCatalogDateMetricsRepository, Mockito.times(1)).incrementBudgetUtilised(any(), any(), any(), any());
         Mockito.verify(campaignDatewiseMetricsRepository, Mockito.times(0)).incrementBudgetUtilised(any(), any(), any());
         Mockito.verify(campaignMetricsRepository, Mockito.times(1)).incrementBudgetUtilised(any(), any());
-        Assert.assertEquals(BigDecimal.valueOf(1000), budget);
+        Assert.assertEquals(BigDecimal.valueOf(1000), budgetUtilised.getCampaignBudgetUtilised());
+        Assert.assertEquals(BigDecimal.valueOf(50), budgetUtilised.getCatalogBudgetUtilised());
     }
 
     @Test
