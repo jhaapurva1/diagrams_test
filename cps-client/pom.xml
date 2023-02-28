@@ -6,12 +6,12 @@
     <parent>
         <groupId>com.meesho</groupId>
         <artifactId>campaign-performance-service</artifactId>
-        <version>0.0.107-RELEASE</version>
+        <version>0.0.117-RELEASE</version>
     </parent>
 
     <groupId>com.meesho</groupId>
     <artifactId>cps-client</artifactId>
-    <version>0.0.13-RELEASE</version>
+    <version>0.0.14-RELEASE</version>
     <name>cps-client</name>
     <description>Demo project for Spring Boot</description>
     <properties>
@@ -22,7 +22,7 @@
         <dependency>
             <groupId>com.meesho</groupId>
             <artifactId>base-client</artifactId>
-            <version>1.5.0-RELEASE</version>
+            <version>2.0.0-RELEASE</version>
         </dependency>
     </dependencies>
 

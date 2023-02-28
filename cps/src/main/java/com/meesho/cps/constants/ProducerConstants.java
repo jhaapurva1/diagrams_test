@@ -9,4 +9,7 @@ public class ProducerConstants {
         public static final String PAYOUT_KAFKA_TEMPLATE = "payout-kafka-template";
     }
 
+    public static class AdsCommonLibKafka {
+        public static final String ADS_COMMON_LIB_KAFKA_TEMPLATE = "ads-common-lib-kafka-template";
+    }
 }

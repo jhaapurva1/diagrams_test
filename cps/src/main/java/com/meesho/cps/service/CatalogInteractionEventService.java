@@ -1,12 +1,13 @@
 package com.meesho.cps.service;
 
 import com.meesho.ad.client.data.AdsMetadata;
-import com.meesho.ad.client.response.CampaignCatalogMetadataResponse;
 import com.meesho.ad.client.response.CampaignDetails;
+import com.meesho.ad.client.response.SupplierCampaignCatalogMetaDataResponse;
 import com.meesho.ads.lib.helper.TelegrafMetricsHelper;
 import com.meesho.ads.lib.utils.DateTimeUtils;
 import com.meesho.cps.config.ApplicationProperties;
 import com.meesho.cps.constants.*;
+import com.meesho.cps.data.entity.internal.BudgetUtilisedData;
 import com.meesho.cps.data.entity.kafka.AdInteractionEvent;
 import com.meesho.cps.data.entity.kafka.AdInteractionPrismEvent;
 import com.meesho.cps.data.internal.CampaignCatalogDate;
@@ -23,9 +24,7 @@ import com.meesho.instrumentation.annotation.DigestLogger;
 import com.meesho.instrumentation.enums.MetricType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
@@ -90,20 +89,11 @@ public class CatalogInteractionEventService {
             feedType = OriginScreenREMapper.getFeedType(origin, screen);
         }
 
-        List<Long> catalogIds = null;
-        List<Long> campaignIds = null;
-        if (Objects.isNull(cpc) || Objects.isNull(campaignId)) {
-            catalogIds = new ArrayList<>(Collections.singletonList(catalogId));
-        } else {
-            campaignIds = new ArrayList<>(Collections.singletonList(campaignId));
-        }
+        SupplierCampaignCatalogMetaDataResponse response = adService.getSupplierCampaignCatalogMetadata(catalogId, campaignId, userId, feedType);
+        SupplierCampaignCatalogMetaDataResponse.CatalogMetadata catalogMetadata = response.getCatalogMetadata();
+        SupplierCampaignCatalogMetaDataResponse.SupplierMetadata supplierMetadata = response.getSupplierMetadata();
 
-        CampaignCatalogMetadataResponse campaignCatalogMetadataResponse = adService.getCampaignCatalogMetadata(catalogIds, campaignIds, userId, feedType);
-        List<CampaignCatalogMetadataResponse.CatalogMetadata> catalogMetadataList = campaignCatalogMetadataResponse.getCampaignDetailsList();
-        List<CampaignCatalogMetadataResponse.SupplierMetadata> supplierMetadataList = campaignCatalogMetadataResponse.getSupplierDetailsList();
-
-        if (CollectionUtils.isEmpty(catalogMetadataList) ||
-                Objects.isNull(catalogMetadataList.get(0).getCampaignDetails())) {
+        if (Objects.isNull(catalogMetadata) || Objects.isNull(catalogMetadata.getCampaignDetails())) {
             log.error("No active ad on catalogId {}", catalogId);
             adInteractionPrismEvent.setStatus(AdInteractionStatus.INVALID);
             adInteractionPrismEvent.setReason(AdInteractionInvalidReason.CAMPAIGN_INACTIVE);
@@ -114,20 +104,30 @@ public class CatalogInteractionEventService {
             return;
         }
 
-        CampaignDetails catalogMetadata = catalogMetadataList.get(0).getCampaignDetails();
-        CampaignCatalogMetadataResponse.SupplierMetadata supplierMetadata = supplierMetadataList.get(0);
+        CampaignDetails campaignDetails = catalogMetadata.getCampaignDetails();
+        BigDecimal catalogBudgetUtilisationLimit = catalogMetadata.getCatalogBudget();
 
-        BigDecimal totalBudget = catalogMetadata.getBudget();
-        Integer billVersion = catalogMetadata.getBillVersion();
-        CampaignType campaignType = CampaignType.fromValue(catalogMetadata.getCampaignType());
-        campaignId = catalogMetadata.getCampaignId();
-        cpc = Objects.isNull(cpc) ? catalogMetadata.getCpc() : cpc;
+        BigDecimal totalBudget = campaignDetails.getBudget();
+        Integer billVersion = campaignDetails.getBillVersion();
+        CampaignType campaignType = CampaignType.fromValue(campaignDetails.getCampaignType());
+        campaignId = campaignDetails.getCampaignId();
+        cpc = Objects.nonNull(campaignDetails.getCpc()) ? campaignDetails.getCpc() : cpc;
+        if (Objects.isNull(cpc)) {
+            log.error("can not process interaction event due to null cpc.  {} - {}", campaignId, catalogId);
+            adInteractionPrismEvent.setStatus(AdInteractionStatus.INVALID);
+            adInteractionPrismEvent.setReason(AdInteractionInvalidReason.CPC_NOT_FOUND);
+            interactionEventAttributionHelper.publishPrismEvent(adInteractionPrismEvent);
+            telegrafMetricsHelper.increment(INTERACTION_EVENT_KEY, INTERACTION_EVENT_TAGS,
+                    adInteractionEvent.getEventName(), adInteractionEvent.getProperties().getScreen(), adInteractionEvent.getProperties().getOrigin(),
+                    AdInteractionStatus.INVALID.name(), AdInteractionInvalidReason.CPC_NOT_FOUND.name());
+            return;
+        }
 
         adInteractionPrismEvent.setCampaignId(campaignId);
         LocalDate eventDate = campaignHelper.getLocalDateForDailyCampaignFromLocalDateTime(
                 DateTimeUtils.getCurrentLocalDateTimeInIST());
         Long supplierId = supplierMetadata.getSupplierId();
-        BigDecimal weeklyBudgetUtilisationLimit = supplierMetadata.getUtilizationBudget();
+        BigDecimal weeklyBudgetUtilisationLimit = supplierMetadata.getBudgetUtilisationLimit();
         LocalDate weekStartDate = DateTimeUtils.getFirstDayOfWeek().toLocalDate();
 
         log.info("CPC for event_id {} catalog id {} in campaign {} is {}", adInteractionEvent.getEventId(), catalogId,
@@ -147,7 +147,7 @@ public class CatalogInteractionEventService {
             return;
         }
 
-        if (interactionEventAttributionHelper.initialiseAndCheckIsBudgetExhausted(catalogMetadata, weekStartDate, eventDate, weeklyBudgetUtilisationLimit, catalogId)) {
+        if (interactionEventAttributionHelper.initialiseAndCheckIsBudgetExhausted(campaignDetails, weekStartDate, eventDate, weeklyBudgetUtilisationLimit, catalogId)) {
             log.error("Budget exhausted for catalogId {}", catalogId);
             adInteractionPrismEvent.setStatus(AdInteractionStatus.INVALID);
             adInteractionPrismEvent.setReason(AdInteractionInvalidReason.BUDGET_EXHAUSTED);
@@ -188,10 +188,15 @@ public class CatalogInteractionEventService {
         //Update campaign catalog date metrics
         interactionEventAttributionHelper.incrementInteractionCount(campaignId, catalogId, eventDate, adInteractionEvent.getEventName());
         // Update budget utilised
-        BigDecimal budgetUtilised = interactionEventAttributionHelper.modifyAndGetBudgetUtilised(cpc, campaignId, catalogId, eventDate, campaignType);
+        BudgetUtilisedData budgetUtilised = interactionEventAttributionHelper.modifyAndGetBudgetUtilised(cpc, campaignId, catalogId, eventDate, campaignType);
 
-        if (budgetUtilised.compareTo(totalBudget) >= 0) {
+        if (budgetUtilised.getCampaignBudgetUtilised().compareTo(totalBudget) >= 0) {
             interactionEventAttributionHelper.sendBudgetExhaustedEvent(campaignId, catalogId);
+        } //If we have paused the campaign then no need to pause the catalog. hence using else-if
+        else if (Objects.nonNull(catalogBudgetUtilisationLimit)
+                && catalogBudgetUtilisationLimit.compareTo(BigDecimal.ZERO) > 0
+                && budgetUtilised.getCatalogBudgetUtilised().compareTo(catalogBudgetUtilisationLimit) >= 0) {
+            interactionEventAttributionHelper.sendCatalogBudgetExhaustEvent(campaignId, catalogId);
         }
 
         //update supplier weekly budget utilised

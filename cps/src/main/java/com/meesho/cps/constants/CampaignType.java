@@ -14,7 +14,8 @@ import java.util.stream.Collectors;
 public enum CampaignType {
 
     TOTAL_BUDGET("TOTAL_BUDGET"),
-    DAILY_BUDGET("DAILY_BUDGET");
+    DAILY_BUDGET("DAILY_BUDGET"),
+    SMART_CAMPAIGN("SMART_CAMPAIGN");
 
     String value;
 

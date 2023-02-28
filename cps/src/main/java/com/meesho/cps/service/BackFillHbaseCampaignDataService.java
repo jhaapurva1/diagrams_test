@@ -159,7 +159,8 @@ public class BackFillHbaseCampaignDataService {
         processDetails.put("Campaign Datewise Metrics Updation Status", "IN PROGRESS");
         try {
             for (Map.Entry<Long, String> mapElement : campaignIdtoCampaignTypeMap.entrySet()) {
-                    if (CampaignType.DAILY_BUDGET.getValue().equals(mapElement.getValue())) {
+                    if (CampaignType.DAILY_BUDGET.getValue().equals(mapElement.getValue())
+                            || CampaignType.SMART_CAMPAIGN.getValue().equals(mapElement.getValue())) {
                         CampaignDatewiseMetrics campaignDateMetrics = campaignDatewiseMetricsRepository.get(mapElement.getKey(), eventDate);
                         if (Objects.isNull(campaignDateMetrics)) {
                             campaignDateMetrics = new CampaignDatewiseMetrics();

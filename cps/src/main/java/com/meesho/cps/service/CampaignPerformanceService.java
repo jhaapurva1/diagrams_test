@@ -193,6 +193,10 @@ public class CampaignPerformanceService {
                         .stream()
                         .map(BudgetUtilisedRequest.CampaignData::getCampaignId)
                         .collect(Collectors.toList());
+        dailyBudgetCampaignIds.addAll(campaignTypeAndCampaignIdsMap.getOrDefault(CampaignType.SMART_CAMPAIGN.getValue(), new ArrayList<>())
+                .stream()
+                .map(BudgetUtilisedRequest.CampaignData::getCampaignId)
+                .collect(Collectors.toList()));
 
         List<Long> totalBudgetCampaignIds =
                 campaignTypeAndCampaignIdsMap.getOrDefault(CampaignType.TOTAL_BUDGET.getValue(), new ArrayList<>())

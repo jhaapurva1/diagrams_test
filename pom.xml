@@ -16,7 +16,7 @@
 
     <groupId>com.meesho</groupId>
     <artifactId>campaign-performance-service</artifactId>
-    <version>0.0.107-RELEASE</version>
+    <version>0.0.117-RELEASE</version>
     <name>campaign-performance-service</name>
     <description>Campaign Performance Service</description>
     <packaging>pom</packaging>
@@ -33,6 +33,17 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>org.springframework.boot</groupId>

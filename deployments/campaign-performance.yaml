@@ -38,8 +38,8 @@ environment:
     as_max: 1
     cpu_limit: 1
     cpu_request: 100m
-    memory_limit: 1G
-    memory_request: 200M
+    memory_limit: 2G
+    memory_request: 2G
     deploymentStrategy: rollingUpdate
     appMetrics: true
     deployment_args:
@@ -78,15 +78,15 @@ environment:
       - -XX:GCLogFileSize=9000k
   prd:
     as_enabled: true
-    as_min: 6
-    as_max: 6
+    as_min: 8
+    as_max: 8
     as_trigger_metric: cpu
     as_trigger_type: Utilization
-    as_trigger_value: 50
-    cpu_limit: 16
-    cpu_request: 3
-    memory_limit: 12G
-    memory_request: 10G
+    as_trigger_value: 80
+    cpu_limit: 8
+    cpu_request: 2
+    memory_limit: 16G
+    memory_request: 4G
     deploymentStrategy: rollingUpdate
     maxSurge: 10
     appMetrics: true
