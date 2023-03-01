@@ -86,7 +86,7 @@ environment:
     cpu_limit: 8
     cpu_request: 4
     memory_limit: 16G
-    memory_request: 8G
+    memory_request: 16G
     deploymentStrategy: rollingUpdate
     maxSurge: 10
     appMetrics: true
