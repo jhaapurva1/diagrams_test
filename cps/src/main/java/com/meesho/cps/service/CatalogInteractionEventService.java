@@ -111,7 +111,7 @@ public class CatalogInteractionEventService {
         Integer billVersion = campaignDetails.getBillVersion();
         CampaignType campaignType = CampaignType.fromValue(campaignDetails.getCampaignType());
         campaignId = campaignDetails.getCampaignId();
-        cpc = Objects.nonNull(campaignDetails.getCpc()) ? campaignDetails.getCpc() : cpc;
+        cpc = interactionEventAttributionHelper.getChargeableCPC(cpc, campaignDetails);
         if (Objects.isNull(cpc)) {
             log.error("can not process interaction event due to null cpc.  {} - {}", campaignId, catalogId);
             adInteractionPrismEvent.setStatus(AdInteractionStatus.INVALID);

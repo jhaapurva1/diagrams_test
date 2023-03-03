@@ -207,4 +207,8 @@ public class InteractionEventAttributionHelper {
                 break;
         }
     }
+
+    public BigDecimal getChargeableCPC(BigDecimal cpc, CampaignDetails campaignDetails) {
+        return Objects.nonNull(campaignDetails.getCpc()) ? campaignDetails.getCpc() : cpc;
+    }
 }

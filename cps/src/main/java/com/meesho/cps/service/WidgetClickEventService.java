@@ -120,9 +120,8 @@ public class WidgetClickEventService {
         BigDecimal totalBudget = campaignDetails.getBudget();
         Integer billVersion = campaignDetails.getBillVersion();
         CampaignType campaignType = CampaignType.fromValue(campaignDetails.getCampaignType());
-        cpc = !Objects.isNull(cpc) && (campaignId == campaignDetails.getCampaignId()) ? cpc:
-            campaignDetails.getCpc();
         campaignId = campaignDetails.getCampaignId();
+        cpc = interactionEventAttributionHelper.getChargeableCPC(cpc, campaignDetails);
         if (Objects.isNull(cpc)) {
             log.error("can not process widget interaction event due to null cpc.  {} - {}", campaignId, catalogId);
             adInteractionPrismEvent.setStatus(AdInteractionStatus.INVALID);
