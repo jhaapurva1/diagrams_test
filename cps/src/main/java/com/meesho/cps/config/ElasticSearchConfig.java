@@ -1,7 +1,11 @@
 package com.meesho.cps.config;
 
 import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.http.impl.nio.reactor.IOReactorConfig;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,6 +23,12 @@ public class ElasticSearchConfig {
 
     @Value("${elasticsearch.port}")
     private Integer port;
+
+    @Value("${elasticsearch.username}")
+    private String username;
+
+    @Value("${elasticsearch.password}")
+    private String password;
 
     @Value("${elasticsearch.host.scheme}")
     private String httpScheme;
@@ -40,6 +50,10 @@ public class ElasticSearchConfig {
 
     @Bean("mainCluster")
     public RestHighLevelClient client() {
+        final CredentialsProvider credentialsProvider =
+                new BasicCredentialsProvider();
+        credentialsProvider.setCredentials(AuthScope.ANY,
+                new UsernamePasswordCredentials(username, password));
         return new RestHighLevelClient(
                 RestClient.builder(
                         new HttpHost(host, port, httpScheme)
@@ -63,7 +77,8 @@ public class ElasticSearchConfig {
                                                         .build()
                                         )
                                         .setMaxConnTotal(maxConnTotal)
-                                        .setMaxConnPerRoute(maxConnPerRoute);
+                                        .setMaxConnPerRoute(maxConnPerRoute)
+                                        .setDefaultCredentialsProvider(credentialsProvider);
 
                             }
                         })
