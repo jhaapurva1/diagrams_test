@@ -1,7 +1,11 @@
 package com.meesho.cps.config;
 
 import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.http.impl.nio.reactor.IOReactorConfig;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +24,15 @@ public class ElasticSearchConfig {
     @Value("${elasticsearch.port}")
     private Integer port;
 
+    @Value("${elasticsearch.primary.host}")
+    private String primaryHost;
+
+    @Value("${elasticsearch.username}")
+    private String username;
+
+    @Value("${elasticsearch.password}")
+    private String password;
+
     @Value("${elasticsearch.host.scheme}")
     private String httpScheme;
 
@@ -37,6 +50,43 @@ public class ElasticSearchConfig {
 
     @Value("${elasticsearch.http-pool.max-total}")
     private Integer maxConnTotal;
+
+    @Bean("primaryCluster")
+    public RestHighLevelClient primaryClient() {
+        final CredentialsProvider credentialsProvider =
+                new BasicCredentialsProvider();
+        credentialsProvider.setCredentials(AuthScope.ANY,
+                new UsernamePasswordCredentials(username, password));
+        return new RestHighLevelClient(
+                RestClient.builder(
+                        new HttpHost(primaryHost, port, httpScheme)
+                ).setRequestConfigCallback(
+                        new RestClientBuilder.RequestConfigCallback() {
+                            @Override
+                            public RequestConfig.Builder customizeRequestConfig(RequestConfig.Builder builder) {
+                                return builder
+                                        .setConnectTimeout(connectTimeoutMs)
+                                        .setConnectionRequestTimeout(connectTimeoutMs)
+                                        .setSocketTimeout(socketTimeoutMs);
+                            }
+                        }).setHttpClientConfigCallback(
+                        new RestClientBuilder.HttpClientConfigCallback() {
+                            @Override
+                            public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder httpAsyncClientBuilder) {
+                                return httpAsyncClientBuilder
+                                        .setDefaultIOReactorConfig(
+                                                IOReactorConfig.custom()
+                                                        .setIoThreadCount(connections)
+                                                        .build()
+                                        )
+                                        .setMaxConnTotal(maxConnTotal)
+                                        .setMaxConnPerRoute(maxConnPerRoute)
+                                        .setDefaultCredentialsProvider(credentialsProvider);
+
+                            }
+                        })
+        );
+    }
 
     @Bean("mainCluster")
     public RestHighLevelClient client() {
