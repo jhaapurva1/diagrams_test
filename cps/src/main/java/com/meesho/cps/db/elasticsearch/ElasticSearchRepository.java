@@ -42,13 +42,8 @@ import java.util.stream.Collectors;
 @DigestLogger(metricType = MetricType.METHOD, tagSet = "className=elasticSearchRepository")
 public class ElasticSearchRepository {
 
-    @Qualifier("mainCluster")
     @Autowired
     private RestHighLevelClient restHighLevelClient;
-
-    @Qualifier("primaryCluster")
-    @Autowired
-    private RestHighLevelClient primaryRestHighLevelClient;
 
     @Autowired
     private ApplicationProperties applicationProperties;
@@ -75,11 +70,6 @@ public class ElasticSearchRepository {
             }
         }
         restHighLevelClient.bulk(bulkRequest, RequestOptions.DEFAULT);
-        try {
-            primaryRestHighLevelClient.bulk(bulkRequest, RequestOptions.DEFAULT);
-        } catch (Exception ex) {
-            log.error("Error indexing daily on new ES cluster", ex);
-        }
     }
 
     public void bulkIndexMonthlyDocs(List<ESMonthlyIndexDocument> monthlyIndexDocuments) throws IOException {
@@ -101,11 +91,6 @@ public class ElasticSearchRepository {
             }
         }
         restHighLevelClient.bulk(bulkRequest, RequestOptions.DEFAULT);
-        try {
-            primaryRestHighLevelClient.bulk(bulkRequest, RequestOptions.DEFAULT);
-        } catch (Exception e) {
-            log.error("Error indexing monthly on new ES cluster", e);
-        }
     }
 
     public EsCampaignCatalogAggregateResponse fetchEsCampaignCatalogsDateWise(
