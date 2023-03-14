@@ -18,14 +18,11 @@ import org.elasticsearch.client.RestHighLevelClient;
 @Configuration
 public class ElasticSearchConfig {
 
-    @Value("${elasticsearch.host}")
-    private String host;
+    @Value("${elasticsearch.primary.host}")
+    private String primaryHost;
 
     @Value("${elasticsearch.port}")
     private Integer port;
-
-    @Value("${elasticsearch.primary.host}")
-    private String primaryHost;
 
     @Value("${elasticsearch.username}")
     private String username;
@@ -51,7 +48,7 @@ public class ElasticSearchConfig {
     @Value("${elasticsearch.http-pool.max-total}")
     private Integer maxConnTotal;
 
-    @Bean("primaryCluster")
+    @Bean("mainCluster")
     public RestHighLevelClient primaryClient() {
         final CredentialsProvider credentialsProvider =
                 new BasicCredentialsProvider();
@@ -82,38 +79,6 @@ public class ElasticSearchConfig {
                                         .setMaxConnTotal(maxConnTotal)
                                         .setMaxConnPerRoute(maxConnPerRoute)
                                         .setDefaultCredentialsProvider(credentialsProvider);
-
-                            }
-                        })
-        );
-    }
-
-    @Bean("mainCluster")
-    public RestHighLevelClient client() {
-        return new RestHighLevelClient(
-                RestClient.builder(
-                        new HttpHost(host, port, httpScheme)
-                ).setRequestConfigCallback(
-                        new RestClientBuilder.RequestConfigCallback() {
-                            @Override
-                            public RequestConfig.Builder customizeRequestConfig(RequestConfig.Builder builder) {
-                                return builder
-                                        .setConnectTimeout(connectTimeoutMs)
-                                        .setConnectionRequestTimeout(connectTimeoutMs)
-                                        .setSocketTimeout(socketTimeoutMs);
-                            }
-                        }).setHttpClientConfigCallback(
-                        new RestClientBuilder.HttpClientConfigCallback() {
-                            @Override
-                            public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder httpAsyncClientBuilder) {
-                                return httpAsyncClientBuilder
-                                        .setDefaultIOReactorConfig(
-                                                IOReactorConfig.custom()
-                                                        .setIoThreadCount(connections)
-                                                        .build()
-                                        )
-                                        .setMaxConnTotal(maxConnTotal)
-                                        .setMaxConnPerRoute(maxConnPerRoute);
 
                             }
                         })
