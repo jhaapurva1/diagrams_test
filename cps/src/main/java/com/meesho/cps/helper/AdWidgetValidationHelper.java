@@ -1,6 +1,7 @@
 package com.meesho.cps.helper;
 
 import com.meesho.cps.constants.ConsumerConstants;
+import com.meesho.cps.constants.ConsumerConstants.AdWidgetRealEstates;
 import com.meesho.cps.data.entity.kafka.AdWidgetClickEvent;
 import com.meesho.cps.data.entity.kafka.AdWidgetViewEvent;
 import org.apache.commons.collections.CollectionUtils;
@@ -41,5 +42,8 @@ public class AdWidgetValidationHelper {
                 Objects.nonNull(adWidgetClickEvent.getProperties().getAppVersionCode()) &&
                 Objects.nonNull(adWidgetClickEvent.getProperties().getIsAdWidget()) &&
                 Objects.nonNull(adWidgetClickEvent.getProperties().getPrimaryRealEstate());
+    }
+    public static Boolean isTopOfSearchRealEstate(String realEstate) {
+        return realEstate.equals(AdWidgetRealEstates.TEXT_SEARCH);
     }
 }
