@@ -122,8 +122,9 @@ public class WidgetClickEventService {
         CampaignType campaignType = CampaignType.fromValue(campaignDetails.getCampaignType());
         campaignId = campaignDetails.getCampaignId();
         cpc = interactionEventAttributionHelper.getChargeableCpc(cpc, campaignDetails);
-        cpc = interactionEventAttributionHelper.getMultipliedCpc(cpc,
-            adWidgetClickEvent.getProperties().getPrimaryRealEstate());
+        HashMap<String, BigDecimal> multipliedCpcData = interactionEventAttributionHelper.getMultipliedCpcData(
+            cpc, adWidgetClickEvent.getProperties().getPrimaryRealEstate());
+        cpc = multipliedCpcData.get("multipliedCpc");
         if (Objects.isNull(cpc)) {
             log.error("can not process widget interaction event due to null cpc.  {} - {}", campaignId, catalogId);
             adInteractionPrismEvent.setStatus(AdInteractionStatus.INVALID);
@@ -144,7 +145,7 @@ public class WidgetClickEventService {
                 adWidgetClickEvent.getEventId(), catalogId, campaignId, cpc);
         adInteractionPrismEvent.setCampaignId(campaignId);
         adInteractionPrismEvent.setCpc(cpc);
-
+        adInteractionPrismEvent.setClickMultiplier(multipliedCpcData.get("multiplier"));
         BillHandler billHandler = adBillFactory.getBillHandlerForBillVersion(billVersion);
 
         if (interactionEventAttributionHelper.initialiseAndCheckIsBudgetExhausted(campaignDetails, weekStartDate, eventDate, weeklyBudgetUtilisationLimit, catalogId)) {

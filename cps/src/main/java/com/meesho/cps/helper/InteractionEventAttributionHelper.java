@@ -21,6 +21,7 @@ import com.meesho.cps.db.hbase.repository.CampaignMetricsRepository;
 import com.meesho.cps.db.hbase.repository.SupplierWeekWiseMetricsRepository;
 import com.meesho.cps.service.KafkaService;
 import com.meesho.cps.service.external.PrismService;
+import java.util.HashMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -214,14 +215,22 @@ public class InteractionEventAttributionHelper {
         return Objects.nonNull(campaignDetails.getCpc()) ? campaignDetails.getCpc() : servingTimeCpc;
     }
 
-    public BigDecimal getMultipliedCpc(BigDecimal chargeableCpc, String realEstate) {
+    public HashMap<String, BigDecimal> getMultipliedCpcData(BigDecimal chargeableCpc,
+        String realEstate) {
+        HashMap<String, BigDecimal> multipliedCpcData = new HashMap<>();
         if (Objects.isNull(chargeableCpc)) {
-            return null;
+            multipliedCpcData.put("multipliedCpc", null);
+            multipliedCpcData.put("multiplier", null);
+            return multipliedCpcData;
         }
         BigDecimal multipliedCpc = chargeableCpc;
+        BigDecimal multiplier = BigDecimal.ONE;
         if (AdWidgetValidationHelper.isTopOfSearchRealEstate(realEstate)) {
             multipliedCpc = chargeableCpc.multiply(topOfSearchCpcMultiplier);
+            multiplier = topOfSearchCpcMultiplier;
         }
-        return multipliedCpc;
+        multipliedCpcData.put("multipliedCpc", multipliedCpc);
+        multipliedCpcData.put("multiplier", multiplier);
+        return multipliedCpcData;
     }
 }
