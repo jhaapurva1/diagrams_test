@@ -78,15 +78,15 @@ environment:
       - -XX:GCLogFileSize=9000k
   prd:
     as_enabled: true
-    as_min: 8
-    as_max: 8
+    as_min: 12
+    as_max: 12
     as_trigger_metric: cpu
     as_trigger_type: Utilization
     as_trigger_value: 80
-    cpu_limit: 8
+    cpu_limit: 6
     cpu_request: 2
-    memory_limit: 16G
-    memory_request: 4G
+    memory_limit: 8G
+    memory_request: 8G
     deploymentStrategy: rollingUpdate
     maxSurge: 10
     appMetrics: true

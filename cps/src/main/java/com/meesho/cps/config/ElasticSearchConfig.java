@@ -1,7 +1,11 @@
 package com.meesho.cps.config;
 
 import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.http.impl.nio.reactor.IOReactorConfig;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,11 +18,17 @@ import org.elasticsearch.client.RestHighLevelClient;
 @Configuration
 public class ElasticSearchConfig {
 
-    @Value("${elasticsearch.host}")
-    private String host;
+    @Value("${elasticsearch.primary.host}")
+    private String primaryHost;
 
     @Value("${elasticsearch.port}")
     private Integer port;
+
+    @Value("${elasticsearch.username}")
+    private String username;
+
+    @Value("${elasticsearch.password}")
+    private String password;
 
     @Value("${elasticsearch.host.scheme}")
     private String httpScheme;
@@ -39,10 +49,14 @@ public class ElasticSearchConfig {
     private Integer maxConnTotal;
 
     @Bean("mainCluster")
-    public RestHighLevelClient client() {
+    public RestHighLevelClient primaryClient() {
+        final CredentialsProvider credentialsProvider =
+                new BasicCredentialsProvider();
+        credentialsProvider.setCredentials(AuthScope.ANY,
+                new UsernamePasswordCredentials(username, password));
         return new RestHighLevelClient(
                 RestClient.builder(
-                        new HttpHost(host, port, httpScheme)
+                        new HttpHost(primaryHost, port, httpScheme)
                 ).setRequestConfigCallback(
                         new RestClientBuilder.RequestConfigCallback() {
                             @Override
@@ -63,7 +77,8 @@ public class ElasticSearchConfig {
                                                         .build()
                                         )
                                         .setMaxConnTotal(maxConnTotal)
-                                        .setMaxConnPerRoute(maxConnPerRoute);
+                                        .setMaxConnPerRoute(maxConnPerRoute)
+                                        .setDefaultCredentialsProvider(credentialsProvider);
 
                             }
                         })
