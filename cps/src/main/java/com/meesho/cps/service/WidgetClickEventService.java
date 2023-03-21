@@ -7,6 +7,7 @@ import com.meesho.ads.lib.helper.TelegrafMetricsHelper;
 import com.meesho.ads.lib.utils.DateTimeUtils;
 import com.meesho.cps.config.ApplicationProperties;
 import com.meesho.cps.constants.*;
+import com.meesho.cps.constants.Constants.CpcData;
 import com.meesho.cps.data.entity.internal.BudgetUtilisedData;
 import com.meesho.cps.data.entity.kafka.AdInteractionPrismEvent;
 import com.meesho.cps.data.entity.kafka.AdWidgetClickEvent;
@@ -124,7 +125,7 @@ public class WidgetClickEventService {
         cpc = interactionEventAttributionHelper.getChargeableCpc(cpc, campaignDetails);
         HashMap<String, BigDecimal> multipliedCpcData = interactionEventAttributionHelper.getMultipliedCpcData(
             cpc, adWidgetClickEvent.getProperties().getPrimaryRealEstate());
-        cpc = multipliedCpcData.get("multipliedCpc");
+        cpc = multipliedCpcData.get(CpcData.MULTIPLIED_CPC);
         if (Objects.isNull(cpc)) {
             log.error("can not process widget interaction event due to null cpc.  {} - {}", campaignId, catalogId);
             adInteractionPrismEvent.setStatus(AdInteractionStatus.INVALID);
@@ -145,7 +146,7 @@ public class WidgetClickEventService {
                 adWidgetClickEvent.getEventId(), catalogId, campaignId, cpc);
         adInteractionPrismEvent.setCampaignId(campaignId);
         adInteractionPrismEvent.setCpc(cpc);
-        adInteractionPrismEvent.setClickMultiplier(multipliedCpcData.get("multiplier"));
+        adInteractionPrismEvent.setClickMultiplier(multipliedCpcData.get(CpcData.MULTIPLIER));
         BillHandler billHandler = adBillFactory.getBillHandlerForBillVersion(billVersion);
 
         if (interactionEventAttributionHelper.initialiseAndCheckIsBudgetExhausted(campaignDetails, weekStartDate, eventDate, weeklyBudgetUtilisationLimit, catalogId)) {

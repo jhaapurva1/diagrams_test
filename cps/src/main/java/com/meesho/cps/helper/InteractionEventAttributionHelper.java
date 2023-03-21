@@ -6,6 +6,7 @@ import com.meesho.cps.config.ApplicationProperties;
 import com.meesho.cps.constants.CampaignType;
 import com.meesho.cps.constants.Constants;
 import com.meesho.cps.constants.Constants.AdWidgets;
+import com.meesho.cps.constants.Constants.CpcData;
 import com.meesho.cps.constants.ConsumerConstants;
 import com.meesho.cps.data.entity.hbase.CampaignDatewiseMetrics;
 import com.meesho.cps.data.entity.hbase.CampaignMetrics;
@@ -219,8 +220,8 @@ public class InteractionEventAttributionHelper {
         String realEstate) {
         HashMap<String, BigDecimal> multipliedCpcData = new HashMap<>();
         if (Objects.isNull(chargeableCpc)) {
-            multipliedCpcData.put("multipliedCpc", null);
-            multipliedCpcData.put("multiplier", null);
+            multipliedCpcData.put(CpcData.MULTIPLIED_CPC, null);
+            multipliedCpcData.put(CpcData.MULTIPLIER, null);
             return multipliedCpcData;
         }
         BigDecimal multipliedCpc = chargeableCpc;
@@ -229,8 +230,8 @@ public class InteractionEventAttributionHelper {
             multipliedCpc = chargeableCpc.multiply(topOfSearchCpcMultiplier);
             multiplier = topOfSearchCpcMultiplier;
         }
-        multipliedCpcData.put("multipliedCpc", multipliedCpc);
-        multipliedCpcData.put("multiplier", multiplier);
+        multipliedCpcData.put(CpcData.MULTIPLIED_CPC, multipliedCpc);
+        multipliedCpcData.put(CpcData.MULTIPLIER, multiplier);
         return multipliedCpcData;
     }
 }

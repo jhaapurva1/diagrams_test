@@ -136,4 +136,10 @@ public class Constants {
     public static class FetchCampaignCatalog {
         public static final Integer DEFAULT_LIMIT = 100;
     }
+
+    public static class CpcData {
+
+        public static final String MULTIPLIED_CPC = "multipliedCpc";
+        public static final String MULTIPLIER = "multiplier";
+    }
 }
