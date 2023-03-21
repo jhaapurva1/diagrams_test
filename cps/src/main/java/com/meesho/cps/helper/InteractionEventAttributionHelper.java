@@ -5,6 +5,8 @@ import com.meesho.ad.client.response.CampaignDetails;
 import com.meesho.cps.config.ApplicationProperties;
 import com.meesho.cps.constants.CampaignType;
 import com.meesho.cps.constants.Constants;
+import com.meesho.cps.constants.Constants.AdWidgets;
+import com.meesho.cps.constants.Constants.CpcData;
 import com.meesho.cps.constants.ConsumerConstants;
 import com.meesho.cps.data.entity.hbase.CampaignDatewiseMetrics;
 import com.meesho.cps.data.entity.hbase.CampaignMetrics;
@@ -20,10 +22,10 @@ import com.meesho.cps.db.hbase.repository.CampaignMetricsRepository;
 import com.meesho.cps.db.hbase.repository.SupplierWeekWiseMetricsRepository;
 import com.meesho.cps.service.KafkaService;
 import com.meesho.cps.service.external.PrismService;
+import java.util.HashMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -69,6 +71,8 @@ public class InteractionEventAttributionHelper {
     @Value(Constants.Kafka.CATALOG_BUDGET_EXHAUSTED_TOPIC)
     private String catalogBudgetExhaustedTopic;
 
+    @Value(AdWidgets.TOP_OF_SEARCH_CPC_MULTIPLIER)
+    private BigDecimal topOfSearchCpcMultiplier;
 
     public void publishPrismEvent(AdInteractionPrismEvent adInteractionPrismEvent) {
         log.info("publishPrismEvent: {}", adInteractionPrismEvent);
@@ -206,5 +210,28 @@ public class InteractionEventAttributionHelper {
                 campaignCatalogDateMetricsRepository.incrementClickCount(campaignId, catalogId, date);
                 break;
         }
+    }
+    //This returns the cpc to be considered for charging.
+    public BigDecimal getChargeableCpc(BigDecimal servingTimeCpc, CampaignDetails campaignDetails) {
+        return Objects.nonNull(campaignDetails.getCpc()) ? campaignDetails.getCpc() : servingTimeCpc;
+    }
+
+    public HashMap<String, BigDecimal> getMultipliedCpcData(BigDecimal chargeableCpc,
+        String realEstate) {
+        HashMap<String, BigDecimal> multipliedCpcData = new HashMap<>();
+        if (Objects.isNull(chargeableCpc)) {
+            multipliedCpcData.put(CpcData.MULTIPLIED_CPC, null);
+            multipliedCpcData.put(CpcData.MULTIPLIER, null);
+            return multipliedCpcData;
+        }
+        BigDecimal multipliedCpc = chargeableCpc;
+        BigDecimal multiplier = BigDecimal.ONE;
+        if (AdWidgetValidationHelper.isTopOfSearchRealEstate(realEstate)) {
+            multipliedCpc = chargeableCpc.multiply(topOfSearchCpcMultiplier);
+            multiplier = topOfSearchCpcMultiplier;
+        }
+        multipliedCpcData.put(CpcData.MULTIPLIED_CPC, multipliedCpc);
+        multipliedCpcData.put(CpcData.MULTIPLIER, multiplier);
+        return multipliedCpcData;
     }
 }

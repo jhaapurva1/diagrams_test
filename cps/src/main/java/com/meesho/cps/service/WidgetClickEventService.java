@@ -1,11 +1,13 @@
 package com.meesho.cps.service;
 
 import com.meesho.ad.client.response.SupplierCampaignCatalogMetaDataResponse;
+import com.meesho.ad.client.data.AdsMetadata;
 import com.meesho.ad.client.response.CampaignDetails;
 import com.meesho.ads.lib.helper.TelegrafMetricsHelper;
 import com.meesho.ads.lib.utils.DateTimeUtils;
 import com.meesho.cps.config.ApplicationProperties;
 import com.meesho.cps.constants.*;
+import com.meesho.cps.constants.Constants.CpcData;
 import com.meesho.cps.data.entity.internal.BudgetUtilisedData;
 import com.meesho.cps.data.entity.kafka.AdInteractionPrismEvent;
 import com.meesho.cps.data.entity.kafka.AdWidgetClickEvent;
@@ -79,6 +81,17 @@ public class WidgetClickEventService {
         Long catalogId = adWidgetClickEvent.getProperties().getCatalogId();
         Long campaignId = adWidgetClickEvent.getProperties().getCampaignId();
 
+        BigDecimal cpc = null;
+        if(Objects.nonNull(adWidgetClickEvent.getProperties().getAdsMetadata())) {
+            AdsMetadata adsMetadataObject = AdsMetadata.decrypt(adWidgetClickEvent.getProperties().getAdsMetadata(), applicationProperties.getAdsMetadataEncryptionKey());
+            campaignId = adsMetadataObject.getCampaignId();
+            cpc = Objects.isNull(adsMetadataObject.getCpc()) ? null : BigDecimal.valueOf(adsMetadataObject.getCpc());
+            if (Objects.nonNull(cpc) && BigDecimal.ZERO.equals(cpc)) {
+                cpc = null;
+            }
+        }
+
+
         AdInteractionPrismEvent adInteractionPrismEvent =
                 PrismEventTransformer.getInteractionEventForWidgetClick(adWidgetClickEvent, userId, catalogId);
 
@@ -109,7 +122,10 @@ public class WidgetClickEventService {
         Integer billVersion = campaignDetails.getBillVersion();
         CampaignType campaignType = CampaignType.fromValue(campaignDetails.getCampaignType());
         campaignId = campaignDetails.getCampaignId();
-        BigDecimal cpc = campaignDetails.getCpc();
+        cpc = interactionEventAttributionHelper.getChargeableCpc(cpc, campaignDetails);
+        HashMap<String, BigDecimal> multipliedCpcData = interactionEventAttributionHelper.getMultipliedCpcData(
+            cpc, adWidgetClickEvent.getProperties().getPrimaryRealEstate());
+        cpc = multipliedCpcData.get(CpcData.MULTIPLIED_CPC);
         if (Objects.isNull(cpc)) {
             log.error("can not process widget interaction event due to null cpc.  {} - {}", campaignId, catalogId);
             adInteractionPrismEvent.setStatus(AdInteractionStatus.INVALID);
@@ -130,7 +146,7 @@ public class WidgetClickEventService {
                 adWidgetClickEvent.getEventId(), catalogId, campaignId, cpc);
         adInteractionPrismEvent.setCampaignId(campaignId);
         adInteractionPrismEvent.setCpc(cpc);
-
+        adInteractionPrismEvent.setClickMultiplier(multipliedCpcData.get(CpcData.MULTIPLIER));
         BillHandler billHandler = adBillFactory.getBillHandlerForBillVersion(billVersion);
 
         if (interactionEventAttributionHelper.initialiseAndCheckIsBudgetExhausted(campaignDetails, weekStartDate, eventDate, weeklyBudgetUtilisationLimit, catalogId)) {
