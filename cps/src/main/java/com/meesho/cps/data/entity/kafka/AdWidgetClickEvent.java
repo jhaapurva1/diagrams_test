@@ -80,5 +80,8 @@ public class AdWidgetClickEvent {
 
         @JsonProperty("is_ad_widget")
         private Boolean isAdWidget;
+
+        @JsonProperty("ads_metadata")
+        private String adsMetadata;
     }
 }
