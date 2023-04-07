@@ -3,12 +3,15 @@ package com.meesho.cps.service;
 import com.meesho.ad.client.response.SupplierCampaignCatalogMetaDataResponse;
 import com.meesho.ad.client.data.AdsMetadata;
 import com.meesho.ad.client.response.CampaignDetails;
+import com.meesho.ad.client.response.SupplierCampaignCatalogMetaDataResponse.CatalogMetadata;
+import com.meesho.ad.client.response.SupplierCampaignCatalogMetaDataResponse.SupplierMetadata;
 import com.meesho.ads.lib.helper.TelegrafMetricsHelper;
 import com.meesho.ads.lib.utils.DateTimeUtils;
 import com.meesho.cps.config.ApplicationProperties;
 import com.meesho.cps.constants.*;
 import com.meesho.cps.constants.Constants.AdWidgets;
 import com.meesho.cps.constants.Constants.CpcData;
+import com.meesho.cps.constants.ConsumerConstants.IngestionInteractionEvents;
 import com.meesho.cps.data.entity.internal.BudgetUtilisedData;
 import com.meesho.cps.data.entity.kafka.AdInteractionPrismEvent;
 import com.meesho.cps.data.entity.kafka.AdWidgetClickEvent;
@@ -20,10 +23,15 @@ import com.meesho.cps.factory.AdBillFactory;
 import com.meesho.cps.helper.AdWidgetValidationHelper;
 import com.meesho.cps.helper.CampaignPerformanceHelper;
 import com.meesho.cps.helper.InteractionEventAttributionHelper;
+import com.meesho.cps.helper.PdpRecoEventHelper;
+import com.meesho.cps.helper.TopOfSearchEventHelper;
+import com.meesho.cps.helper.WidgetEventHelper;
+import com.meesho.cps.helper.WidgetEventHelperDummy;
 import com.meesho.cps.service.external.AdService;
 import com.meesho.cps.transformer.PrismEventTransformer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -61,6 +69,17 @@ public class WidgetClickEventService {
     @Autowired
     private UserCatalogInteractionCacheDao userCatalogInteractionCacheDao;
 
+    @Autowired
+    private TopOfSearchEventHelper topOfSearchEventHelper;
+
+    @Autowired
+    private PdpRecoEventHelper pdpRecoEventHelper;
+
+    @Autowired
+    private WidgetEventHelperDummy widgetEventHelperDummy;
+
+    private WidgetEventHelper widgetEventHelper;
+
     public void handle(AdWidgetClickEvent adWidgetClickEvent) throws ExternalRequestFailedException {
         log.debug("processing widget click event: {}", adWidgetClickEvent);
 
@@ -75,7 +94,8 @@ public class WidgetClickEventService {
             return;
         }
 
-
+        widgetEventHelper=getWidgetEventHelper(adWidgetClickEvent);
+        
         Long interactionTime = adWidgetClickEvent.getEventTimestamp();
         String userId = adWidgetClickEvent.getUserId();
         Long catalogId = adWidgetClickEvent.getProperties().getCatalogId();
@@ -96,13 +116,12 @@ public class WidgetClickEventService {
                 PrismEventTransformer.getInteractionEventForWidgetClick(adWidgetClickEvent, userId, catalogId);
 
         // set feedType
-        String feedType = interactionEventAttributionHelper.getFeedTypeFromRealEstate(
-            adWidgetClickEvent.getProperties().getPrimaryRealEstate());
+        String feedType = widgetEventHelper.getFeedType();
 
         SupplierCampaignCatalogMetaDataResponse response = adService.getSupplierCampaignCatalogMetadata(catalogId, campaignId, userId, feedType);
         log.debug("campaign catalog metadata: {}", response);
-        SupplierCampaignCatalogMetaDataResponse.CatalogMetadata catalogMetadata = response.getCatalogMetadata();
-        SupplierCampaignCatalogMetaDataResponse.SupplierMetadata supplierMetadata = response.getSupplierMetadata();
+        CatalogMetadata catalogMetadata = response.getCatalogMetadata();
+        SupplierMetadata supplierMetadata = response.getSupplierMetadata();
 
         // Check if catalog metadata is empty
         if (Objects.isNull(catalogMetadata) || Objects.isNull(catalogMetadata.getCampaignDetails())) {
@@ -125,7 +144,7 @@ public class WidgetClickEventService {
         campaignId = campaignDetails.getCampaignId();
         cpc = interactionEventAttributionHelper.getChargeableCpc(cpc, campaignDetails);
         HashMap<String, BigDecimal> multipliedCpcData = interactionEventAttributionHelper.getMultipliedCpcData(
-            cpc, adWidgetClickEvent.getProperties().getPrimaryRealEstate());
+            cpc, adWidgetClickEvent.getProperties().getPrimaryRealEstate(),widgetEventHelper);
         cpc = multipliedCpcData.get(CpcData.MULTIPLIED_CPC);
         if (Objects.isNull(cpc)) {
             log.error("can not process widget interaction event due to null cpc.  {} - {}", campaignId, catalogId);
@@ -161,6 +180,12 @@ public class WidgetClickEventService {
             return;
         }
 
+        //Set screen and origin
+        adWidgetClickEvent.getProperties().setScreen(widgetEventHelper.getScreen(adWidgetClickEvent));
+        adWidgetClickEvent.getProperties().setOrigin(widgetEventHelper.getOrigin(adWidgetClickEvent));
+        adInteractionPrismEvent.setOrigin(adWidgetClickEvent.getProperties().getOrigin());
+        adInteractionPrismEvent.setScreen(adWidgetClickEvent.getProperties().getScreen());
+
         //Perform deduplication
         if(performDedup(billHandler, adWidgetClickEvent, adInteractionPrismEvent, userId, interactionTime)) {
             interactionEventAttributionHelper.publishPrismEvent(adInteractionPrismEvent);
@@ -173,7 +198,7 @@ public class WidgetClickEventService {
         //Update campaign catalog date metrics
         log.debug("campaignId {}, catalogId {}, date{}, eventName {}", campaignId, catalogId, eventDate, "AdWidgetClickEvent");
         interactionEventAttributionHelper.incrementInteractionCount(campaignId, catalogId, eventDate,
-                ConsumerConstants.IngestionInteractionEvents.AD_CLICK_EVENT_NAME);
+                IngestionInteractionEvents.AD_CLICK_EVENT_NAME);
 
         // Update budget utilised
         BudgetUtilisedData budgetUtilised = interactionEventAttributionHelper.modifyAndGetBudgetUtilised(cpc, campaignId, catalogId, eventDate, campaignType);
@@ -211,9 +236,6 @@ public class WidgetClickEventService {
                               AdInteractionPrismEvent adInteractionPrismEvent, String userId, Long interactionTime) {
         log.debug("perform dedup: {} {} {} {} {}", billHandler, adWidgetClickEvent, adWidgetClickEvent, userId, interactionTime);
 
-        //Set screen and origin
-        setScreenAndOrigin(adWidgetClickEvent,adInteractionPrismEvent);
-
         String origin = adWidgetClickEvent.getProperties().getOrigin();
         String screen = adWidgetClickEvent.getProperties().getScreen();
 
@@ -232,27 +254,15 @@ public class WidgetClickEventService {
         }
         return false;
     }
-    private void setScreenAndOrigin(AdWidgetClickEvent adWidgetClickEvent,
-        AdInteractionPrismEvent adInteractionPrismEvent) {
+
+    private WidgetEventHelper getWidgetEventHelper(AdWidgetClickEvent adWidgetClickEvent) {
         if (Boolean.TRUE.equals(AdWidgetValidationHelper.isTopOfSearchRealEstate(
             adWidgetClickEvent.getProperties().getPrimaryRealEstate()))) {
-            if (Objects.nonNull(adWidgetClickEvent.getProperties().getWidgetGroupPosition())
-                && adWidgetClickEvent.getProperties().getWidgetGroupPosition() > 1) {
-                adWidgetClickEvent.getProperties().setScreen(
-                    String.format(Constants.AdWidgets.SCREEN_MID_FEED_SEARCH,
-                        adWidgetClickEvent.getProperties().getWidgetGroupPosition()));
-            } else {
-                adWidgetClickEvent.getProperties()
-                    .setScreen(Constants.AdWidgets.SCREEN_TOP_OF_SEARCH);
-            }
-            adWidgetClickEvent.getProperties().setOrigin(Constants.AdWidgets.ORIGIN_SEARCH);
+            return topOfSearchEventHelper;
         } else if (Boolean.TRUE.equals(AdWidgetValidationHelper.isPdpRecoRealEstate(
             adWidgetClickEvent.getProperties().getPrimaryRealEstate()))) {
-            // to add screen & Origin
-
-            adWidgetClickEvent.getProperties().setOrigin(AdWidgets.ORIGIN_PDP_RECO);
+            return pdpRecoEventHelper;
         }
-        adInteractionPrismEvent.setOrigin(adWidgetClickEvent.getProperties().getOrigin());
-        adInteractionPrismEvent.setScreen(adWidgetClickEvent.getProperties().getScreen());
+        return widgetEventHelperDummy;
     }
 }

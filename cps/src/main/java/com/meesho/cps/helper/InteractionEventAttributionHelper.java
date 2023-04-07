@@ -20,7 +20,6 @@ import com.meesho.cps.db.hbase.repository.CampaignCatalogDateMetricsRepository;
 import com.meesho.cps.db.hbase.repository.CampaignDatewiseMetricsRepository;
 import com.meesho.cps.db.hbase.repository.CampaignMetricsRepository;
 import com.meesho.cps.db.hbase.repository.SupplierWeekWiseMetricsRepository;
-import com.meesho.cps.enums.FeedType;
 import com.meesho.cps.service.KafkaService;
 import com.meesho.cps.service.external.PrismService;
 import java.util.HashMap;
@@ -221,7 +220,7 @@ public class InteractionEventAttributionHelper {
     }
 
     public HashMap<String, BigDecimal> getMultipliedCpcData(BigDecimal chargeableCpc,
-        String realEstate) {
+        String realEstate, WidgetEventHelper widgetEventHelper) {
         HashMap<String, BigDecimal> multipliedCpcData = new HashMap<>();
         if (Objects.isNull(chargeableCpc)) {
             multipliedCpcData.put(CpcData.MULTIPLIED_CPC, null);
@@ -230,24 +229,13 @@ public class InteractionEventAttributionHelper {
         }
         BigDecimal multipliedCpc = chargeableCpc;
         BigDecimal multiplier = BigDecimal.ONE;
-        if (AdWidgetValidationHelper.isTopOfSearchRealEstate(realEstate)) {
-            multipliedCpc = chargeableCpc.multiply(topOfSearchCpcMultiplier);
-            multiplier = topOfSearchCpcMultiplier;
-        } else if (AdWidgetValidationHelper.isPdpRecoRealEstate(realEstate)) {
-            multipliedCpc = chargeableCpc.multiply(pdpRecoCpcMultiplier);
-            multiplier = pdpRecoCpcMultiplier;
+        if (Objects.nonNull(widgetEventHelper) && Boolean.FALSE.equals(
+            widgetEventHelper instanceof WidgetEventHelperDummy)) {
+            multipliedCpc = chargeableCpc.multiply(widgetEventHelper.getCpcMultiplier());
+            multiplier = widgetEventHelper.getCpcMultiplier();
         }
         multipliedCpcData.put(CpcData.MULTIPLIED_CPC, multipliedCpc);
         multipliedCpcData.put(CpcData.MULTIPLIER, multiplier);
         return multipliedCpcData;
-    }
-    public String getFeedTypeFromRealEstate(String realEstate){
-        String feedType=null;
-        if (AdWidgetValidationHelper.isTopOfSearchRealEstate(realEstate)) {
-            feedType= FeedType.TEXT_SEARCH.getValue();
-        } else if (AdWidgetValidationHelper.isPdpRecoRealEstate(realEstate)) {
-            feedType= FeedType.PRODUCT_RECO.getValue();
-        }
-        return feedType;
     }
 }
