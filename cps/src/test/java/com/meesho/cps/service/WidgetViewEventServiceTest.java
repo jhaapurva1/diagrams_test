@@ -69,7 +69,7 @@ public class WidgetViewEventServiceTest {
                         .catalogIds(Collections.singletonList(1L))
                         .origins(Collections.singletonList("origin"))
                         .screens(Collections.singletonList("screen"))
-                        .primaryRealEstates(Collections.singletonList("catalog_search_results"))
+                        .primaryRealEstates(Collections.singletonList("search"))
                         .build())
                 .build();
     }
@@ -99,7 +99,7 @@ public class WidgetViewEventServiceTest {
         Mockito.doReturn(Collections.EMPTY_MAP).when(catalogViewEventService).getCampaignCatalogMetadataFromCatalogIds(any());
         AdWidgetViewEvent adWidgetViewEvent = getAdWidgetViewEvent();
         widgetViewEventService.handle(adWidgetViewEvent);
-        Mockito.verify(statsdMetricManager, times(1)).incrementCounter(any(), any());
+        Mockito.verify(statsdMetricManager, times(0)).incrementCounter(any(), any());
     }
 
     @Test
@@ -150,6 +150,8 @@ public class WidgetViewEventServiceTest {
         AdWidgetViewEvent adWidgetViewEvent = getAdWidgetViewEvent();
         Mockito.doReturn(10L).when(applicationProperties).getBatchInterval();
         widgetViewEventService.handle(adWidgetViewEvent);
+        Mockito.verify(statsdMetricManager, times(1)).incrementCounter(WIDGET_VIEW_EVENT_KEY, String.format(VIEW_EVENT_TAGS,
+                adWidgetViewEvent.getEventName(), adWidgetViewEvent.getProperties().getScreens(), adWidgetViewEvent.getProperties().getOrigins(), VALID, NAN));
         Thread.sleep(10);
         widgetViewEventService.handle(adWidgetViewEvent);
         CampaignCatalogViewCount campaignCatalogViewCount = CampaignCatalogViewCount.builder().campaignId(1L).catalogId(1L).count(2).date(localDate).build();
