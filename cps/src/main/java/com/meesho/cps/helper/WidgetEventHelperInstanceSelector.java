@@ -10,11 +10,11 @@ import org.springframework.stereotype.Service;
 public class WidgetEventHelperInstanceSelector {
 
     @Autowired
-    TopOfSearchEventHelper topOfSearchEventHelper;
+    private TopOfSearchEventHelper topOfSearchEventHelper;
     @Autowired
-    PdpRecoEventHelper pdpRecoEventHelper;
+    private PdpRecoEventHelper pdpRecoEventHelper;
     @Autowired
-    WidgetEventHelperDummy widgetEventHelperDummy;
+    private WidgetEventHelperDummy widgetEventHelperDummy;
     public WidgetEventHelper getWidgetEventHelperInstance(AdWidgetClickEvent adWidgetClickEvent) {
         if (Boolean.TRUE.equals(AdWidgetValidationHelper.isTopOfSearchRealEstate(
             adWidgetClickEvent.getProperties().getPrimaryRealEstate()))) {
