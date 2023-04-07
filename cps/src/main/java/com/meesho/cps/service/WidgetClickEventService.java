@@ -19,10 +19,8 @@ import com.meesho.cps.factory.AdBillFactory;
 import com.meesho.cps.helper.AdWidgetValidationHelper;
 import com.meesho.cps.helper.CampaignPerformanceHelper;
 import com.meesho.cps.helper.InteractionEventAttributionHelper;
-import com.meesho.cps.helper.PdpRecoEventHelper;
-import com.meesho.cps.helper.TopOfSearchEventHelper;
+import com.meesho.cps.helper.WidgetEventHelperInstanceSelector;
 import com.meesho.cps.helper.WidgetEventHelper;
-import com.meesho.cps.helper.WidgetEventHelperDummy;
 import com.meesho.cps.service.external.AdService;
 import com.meesho.cps.transformer.PrismEventTransformer;
 import lombok.extern.slf4j.Slf4j;
@@ -65,13 +63,7 @@ public class WidgetClickEventService {
     private UserCatalogInteractionCacheDao userCatalogInteractionCacheDao;
 
     @Autowired
-    private TopOfSearchEventHelper topOfSearchEventHelper;
-
-    @Autowired
-    private PdpRecoEventHelper pdpRecoEventHelper;
-
-    @Autowired
-    private WidgetEventHelperDummy widgetEventHelperDummy;
+    private WidgetEventHelperInstanceSelector widgetEventHelperInstanceSelector;
 
     private WidgetEventHelper widgetEventHelper;
 
@@ -89,7 +81,7 @@ public class WidgetClickEventService {
             return;
         }
 
-        widgetEventHelper=getWidgetEventHelper(adWidgetClickEvent);
+        widgetEventHelper= widgetEventHelperInstanceSelector.getWidgetEventHelperInstance(adWidgetClickEvent);
         
         Long interactionTime = adWidgetClickEvent.getEventTimestamp();
         String userId = adWidgetClickEvent.getUserId();
@@ -248,16 +240,5 @@ public class WidgetClickEventService {
             userCatalogInteractionCacheDao.set(userId, id, origin, screen, interactionTime, type);
         }
         return false;
-    }
-
-    private WidgetEventHelper getWidgetEventHelper(AdWidgetClickEvent adWidgetClickEvent) {
-        if (Boolean.TRUE.equals(AdWidgetValidationHelper.isTopOfSearchRealEstate(
-            adWidgetClickEvent.getProperties().getPrimaryRealEstate()))) {
-            return topOfSearchEventHelper;
-        } else if (Boolean.TRUE.equals(AdWidgetValidationHelper.isPdpRecoRealEstate(
-            adWidgetClickEvent.getProperties().getPrimaryRealEstate()))) {
-            return pdpRecoEventHelper;
-        }
-        return widgetEventHelperDummy;
     }
 }
