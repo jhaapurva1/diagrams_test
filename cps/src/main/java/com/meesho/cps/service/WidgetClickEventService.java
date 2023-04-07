@@ -7,6 +7,7 @@ import com.meesho.ads.lib.helper.TelegrafMetricsHelper;
 import com.meesho.ads.lib.utils.DateTimeUtils;
 import com.meesho.cps.config.ApplicationProperties;
 import com.meesho.cps.constants.*;
+import com.meesho.cps.constants.Constants.AdWidgets;
 import com.meesho.cps.constants.Constants.CpcData;
 import com.meesho.cps.data.entity.internal.BudgetUtilisedData;
 import com.meesho.cps.data.entity.kafka.AdInteractionPrismEvent;
@@ -14,7 +15,6 @@ import com.meesho.cps.data.entity.kafka.AdWidgetClickEvent;
 import com.meesho.cps.data.internal.CampaignCatalogDate;
 import com.meesho.cps.db.redis.dao.UpdatedCampaignCatalogCacheDao;
 import com.meesho.cps.db.redis.dao.UserCatalogInteractionCacheDao;
-import com.meesho.cps.enums.FeedType;
 import com.meesho.cps.exception.ExternalRequestFailedException;
 import com.meesho.cps.factory.AdBillFactory;
 import com.meesho.cps.helper.AdWidgetValidationHelper;
@@ -65,8 +65,8 @@ public class WidgetClickEventService {
         log.debug("processing widget click event: {}", adWidgetClickEvent);
 
         // check if valid ad-widget event
-        if (!adWidgetClickEvent.getProperties().getIsAdWidget()
-                || !AdWidgetValidationHelper.isValidWidgetRealEstate(adWidgetClickEvent.getProperties().getPrimaryRealEstate())) {
+        if (Boolean.FALSE.equals(adWidgetClickEvent.getProperties().getIsAdWidget())
+                || Boolean.FALSE.equals(AdWidgetValidationHelper.isValidWidgetRealEstate(adWidgetClickEvent.getProperties().getPrimaryRealEstate()))) {
             log.error("Not a valid event userId {} eventId {} for the real estate {}",
                     adWidgetClickEvent.getUserId(), adWidgetClickEvent.getEventId(), adWidgetClickEvent.getProperties().getPrimaryRealEstate());
             telegrafMetricsHelper.increment(INTERACTION_EVENT_KEY, String.format(INTERACTION_EVENT_TAGS,
@@ -96,7 +96,8 @@ public class WidgetClickEventService {
                 PrismEventTransformer.getInteractionEventForWidgetClick(adWidgetClickEvent, userId, catalogId);
 
         // set feedType
-        String feedType = FeedType.TEXT_SEARCH.getValue();
+        String feedType = interactionEventAttributionHelper.getFeedTypeFromRealEstate(
+            adWidgetClickEvent.getProperties().getPrimaryRealEstate());
 
         SupplierCampaignCatalogMetaDataResponse response = adService.getSupplierCampaignCatalogMetadata(catalogId, campaignId, userId, feedType);
         log.debug("campaign catalog metadata: {}", response);
@@ -210,20 +211,11 @@ public class WidgetClickEventService {
                               AdInteractionPrismEvent adInteractionPrismEvent, String userId, Long interactionTime) {
         log.debug("perform dedup: {} {} {} {} {}", billHandler, adWidgetClickEvent, adWidgetClickEvent, userId, interactionTime);
 
-        // Populating the ORIGIN and SCREEN as per the product requirements:
-        // https://docs.google.com/spreadsheets/d/1WOY4CGfMnn5aGgA8kAYLQfU12t6C8dztpF2UhgGKY2E/edit?usp=sharing
-        if(Objects.nonNull(adWidgetClickEvent.getProperties().getWidgetGroupPosition()) &&
-                adWidgetClickEvent.getProperties().getWidgetGroupPosition() > 1) {
-            adWidgetClickEvent.getProperties().setScreen(String.format(Constants.AdWidgets.SCREEN_MID_FEED_SEARCH,
-                    adWidgetClickEvent.getProperties().getWidgetGroupPosition()));
-        } else {
-            adWidgetClickEvent.getProperties().setScreen(Constants.AdWidgets.SCREEN_TOP_OF_SEARCH);
-        }
-        adWidgetClickEvent.getProperties().setOrigin(Constants.AdWidgets.ORIGIN_SEARCH);
+        //Set screen and origin
+        setScreenAndOrigin(adWidgetClickEvent,adInteractionPrismEvent);
+
         String origin = adWidgetClickEvent.getProperties().getOrigin();
         String screen = adWidgetClickEvent.getProperties().getScreen();
-        adInteractionPrismEvent.setOrigin(origin);
-        adInteractionPrismEvent.setScreen(screen);
 
         if (billHandler.performWindowDeDuplication()) {
             Long id = adWidgetClickEvent.getProperties().getCatalogId();
@@ -239,5 +231,28 @@ public class WidgetClickEventService {
             userCatalogInteractionCacheDao.set(userId, id, origin, screen, interactionTime, type);
         }
         return false;
+    }
+    private void setScreenAndOrigin(AdWidgetClickEvent adWidgetClickEvent,
+        AdInteractionPrismEvent adInteractionPrismEvent) {
+        if (Boolean.TRUE.equals(AdWidgetValidationHelper.isTopOfSearchRealEstate(
+            adWidgetClickEvent.getProperties().getPrimaryRealEstate()))) {
+            if (Objects.nonNull(adWidgetClickEvent.getProperties().getWidgetGroupPosition())
+                && adWidgetClickEvent.getProperties().getWidgetGroupPosition() > 1) {
+                adWidgetClickEvent.getProperties().setScreen(
+                    String.format(Constants.AdWidgets.SCREEN_MID_FEED_SEARCH,
+                        adWidgetClickEvent.getProperties().getWidgetGroupPosition()));
+            } else {
+                adWidgetClickEvent.getProperties()
+                    .setScreen(Constants.AdWidgets.SCREEN_TOP_OF_SEARCH);
+            }
+            adWidgetClickEvent.getProperties().setOrigin(Constants.AdWidgets.ORIGIN_SEARCH);
+        } else if (Boolean.TRUE.equals(AdWidgetValidationHelper.isPdpRecoRealEstate(
+            adWidgetClickEvent.getProperties().getPrimaryRealEstate()))) {
+            // to add screen & Origin
+
+            adWidgetClickEvent.getProperties().setOrigin(AdWidgets.ORIGIN_PDP_RECO);
+        }
+        adInteractionPrismEvent.setOrigin(adWidgetClickEvent.getProperties().getOrigin());
+        adInteractionPrismEvent.setScreen(adWidgetClickEvent.getProperties().getScreen());
     }
 }

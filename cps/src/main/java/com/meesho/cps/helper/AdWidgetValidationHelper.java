@@ -13,7 +13,9 @@ import java.util.Set;
 
 public class AdWidgetValidationHelper {
 
-    private static final Set<String> VALID_REAL_ESTATES = new HashSet<>(Arrays.asList(ConsumerConstants.AdWidgetRealEstates.TEXT_SEARCH));
+    private static final Set<String> VALID_REAL_ESTATES =
+        new HashSet<>(Arrays.asList(ConsumerConstants.AdWidgetRealEstates.TEXT_SEARCH,
+            AdWidgetRealEstates.PDP_RECO));
 
     public static Boolean isValidAdWidgetViewEvent(AdWidgetViewEvent adWidgetViewEvent) {
         return Objects.nonNull(adWidgetViewEvent.getEventName()) &&
@@ -45,5 +47,8 @@ public class AdWidgetValidationHelper {
     }
     public static Boolean isTopOfSearchRealEstate(String realEstate) {
         return realEstate.equals(AdWidgetRealEstates.TEXT_SEARCH);
+    }
+    public static Boolean isPdpRecoRealEstate(String realEstate) {
+        return realEstate.equals(AdWidgetRealEstates.PDP_RECO);
     }
 }

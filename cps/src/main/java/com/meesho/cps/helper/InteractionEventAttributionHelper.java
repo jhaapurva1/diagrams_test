@@ -20,6 +20,7 @@ import com.meesho.cps.db.hbase.repository.CampaignCatalogDateMetricsRepository;
 import com.meesho.cps.db.hbase.repository.CampaignDatewiseMetricsRepository;
 import com.meesho.cps.db.hbase.repository.CampaignMetricsRepository;
 import com.meesho.cps.db.hbase.repository.SupplierWeekWiseMetricsRepository;
+import com.meesho.cps.enums.FeedType;
 import com.meesho.cps.service.KafkaService;
 import com.meesho.cps.service.external.PrismService;
 import java.util.HashMap;
@@ -73,6 +74,9 @@ public class InteractionEventAttributionHelper {
 
     @Value(AdWidgets.TOP_OF_SEARCH_CPC_MULTIPLIER)
     private BigDecimal topOfSearchCpcMultiplier;
+
+    @Value(AdWidgets.PDP_RECO_CPC_MULTIPLIER)
+    private BigDecimal pdpRecoCpcMultiplier;
 
     public void publishPrismEvent(AdInteractionPrismEvent adInteractionPrismEvent) {
         log.info("publishPrismEvent: {}", adInteractionPrismEvent);
@@ -229,9 +233,21 @@ public class InteractionEventAttributionHelper {
         if (AdWidgetValidationHelper.isTopOfSearchRealEstate(realEstate)) {
             multipliedCpc = chargeableCpc.multiply(topOfSearchCpcMultiplier);
             multiplier = topOfSearchCpcMultiplier;
+        } else if (AdWidgetValidationHelper.isPdpRecoRealEstate(realEstate)) {
+            multipliedCpc = chargeableCpc.multiply(pdpRecoCpcMultiplier);
+            multiplier = pdpRecoCpcMultiplier;
         }
         multipliedCpcData.put(CpcData.MULTIPLIED_CPC, multipliedCpc);
         multipliedCpcData.put(CpcData.MULTIPLIER, multiplier);
         return multipliedCpcData;
+    }
+    public String getFeedTypeFromRealEstate(String realEstate){
+        String feedType=null;
+        if (AdWidgetValidationHelper.isTopOfSearchRealEstate(realEstate)) {
+            feedType= FeedType.TEXT_SEARCH.getValue();
+        } else if (AdWidgetValidationHelper.isPdpRecoRealEstate(realEstate)) {
+            feedType= FeedType.PRODUCT_RECO.getValue();
+        }
+        return feedType;
     }
 }
