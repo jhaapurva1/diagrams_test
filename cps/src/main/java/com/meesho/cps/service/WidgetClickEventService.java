@@ -3,15 +3,11 @@ package com.meesho.cps.service;
 import com.meesho.ad.client.response.SupplierCampaignCatalogMetaDataResponse;
 import com.meesho.ad.client.data.AdsMetadata;
 import com.meesho.ad.client.response.CampaignDetails;
-import com.meesho.ad.client.response.SupplierCampaignCatalogMetaDataResponse.CatalogMetadata;
-import com.meesho.ad.client.response.SupplierCampaignCatalogMetaDataResponse.SupplierMetadata;
 import com.meesho.ads.lib.helper.TelegrafMetricsHelper;
 import com.meesho.ads.lib.utils.DateTimeUtils;
 import com.meesho.cps.config.ApplicationProperties;
 import com.meesho.cps.constants.*;
-import com.meesho.cps.constants.Constants.AdWidgets;
 import com.meesho.cps.constants.Constants.CpcData;
-import com.meesho.cps.constants.ConsumerConstants.IngestionInteractionEvents;
 import com.meesho.cps.data.entity.internal.BudgetUtilisedData;
 import com.meesho.cps.data.entity.kafka.AdInteractionPrismEvent;
 import com.meesho.cps.data.entity.kafka.AdWidgetClickEvent;
@@ -31,7 +27,6 @@ import com.meesho.cps.service.external.AdService;
 import com.meesho.cps.transformer.PrismEventTransformer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -120,8 +115,8 @@ public class WidgetClickEventService {
 
         SupplierCampaignCatalogMetaDataResponse response = adService.getSupplierCampaignCatalogMetadata(catalogId, campaignId, userId, feedType);
         log.debug("campaign catalog metadata: {}", response);
-        CatalogMetadata catalogMetadata = response.getCatalogMetadata();
-        SupplierMetadata supplierMetadata = response.getSupplierMetadata();
+        SupplierCampaignCatalogMetaDataResponse.CatalogMetadata catalogMetadata = response.getCatalogMetadata();
+        SupplierCampaignCatalogMetaDataResponse.SupplierMetadata supplierMetadata = response.getSupplierMetadata();
 
         // Check if catalog metadata is empty
         if (Objects.isNull(catalogMetadata) || Objects.isNull(catalogMetadata.getCampaignDetails())) {
@@ -198,7 +193,7 @@ public class WidgetClickEventService {
         //Update campaign catalog date metrics
         log.debug("campaignId {}, catalogId {}, date{}, eventName {}", campaignId, catalogId, eventDate, "AdWidgetClickEvent");
         interactionEventAttributionHelper.incrementInteractionCount(campaignId, catalogId, eventDate,
-                IngestionInteractionEvents.AD_CLICK_EVENT_NAME);
+            ConsumerConstants.IngestionInteractionEvents.AD_CLICK_EVENT_NAME);
 
         // Update budget utilised
         BudgetUtilisedData budgetUtilised = interactionEventAttributionHelper.modifyAndGetBudgetUtilised(cpc, campaignId, catalogId, eventDate, campaignType);

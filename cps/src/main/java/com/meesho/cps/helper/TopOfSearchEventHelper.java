@@ -6,8 +6,12 @@ import com.meesho.cps.data.entity.kafka.AdWidgetClickEvent;
 import com.meesho.cps.enums.FeedType;
 import java.math.BigDecimal;
 import java.util.Objects;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
+@Slf4j
+@Service
 public class TopOfSearchEventHelper implements WidgetEventHelper {
 
     @Value(AdWidgets.TOP_OF_SEARCH_CPC_MULTIPLIER)
