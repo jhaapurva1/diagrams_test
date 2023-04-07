@@ -6,16 +6,28 @@ import java.math.BigDecimal;
 
 public interface WidgetEventHelper {
 
-    String getFeedType();
+    default String getFeedType() {
+        return null;
+    }
 
-    String getScreen(AdWidgetClickEvent adWidgetClickEvent);
+    default String getScreen(AdWidgetClickEvent adWidgetClickEvent) {
+        return null;
+    }
 
-    String getScreen(AdWidgetViewEvent adWidgetViewEvent);
+    default String getScreen(AdWidgetViewEvent adWidgetViewEvent) {
+        return null;
+    }
 
-    String getOrigin(AdWidgetClickEvent adWidgetClickEvent);
+    default String getOrigin(AdWidgetClickEvent adWidgetClickEvent) {
+        return null;
+    }
 
-    String getOrigin(AdWidgetViewEvent adWidgetViewEvent);
+    default String getOrigin(AdWidgetViewEvent adWidgetViewEvent) {
+        return null;
+    }
 
-    BigDecimal getCpcMultiplier();
+    default BigDecimal getCpcMultiplier() {
+        return BigDecimal.ONE;
+    }
 
 }
