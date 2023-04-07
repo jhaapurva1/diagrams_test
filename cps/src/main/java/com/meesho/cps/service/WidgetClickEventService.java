@@ -79,8 +79,8 @@ public class WidgetClickEventService {
         log.debug("processing widget click event: {}", adWidgetClickEvent);
 
         // check if valid ad-widget event
-        if (Boolean.FALSE.equals(adWidgetClickEvent.getProperties().getIsAdWidget())
-                || Boolean.FALSE.equals(AdWidgetValidationHelper.isValidWidgetRealEstate(adWidgetClickEvent.getProperties().getPrimaryRealEstate()))) {
+        if (!adWidgetClickEvent.getProperties().getIsAdWidget()
+                || !AdWidgetValidationHelper.isValidWidgetRealEstate(adWidgetClickEvent.getProperties().getPrimaryRealEstate())) {
             log.error("Not a valid event userId {} eventId {} for the real estate {}",
                     adWidgetClickEvent.getUserId(), adWidgetClickEvent.getEventId(), adWidgetClickEvent.getProperties().getPrimaryRealEstate());
             telegrafMetricsHelper.increment(INTERACTION_EVENT_KEY, String.format(INTERACTION_EVENT_TAGS,
@@ -193,7 +193,7 @@ public class WidgetClickEventService {
         //Update campaign catalog date metrics
         log.debug("campaignId {}, catalogId {}, date{}, eventName {}", campaignId, catalogId, eventDate, "AdWidgetClickEvent");
         interactionEventAttributionHelper.incrementInteractionCount(campaignId, catalogId, eventDate,
-            ConsumerConstants.IngestionInteractionEvents.AD_CLICK_EVENT_NAME);
+                ConsumerConstants.IngestionInteractionEvents.AD_CLICK_EVENT_NAME);
 
         // Update budget utilised
         BudgetUtilisedData budgetUtilised = interactionEventAttributionHelper.modifyAndGetBudgetUtilised(cpc, campaignId, catalogId, eventDate, campaignType);
