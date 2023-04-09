@@ -100,4 +100,13 @@ public class DebugController {
         debugService.BackillCampaignCatalogDayPerformanceEventsToPrism(path);
     }
 
+    @ApiOperation(value = "/cache_values",
+            notes = "",
+            consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(path = "/cache_values",
+            method = RequestMethod.GET)
+    public void getCacheValues() {
+        debugService.getCacheValues();
+    }
+
 }
