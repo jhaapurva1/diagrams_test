@@ -90,14 +90,6 @@ public class DebugService {
     @Value(ConsumerConstants.DayWisePerformanceEventsConsumer.TOPIC)
     String dayWisePerformanceEventsConsumerTopic;
 
-    private final Cache<Long, AdViewEventMetadataResponse.CatalogCampaignMetadata> adViewCampaignCatalogCache;
-
-    @Autowired
-    public DebugService(
-            @Qualifier("adServiceViewCampaignCatalogCache") Cache<Long, AdViewEventMetadataResponse.CatalogCampaignMetadata> adViewCampaignCatalogCache) {
-        this.adViewCampaignCatalogCache = adViewCampaignCatalogCache;
-    }
-
     public CampaignCatalogDateMetrics saveCampaignCatalogMetrics(
             CampaignCatalogDateMetricsSaveRequest campaignCatalogMetricsSaveRequest) throws Exception {
         CampaignCatalogDateMetrics campaignCatalogDateMetrics =
@@ -232,8 +224,4 @@ public class DebugService {
         }
     }
 
-    public void getCacheValues() {
-        log.info("KEYS: {}", adViewCampaignCatalogCache.asMap().keySet());
-        log.info("MAP: {}", adViewCampaignCatalogCache.asMap());
-    }
 }
