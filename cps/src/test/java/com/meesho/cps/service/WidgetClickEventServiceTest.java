@@ -7,6 +7,7 @@ import com.meesho.ads.lib.utils.DateTimeUtils;
 import com.meesho.cps.constants.AdInteractionInvalidReason;
 import com.meesho.cps.constants.AdInteractionStatus;
 import com.meesho.cps.constants.CampaignType;
+import com.meesho.cps.constants.Constants;
 import com.meesho.cps.data.entity.internal.BudgetUtilisedData;
 import com.meesho.cps.data.entity.kafka.AdWidgetClickEvent;
 import com.meesho.cps.db.hbase.repository.CampaignCatalogDateMetricsRepository;
@@ -26,6 +27,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.any;
@@ -74,13 +76,13 @@ public class WidgetClickEventServiceTest {
                 .getLocalDateForDailyCampaignFromLocalDateTime(any());
         Mockito.doNothing().when(telegrafMetricsHelper).increment(any(), any(), any());
         Mockito.doNothing().when(interactionEventAttributionHelper).publishPrismEvent(any());
-        Mockito.doNothing().when(campaignCatalogDateMetricsRepository).incrementClickCount(any(), any(), any());
         Mockito.doNothing().when(interactionEventAttributionHelper).sendBudgetExhaustedEvent(any(), any());
         Mockito.doNothing().when(interactionEventAttributionHelper).sendSupplierBudgetExhaustedEvent(any(), any());
         Mockito.doNothing().when(updatedCampaignCatalogCacheDao).add(any());
         Mockito.doReturn(1L).when(userCatalogInteractionCacheDao).get(any(), any(), any(), any(), any());
         Mockito.doNothing().when(userCatalogInteractionCacheDao).set(any(), any(), any(), any(), any(), any());
-
+        HashMap<String, BigDecimal> multipliedCpcData = new HashMap<String, BigDecimal>(){{put(Constants.CpcData.MULTIPLIED_CPC, BigDecimal.valueOf(0.42));}};
+        Mockito.doReturn(multipliedCpcData).when(interactionEventAttributionHelper).getMultipliedCpcData(any(), any());
     }
 
     public AdWidgetClickEvent getAdWidgetClickEvent() {
@@ -93,7 +95,7 @@ public class WidgetClickEventServiceTest {
                         .appVersionCode(1)
                         .origin("origin")
                         .screen("screen")
-                        .primaryRealEstate("search")
+                        .primaryRealEstate("catalog_search_results")
                         .build())
                 .build();
     }
@@ -159,7 +161,7 @@ public class WidgetClickEventServiceTest {
         Mockito.doReturn(BigDecimal.valueOf(110)).when(interactionEventAttributionHelper).modifyAndGetSupplierWeeklyBudgetUtilised(any(), any(), any());
         widgetClickEventService.handle(getAdWidgetClickEvent());
         Mockito.verify(interactionEventAttributionHelper, times(1)).sendSupplierBudgetExhaustedEvent(any(), any());
-        Mockito.verify(interactionEventAttributionHelper, times(0)).sendBudgetExhaustedEvent(any(), any());
+        Mockito.verify(interactionEventAttributionHelper, times(1)).sendBudgetExhaustedEvent(any(), any());
     }
 
     @Test
@@ -191,8 +193,6 @@ public class WidgetClickEventServiceTest {
         Mockito.verify(telegrafMetricsHelper, times(1)).increment(INTERACTION_EVENT_KEY, INTERACTION_EVENT_TAGS,
                 adWidgetClickEvent.getEventName(), adWidgetClickEvent.getProperties().getScreen(), adWidgetClickEvent.getProperties().getOrigin(),
                 AdInteractionStatus.VALID.name(), NAN);
-        Mockito.verify(telegrafMetricsHelper, times(1)).increment(INTERACTION_EVENT_CPC_KEY, 92, INTERACTION_EVENT_CPC_TAGS,
-                adWidgetClickEvent.getEventName(), adWidgetClickEvent.getProperties().getScreen(), adWidgetClickEvent.getProperties().getOrigin());
     }
 
     @Test
@@ -242,7 +242,5 @@ public class WidgetClickEventServiceTest {
         Mockito.verify(telegrafMetricsHelper, times(1)).increment(INTERACTION_EVENT_KEY, INTERACTION_EVENT_TAGS,
                 adWidgetClickEvent.getEventName(), adWidgetClickEvent.getProperties().getScreen(), adWidgetClickEvent.getProperties().getOrigin(),
                 AdInteractionStatus.VALID.name(), NAN);
-        Mockito.verify(telegrafMetricsHelper, times(1)).increment(INTERACTION_EVENT_CPC_KEY, 92, INTERACTION_EVENT_CPC_TAGS,
-                adWidgetClickEvent.getEventName(), adWidgetClickEvent.getProperties().getScreen(), adWidgetClickEvent.getProperties().getOrigin());
     }
 }

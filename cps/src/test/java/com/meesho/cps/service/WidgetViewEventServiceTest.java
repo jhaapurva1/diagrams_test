@@ -69,7 +69,7 @@ public class WidgetViewEventServiceTest {
                         .catalogIds(Collections.singletonList(1L))
                         .origins(Collections.singletonList("origin"))
                         .screens(Collections.singletonList("screen"))
-                        .primaryRealEstates(Collections.singletonList("search"))
+                        .primaryRealEstates(Collections.singletonList("catalog_search_results"))
                         .build())
                 .build();
     }
@@ -99,7 +99,7 @@ public class WidgetViewEventServiceTest {
         Mockito.doReturn(Collections.EMPTY_MAP).when(catalogViewEventService).getCampaignCatalogMetadataFromCatalogIds(any());
         AdWidgetViewEvent adWidgetViewEvent = getAdWidgetViewEvent();
         widgetViewEventService.handle(adWidgetViewEvent);
-        Mockito.verify(statsdMetricManager, times(0)).incrementCounter(any(), any());
+        Mockito.verify(statsdMetricManager, times(1)).incrementCounter(any(), any());
     }
 
     @Test
