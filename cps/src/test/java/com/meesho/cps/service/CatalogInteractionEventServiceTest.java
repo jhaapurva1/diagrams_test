@@ -76,9 +76,6 @@ public class CatalogInteractionEventServiceTest {
     public void setUp() {
         Mockito.doReturn(getSampleDate()).when(campaignPerformanceHelper).getLocalDateForDailyCampaignFromLocalDateTime(any());
         Mockito.doNothing().when(telegrafMetricsHelper).increment(any(), any(), any());
-        Mockito.doReturn(BudgetUtilisedData.builder().campaignBudgetUtilised(BigDecimal.valueOf(1000))
-                .catalogBudgetUtilised(BigDecimal.valueOf(100)).build()).when(interactionEventAttributionHelper)
-                .modifyAndGetBudgetUtilised(any(), any(), any(), any(), any());
         Mockito.doReturn(BigDecimal.valueOf(200)).when(interactionEventAttributionHelper).modifyAndGetSupplierWeeklyBudgetUtilised(any(), any(), any());
         Mockito.doReturn(getAdsMetaDataEncryptionKey()).when(applicationProperties).getAdsMetadataEncryptionKey();
     }
@@ -175,7 +172,6 @@ public class CatalogInteractionEventServiceTest {
     @Test
     public void testForBillVersionOne() throws ExternalRequestFailedException {
         Mockito.doReturn(getSampleSupplierCampaignCatalogMetaDataResponse(1)).when(adService).getSupplierCampaignCatalogMetadata(any(), any(), any(), any());
-        Mockito.doReturn(clickBillHandler).when(adBillFactory).getBillHandlerForBillVersion(1);
         catalogInteractionEventService.handle(getSampleAdInteractionEvent("ad_click"));
     }
 
@@ -184,28 +180,24 @@ public class CatalogInteractionEventServiceTest {
         Mockito.doReturn(getSampleSupplierCampaignCatalogMetaDataResponse(1)).when(adService).getSupplierCampaignCatalogMetadata(any(), any(), any(), any());
         CampaignCatalogDateMetrics campaignCatalogDateMetrics = getSampleCampaignCatalogMetrics();
         campaignCatalogDateMetrics.setClickCount(22L);
-        Mockito.doReturn(clickBillHandler).when(adBillFactory).getBillHandlerForBillVersion(1);
         catalogInteractionEventService.handle(getSampleAdInteractionEvent("ad_click"));
     }
 
     @Test
     public void testForBillVersionSharesForClick() throws ExternalRequestFailedException {
         Mockito.doReturn(getSampleSupplierCampaignCatalogMetaDataResponse(2)).when(adService).getSupplierCampaignCatalogMetadata(any(), any(), any(), any());
-        Mockito.doReturn(interactionBillHandler).when(adBillFactory).getBillHandlerForBillVersion(2);
         catalogInteractionEventService.handle(getSampleAdInteractionEvent("ad_click"));
     }
 
     @Test
     public void testForBillVersionSharesForClickNotUpdatingRedis() throws ExternalRequestFailedException {
         Mockito.doReturn(getSampleSupplierCampaignCatalogMetaDataResponse(2)).when(adService).getSupplierCampaignCatalogMetadata(any(), any(), any(), any());
-        Mockito.doReturn(interactionBillHandler).when(adBillFactory).getBillHandlerForBillVersion(2);
         catalogInteractionEventService.handle(getSampleAdInteractionEvent("ad_click"));
     }
 
     @Test
     public void testForBillVersionSharesForShares() throws ExternalRequestFailedException {
         Mockito.doReturn(getSampleSupplierCampaignCatalogMetaDataResponse(2)).when(adService).getSupplierCampaignCatalogMetadata(any(), any(), any(), any());
-        Mockito.doReturn(interactionBillHandler).when(adBillFactory).getBillHandlerForBillVersion(2);
         catalogInteractionEventService.handle(getSampleAdInteractionEvent("ad_shared"));
     }
 
@@ -214,7 +206,6 @@ public class CatalogInteractionEventServiceTest {
         Mockito.doReturn(getSampleSupplierCampaignCatalogMetaDataResponse(2)).when(adService).getSupplierCampaignCatalogMetadata(any(), any(), any(), any());
         CampaignCatalogDateMetrics campaignCatalogDateMetrics = getSampleCampaignCatalogMetricsForBillShares();
         campaignCatalogDateMetrics.setClickCount(14L);
-        Mockito.doReturn(interactionBillHandler).when(adBillFactory).getBillHandlerForBillVersion(2);
         catalogInteractionEventService.handle(getSampleAdInteractionEvent("ad_click"));
     }
 
@@ -223,7 +214,6 @@ public class CatalogInteractionEventServiceTest {
         Mockito.doReturn(getSampleSupplierCampaignCatalogMetaDataResponse(2)).when(adService).getSupplierCampaignCatalogMetadata(any(), any(), any(), any());
         CampaignCatalogDateMetrics campaignCatalogDateMetrics = getSampleCampaignCatalogMetricsForBillShares();
         campaignCatalogDateMetrics.setSharesCount(15L);
-        Mockito.doReturn(interactionBillHandler).when(adBillFactory).getBillHandlerForBillVersion(2);
         catalogInteractionEventService.handle(getSampleAdInteractionEvent("ad_shared"));
     }
 
@@ -232,14 +222,12 @@ public class CatalogInteractionEventServiceTest {
         Mockito.doReturn(getSampleSupplierCampaignCatalogMetaDataResponse(2)).when(adService).getSupplierCampaignCatalogMetadata(any(), any(), any(), any());
         CampaignCatalogDateMetrics campaignCatalogDateMetrics = getSampleCampaignCatalogMetricsForBillShares();
         campaignCatalogDateMetrics.setWishlistCount(16L);
-        Mockito.doReturn(interactionBillHandler).when(adBillFactory).getBillHandlerForBillVersion(2);
         catalogInteractionEventService.handle(getSampleAdInteractionEvent("ad_wishlisted"));
     }
 
     @Test
     public void testForBillVersionOneNew() throws ExternalRequestFailedException {
         Mockito.doReturn(getSampleSupplierCampaignCatalogMetaDataResponseForNewRequests(1)).when(adService).getSupplierCampaignCatalogMetadata(any(), any(), any(), any());
-        Mockito.doReturn(clickBillHandler).when(adBillFactory).getBillHandlerForBillVersion(1);
         catalogInteractionEventService.handle(getSampleNewAdInteractionEvent("ad_click"));
     }
 
@@ -248,28 +236,24 @@ public class CatalogInteractionEventServiceTest {
         Mockito.doReturn(getSampleSupplierCampaignCatalogMetaDataResponseForNewRequests(1)).when(adService).getSupplierCampaignCatalogMetadata(any(), any(), any(), any());
         CampaignCatalogDateMetrics campaignCatalogDateMetrics = getSampleCampaignCatalogMetrics();
         campaignCatalogDateMetrics.setClickCount(22L);
-        Mockito.doReturn(clickBillHandler).when(adBillFactory).getBillHandlerForBillVersion(1);
         catalogInteractionEventService.handle(getSampleNewAdInteractionEvent("ad_click"));
     }
 
     @Test
     public void testForBillVersionSharesForClickNew() throws ExternalRequestFailedException {
         Mockito.doReturn(getSampleSupplierCampaignCatalogMetaDataResponseForNewRequests(2)).when(adService).getSupplierCampaignCatalogMetadata(any(), any(), any(), any());
-        Mockito.doReturn(interactionBillHandler).when(adBillFactory).getBillHandlerForBillVersion(2);
         catalogInteractionEventService.handle(getSampleNewAdInteractionEvent("ad_click"));
     }
 
     @Test
     public void testForBillVersionSharesForClickNotUpdatingRedisNew() throws ExternalRequestFailedException {
         Mockito.doReturn(getSampleSupplierCampaignCatalogMetaDataResponseForNewRequests(2)).when(adService).getSupplierCampaignCatalogMetadata(any(), any(), any(), any());
-        Mockito.doReturn(interactionBillHandler).when(adBillFactory).getBillHandlerForBillVersion(2);
         catalogInteractionEventService.handle(getSampleNewAdInteractionEvent("ad_click"));
     }
 
     @Test
     public void testForBillVersionSharesForSharesNew() throws ExternalRequestFailedException {
         Mockito.doReturn(getSampleSupplierCampaignCatalogMetaDataResponseForNewRequests(2)).when(adService).getSupplierCampaignCatalogMetadata(any(), any(), any(), any());
-        Mockito.doReturn(interactionBillHandler).when(adBillFactory).getBillHandlerForBillVersion(2);
         catalogInteractionEventService.handle(getSampleNewAdInteractionEvent("ad_shared"));
     }
 
@@ -278,7 +262,6 @@ public class CatalogInteractionEventServiceTest {
         Mockito.doReturn(getSampleSupplierCampaignCatalogMetaDataResponseForNewRequests(2)).when(adService).getSupplierCampaignCatalogMetadata(any(), any(), any(), any());
         CampaignCatalogDateMetrics campaignCatalogDateMetrics = getSampleCampaignCatalogMetricsForBillShares();
         campaignCatalogDateMetrics.setClickCount(14L);
-        Mockito.doReturn(interactionBillHandler).when(adBillFactory).getBillHandlerForBillVersion(2);
         catalogInteractionEventService.handle(getSampleNewAdInteractionEvent("ad_click"));
     }
 
@@ -287,7 +270,6 @@ public class CatalogInteractionEventServiceTest {
         Mockito.doReturn(getSampleSupplierCampaignCatalogMetaDataResponseForNewRequests(2)).when(adService).getSupplierCampaignCatalogMetadata(any(), any(), any(), any());
         CampaignCatalogDateMetrics campaignCatalogDateMetrics = getSampleCampaignCatalogMetricsForBillShares();
         campaignCatalogDateMetrics.setSharesCount(15L);
-        Mockito.doReturn(interactionBillHandler).when(adBillFactory).getBillHandlerForBillVersion(2);
         catalogInteractionEventService.handle(getSampleNewAdInteractionEvent("ad_shared"));
     }
 
@@ -296,7 +278,6 @@ public class CatalogInteractionEventServiceTest {
         Mockito.doReturn(getSampleSupplierCampaignCatalogMetaDataResponseForNewRequests(2)).when(adService).getSupplierCampaignCatalogMetadata(any(), any(), any(), any());
         CampaignCatalogDateMetrics campaignCatalogDateMetrics = getSampleCampaignCatalogMetricsForBillShares();
         campaignCatalogDateMetrics.setWishlistCount(16L);
-        Mockito.doReturn(interactionBillHandler).when(adBillFactory).getBillHandlerForBillVersion(2);
         catalogInteractionEventService.handle(getSampleNewAdInteractionEvent("ad_wishlisted"));
     }
 
@@ -308,6 +289,7 @@ public class CatalogInteractionEventServiceTest {
         Mockito.doReturn(getSampleSupplierCampaignCatalogMetaDataResponseForNewRequests(2)).when(adService).getSupplierCampaignCatalogMetadata(any(), any(), any(), any());
         Mockito.doReturn(clickBillHandler).when(adBillFactory).getBillHandlerForBillVersion(any());
         Mockito.doNothing().when(interactionEventAttributionHelper).sendCatalogBudgetExhaustEvent(any(), any());
+        Mockito.doReturn(BigDecimal.valueOf(0.42)).when(interactionEventAttributionHelper).getChargeableCpc(any(), any());
         AdInteractionEvent adInteractionEvent = getSampleNewAdInteractionEvent("ad_click");
         Long catalogId = adInteractionEvent.getProperties().getId();
         catalogInteractionEventService.handle(adInteractionEvent);
