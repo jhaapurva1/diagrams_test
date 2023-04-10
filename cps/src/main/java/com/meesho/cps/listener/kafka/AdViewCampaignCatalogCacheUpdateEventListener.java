@@ -54,7 +54,7 @@ public class AdViewCampaignCatalogCacheUpdateEventListener extends BatchKafkaLis
                     ConsumerConfig.MAX_POLL_RECORDS_CONFIG + "=" + ConsumerConstants.AdViewCampaignCatalogCacheUpdateEventConsumer.BATCH_SIZE
             }
     )
-    @DigestLogger(metricType = MetricType.METHOD, tagSet = "className=CatalogUploadAdNudgeEventListener")
+    @DigestLogger(metricType = MetricType.METHOD, tagSet = "className=AdViewCampaignCatalogCacheUpdateEventListener")
     public void listen(List<ConsumerRecord<String, String>> consumerRecord) {
         super.listen(consumerRecord);
     }
