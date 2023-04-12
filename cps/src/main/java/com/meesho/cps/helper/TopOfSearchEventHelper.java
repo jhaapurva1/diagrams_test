@@ -26,13 +26,12 @@ public class TopOfSearchEventHelper implements WidgetEventHelper {
     // https://docs.google.com/spreadsheets/d/1WOY4CGfMnn5aGgA8kAYLQfU12t6C8dztpF2UhgGKY2E/edit?usp=sharing
     @Override
     public String getScreen(AdWidgetClickEvent adWidgetClickEvent) {
-        String screen = null;
-        if (Objects.nonNull(adWidgetClickEvent.getProperties().getWidgetGroupPosition())
+        String screen = Constants.AdWidgets.SCREEN_TOP_OF_SEARCH;
+        if (Objects.nonNull(adWidgetClickEvent.getProperties()) && Objects.nonNull(
+            adWidgetClickEvent.getProperties().getWidgetGroupPosition())
             && adWidgetClickEvent.getProperties().getWidgetGroupPosition() > 1) {
             screen = String.format(Constants.AdWidgets.SCREEN_MID_FEED_SEARCH,
                 adWidgetClickEvent.getProperties().getWidgetGroupPosition());
-        } else {
-            screen = Constants.AdWidgets.SCREEN_TOP_OF_SEARCH;
         }
         return screen;
     }

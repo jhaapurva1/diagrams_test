@@ -71,8 +71,8 @@ public class WidgetClickEventService {
         log.debug("processing widget click event: {}", adWidgetClickEvent);
 
         // check if valid ad-widget event
-        if (!adWidgetClickEvent.getProperties().getIsAdWidget()
-                || !AdWidgetValidationHelper.isValidWidgetRealEstate(adWidgetClickEvent.getProperties().getPrimaryRealEstate())) {
+        if (Boolean.FALSE.equals(adWidgetClickEvent.getProperties().getIsAdWidget())
+                || Boolean.FALSE.equals(AdWidgetValidationHelper.isValidWidgetRealEstate(adWidgetClickEvent.getProperties().getPrimaryRealEstate()))) {
             log.error("Not a valid event userId {} eventId {} for the real estate {}",
                     adWidgetClickEvent.getUserId(), adWidgetClickEvent.getEventId(), adWidgetClickEvent.getProperties().getPrimaryRealEstate());
             telegrafMetricsHelper.increment(INTERACTION_EVENT_KEY, String.format(INTERACTION_EVENT_TAGS,
@@ -82,7 +82,7 @@ public class WidgetClickEventService {
         }
 
         widgetEventHelper= widgetEventHelperInstanceSelector.getWidgetEventHelperInstance(adWidgetClickEvent);
-        
+
         Long interactionTime = adWidgetClickEvent.getEventTimestamp();
         String userId = adWidgetClickEvent.getUserId();
         Long catalogId = adWidgetClickEvent.getProperties().getCatalogId();

@@ -17,12 +17,12 @@ public class PdpRecoEventHelper implements WidgetEventHelper {
 
     @Override
     public String getFeedType() {
-        return FeedType.TEXT_SEARCH.getValue();
+        return FeedType.PRODUCT_RECO.getValue();
     }
 
     @Override
     public String getScreen(AdWidgetClickEvent adWidgetClickEvent) {
-        return null;
+        return AdWidgets.SCREEN_PDP_RECO;
     }
 
     @Override
