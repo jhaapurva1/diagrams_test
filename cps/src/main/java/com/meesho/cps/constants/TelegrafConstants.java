@@ -27,4 +27,8 @@ public class TelegrafConstants {
     public static final String VALID = "valid";
     public static final String INVALID = "invalid";
 
+    // redis pub sub
+    public static final String REDIS_PUB_SUB_KEY = SERVICE_NAME + "PubSub";
+    public static final String PUB_SUB_TAGS = "type=%s,intent=%s";
+
 }

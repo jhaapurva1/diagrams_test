@@ -163,4 +163,10 @@ public class ConsumerConstants {
         public static final String BATCH_SIZE = "${kafka.ad_view_campaign_catalog_cache_update.event.consumer.batch.size}";
     }
 
+    public static class GenericRedisNotificationsConsumer {
+        public static final String TOPIC = "${redis.generic.notifications.event.consumer.topic}";
+        public static final String PUBSUB_ENABLE = "${redis.generic.notifications.event.pubsub.enable}";
+        public static final String DELIMITER_USED = ",";
+    }
+
 }

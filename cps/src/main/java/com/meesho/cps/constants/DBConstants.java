@@ -62,6 +62,10 @@ public class DBConstants {
                         REDIS_KEY_DELIMITER + "%s" + REDIS_KEY_DELIMITER + "%s" + REDIS_KEY_DELIMITER + "%s";
 
         public static final String UPDATED_CAMPAIGN_CATALOGS = "ucc" + "_{%s}";
+
+        public static final String PUB_SUB_STANDALONE_HOST = "${redis.pub.sub.standalone.host}";
+        public static final String PUB_SUB_STANDALONE_PASSWORD = "${redis.pub.sub.standalone.password}";
+        public static final String PUB_SUB_STANDALONE_PORT = "${redis.pub.sub.standalone.port}";
     }
 
     public static class ElasticSearch {
