@@ -55,7 +55,7 @@ public class WidgetViewEventService {
 
     public void handle(AdWidgetViewEvent adWidgetViewEvent) {
         log.info("Started porcessing of view event: {}", adWidgetViewEvent);
-        if (!AdWidgetValidationHelper.isValidWidgetRealEstate(adWidgetViewEvent.getProperties().getPrimaryRealEstates().get(0))) {
+        if (Boolean.FALSE.equals(AdWidgetValidationHelper.isValidWidgetRealEstate(adWidgetViewEvent.getProperties().getPrimaryRealEstates().get(0)))) {
             log.error("Not a valid event userId {} eventId {} for the real estate {}",
                     adWidgetViewEvent.getUserId(), adWidgetViewEvent.getEventId(), adWidgetViewEvent.getProperties().getPrimaryRealEstates().get(0));
             statsdMetricManager.incrementCounter(WIDGET_VIEW_EVENT_KEY, String.format(VIEW_EVENT_TAGS,
@@ -110,7 +110,7 @@ public class WidgetViewEventService {
         for (Long catalogId : adWidgetViewEvent.getProperties().getCatalogIds()) {
 
             AdViewEventMetadataResponse.CatalogCampaignMetadata catalogMetadata = catalogMetadataMap.get(catalogId);
-            if(Objects.isNull(catalogMetadata) || !catalogMetadata.getIsCampaignActive()){
+            if(Objects.isNull(catalogMetadata) || Boolean.FALSE.equals(catalogMetadata.getIsCampaignActive())){
                 log.error("No active ad on catalogIds {} userId {} eventId {}",
                         adWidgetViewEvent.getProperties().getCatalogIds(), adWidgetViewEvent.getUserId(), adWidgetViewEvent.getEventId());
                 statsdMetricManager.incrementCounter(WIDGET_VIEW_EVENT_KEY, String.format(VIEW_EVENT_TAGS,

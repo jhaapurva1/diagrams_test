@@ -55,7 +55,7 @@ public class AdWidgetViewEventListener extends BaseManualAcknowledgeKafkaListene
     @Override
     public void consume(AdWidgetViewEvent adWidgetViewEvent) throws DataValidationException {
         log.info("Consuming ad widget view event: {}", adWidgetViewEvent);
-        if (!AdWidgetValidationHelper.isValidAdWidgetViewEvent(adWidgetViewEvent)) {
+        if (Boolean.FALSE.equals(AdWidgetValidationHelper.isValidAdWidgetViewEvent(adWidgetViewEvent))) {
             log.error("Invalid event {}", adWidgetViewEvent);
             telegrafMetricsHelper.increment(WIDGET_VIEW_EVENT_KEY, INTERACTION_EVENT_TAGS, adWidgetViewEvent.getEventName(), NAN, NAN,
                     AdInteractionStatus.INVALID.name(), NAN);
