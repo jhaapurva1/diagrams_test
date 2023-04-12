@@ -8,6 +8,7 @@ import com.meesho.cps.constants.AdInteractionInvalidReason;
 import com.meesho.cps.constants.AdInteractionStatus;
 import com.meesho.cps.constants.CampaignType;
 import com.meesho.cps.constants.Constants;
+import com.meesho.cps.constants.Constants.CpcData;
 import com.meesho.cps.data.entity.internal.BudgetUtilisedData;
 import com.meesho.cps.data.entity.kafka.AdWidgetClickEvent;
 import com.meesho.cps.db.hbase.repository.CampaignCatalogDateMetricsRepository;
@@ -17,6 +18,8 @@ import com.meesho.cps.exception.ExternalRequestFailedException;
 import com.meesho.cps.factory.AdBillFactory;
 import com.meesho.cps.helper.CampaignPerformanceHelper;
 import com.meesho.cps.helper.InteractionEventAttributionHelper;
+import com.meesho.cps.helper.TopOfSearchEventHelper;
+import com.meesho.cps.helper.WidgetEventHelperInstanceSelector;
 import com.meesho.cps.service.external.AdService;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,6 +30,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.math.BigDecimal;
+import org.springframework.test.util.ReflectionTestUtils;
 import java.util.HashMap;
 
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -67,11 +71,31 @@ public class WidgetClickEventServiceTest {
     @Mock
     UserCatalogInteractionCacheDao userCatalogInteractionCacheDao;
 
+    @Mock
+    WidgetEventHelperInstanceSelector widgetEventHelperInstanceSelector;
+
     @InjectMocks
     WidgetClickEventService widgetClickEventService;
 
+    @InjectMocks
+    TopOfSearchEventHelper topOfSearchEventHelper;
+
+    private BigDecimal commonCpcValue;
+    
     @Before
     public void setUp() {
+        commonCpcValue = new BigDecimal("0.92");
+        HashMap<String, BigDecimal> multipliedCpcData = new HashMap<>();
+        multipliedCpcData.put(CpcData.MULTIPLIED_CPC, commonCpcValue);
+        multipliedCpcData.put(CpcData.MULTIPLIER, BigDecimal.ONE);
+        Mockito.doReturn(commonCpcValue).when(interactionEventAttributionHelper)
+            .getChargeableCpc(any(), any());
+        Mockito.doReturn(multipliedCpcData).when(interactionEventAttributionHelper)
+            .getMultipliedCpcData(any(), any(), any());
+        ReflectionTestUtils.setField(topOfSearchEventHelper, "topOfSearchCpcMultiplier",
+            BigDecimal.ONE);
+        Mockito.doReturn(topOfSearchEventHelper).when(widgetEventHelperInstanceSelector)
+            .getWidgetEventHelperInstance((AdWidgetClickEvent) any());
         Mockito.doReturn(DateTimeUtils.getCurrentLocalDateTimeInIST().toLocalDate()).when(campaignHelper)
                 .getLocalDateForDailyCampaignFromLocalDateTime(any());
         Mockito.doNothing().when(telegrafMetricsHelper).increment(any(), any(), any());
@@ -81,8 +105,6 @@ public class WidgetClickEventServiceTest {
         Mockito.doNothing().when(updatedCampaignCatalogCacheDao).add(any());
         Mockito.doReturn(1L).when(userCatalogInteractionCacheDao).get(any(), any(), any(), any(), any());
         Mockito.doNothing().when(userCatalogInteractionCacheDao).set(any(), any(), any(), any(), any(), any());
-        HashMap<String, BigDecimal> multipliedCpcData = new HashMap<String, BigDecimal>(){{put(Constants.CpcData.MULTIPLIED_CPC, BigDecimal.valueOf(0.42));}};
-        Mockito.doReturn(multipliedCpcData).when(interactionEventAttributionHelper).getMultipliedCpcData(any(), any());
     }
 
     public AdWidgetClickEvent getAdWidgetClickEvent() {
@@ -108,7 +130,7 @@ public class WidgetClickEventServiceTest {
                 .campaignDetails(CampaignDetails.builder()
                         .campaignId(1L)
                         .campaignType(CampaignType.DAILY_BUDGET.getValue())
-                        .cpc(new BigDecimal("0.92"))
+                        .cpc(commonCpcValue)
                         .billVersion(billVersion)
                         .budget(new BigDecimal("900"))
                         .build())

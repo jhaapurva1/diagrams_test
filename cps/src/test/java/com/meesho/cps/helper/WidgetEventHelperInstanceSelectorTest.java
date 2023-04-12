@@ -24,7 +24,7 @@ public class WidgetEventHelperInstanceSelectorTest {
     @Mock
     private PdpRecoEventHelper pdpRecoEventHelper;
     @Mock
-    private TopOfSearchEventHelperTest topOfSearchEventHelper;
+    private TopOfSearchEventHelper topOfSearchEventHelper;
     @Mock
     private WidgetEventHelperDummy widgetEventHelperDummy;
 
@@ -54,7 +54,7 @@ public class WidgetEventHelperInstanceSelectorTest {
             .build();
         WidgetEventHelper widgetEventHelper = widgetEventHelperInstanceSelector.getWidgetEventHelperInstance(
             adWidgetClickEvent);
-        Assert.assertTrue(widgetEventHelper instanceof TopOfSearchEventHelperTest);
+        Assert.assertTrue(widgetEventHelper instanceof TopOfSearchEventHelper);
     }
 
     @Test
@@ -87,7 +87,7 @@ public class WidgetEventHelperInstanceSelectorTest {
         widgetEventHelperInstanceSelector.getWidgetEventHelperInstance(adWidgetViewEvent);
         WidgetEventHelper widgetEventHelper = widgetEventHelperInstanceSelector.getWidgetEventHelperInstance(
             adWidgetViewEvent);
-        Assert.assertTrue(widgetEventHelper instanceof TopOfSearchEventHelperTest);
+        Assert.assertTrue(widgetEventHelper instanceof TopOfSearchEventHelper);
 
     }
 
