@@ -24,14 +24,6 @@ public class LocalCacheConfig {
     @Value("${cache.ads.campaign.catalog.seconds}")
     private Integer adsCampaignCatalogSeconds;
 
-    @Bean("adServiceViewCampaignCatalogCache")
-    public Cache<Long, AdViewEventMetadataResponse.CatalogCampaignMetadata> adsViewCampaignCatalogCache() {
-        return Caffeine.newBuilder()
-                .maximumSize(adsCampaignCatalogElements)
-                .expireAfterWrite(adsCampaignCatalogSeconds, TimeUnit.SECONDS)
-                .build();
-    }
-
     @Bean("adViewCampaignCatalogCacheManager")
     public CacheManager adViewCampaignCatalogCacheManager() {
         Caffeine caffeine = Caffeine.newBuilder().recordStats().maximumSize(adsCampaignCatalogElements)
