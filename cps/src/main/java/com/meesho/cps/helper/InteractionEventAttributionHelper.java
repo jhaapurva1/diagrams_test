@@ -71,12 +71,6 @@ public class InteractionEventAttributionHelper {
     @Value(Constants.Kafka.CATALOG_BUDGET_EXHAUSTED_TOPIC)
     private String catalogBudgetExhaustedTopic;
 
-    @Value(AdWidgets.TOP_OF_SEARCH_CPC_MULTIPLIER)
-    private BigDecimal topOfSearchCpcMultiplier;
-
-    @Value(AdWidgets.PDP_RECO_CPC_MULTIPLIER)
-    private BigDecimal pdpRecoCpcMultiplier;
-
     public void publishPrismEvent(AdInteractionPrismEvent adInteractionPrismEvent) {
         log.info("publishPrismEvent: {}", adInteractionPrismEvent);
         List<AdInteractionPrismEvent> prismEvents = new ArrayList<>(Arrays.asList(adInteractionPrismEvent));
