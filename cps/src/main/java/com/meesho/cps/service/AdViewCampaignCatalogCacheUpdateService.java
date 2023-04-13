@@ -15,10 +15,11 @@ public class AdViewCampaignCatalogCacheUpdateService {
     @Autowired
     private RedisPublisherService redisPublisherService;
 
-    public void handle(List<AdViewCampaignCatalogCacheUpdateEvent> events) throws ExternalRequestFailedException {
+    public void handle(List<AdViewCampaignCatalogCacheUpdateEvent> events) {
+        log.debug("AdViewCampaignCatalogCacheUpdateEvents received : {}", events);
         for(AdViewCampaignCatalogCacheUpdateEvent event : events) {
+            // set catalogs in local cache
             redisPublisherService.publishAdViewCampaignCatalogRefreshEvent(event.getCatalogIds());
-            log.info("Set missed catalogIds in local cache {}", event.getCatalogIds());
         }
     }
 

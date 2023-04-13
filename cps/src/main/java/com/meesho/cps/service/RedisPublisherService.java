@@ -31,10 +31,10 @@ public class RedisPublisherService {
     private RedisTemplate<String, byte[]> redisTemplate;
 
     @Autowired
-    ChannelTopic genericRedisNotificationsConsumerTopic;
+    private ChannelTopic genericRedisNotificationsConsumerTopic;
 
     @Autowired
-    ObjectMapper objectMapper;
+    private ObjectMapper objectMapper;
 
     @Autowired
     private TelegrafMetricsHelper telegrafMetricsHelper;
@@ -48,16 +48,17 @@ public class RedisPublisherService {
 
     public void publishAdViewCampaignCatalogRefreshEvent(List<Long> catalogIds) {
         try {
-            String adCatalogsData = catalogIds.stream().map(Object::toString)
+            String catalogsData = catalogIds.stream().map(Object::toString)
                     .collect(Collectors.joining(ConsumerConstants.GenericRedisNotificationsConsumer.DELIMITER_USED));
 
             RedisPubSubEvent messageContentContainingCatalogs = RedisPubSubEvent
                     .builder()
                     .messageIntent(MessageIntent.UPDATE_AD_VIEW_CAMPAIGN_CATALOG)
-                    .recordsAsString(adCatalogsData)
+                    .recordsAsString(catalogsData)
                     .build();
 
             sendMessageAsync(messageContentContainingCatalogs);
+            log.info("Published AdViewCampaignCatalogRefreshEvent for catalogs : {}", catalogIds);
 
         } catch (Exception e) {
             log.error("Error in publishing AdViewCampaignCatalogRefreshEvent ", e);
