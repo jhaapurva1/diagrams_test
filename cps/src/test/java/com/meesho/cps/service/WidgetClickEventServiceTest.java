@@ -7,7 +7,6 @@ import com.meesho.ads.lib.utils.DateTimeUtils;
 import com.meesho.cps.constants.AdInteractionInvalidReason;
 import com.meesho.cps.constants.AdInteractionStatus;
 import com.meesho.cps.constants.CampaignType;
-import com.meesho.cps.constants.Constants;
 import com.meesho.cps.constants.Constants.CpcData;
 import com.meesho.cps.data.entity.internal.BudgetUtilisedData;
 import com.meesho.cps.data.entity.kafka.AdWidgetClickEvent;
@@ -18,8 +17,6 @@ import com.meesho.cps.exception.ExternalRequestFailedException;
 import com.meesho.cps.factory.AdBillFactory;
 import com.meesho.cps.helper.CampaignPerformanceHelper;
 import com.meesho.cps.helper.InteractionEventAttributionHelper;
-import com.meesho.cps.helper.TopOfSearchEventHelper;
-import com.meesho.cps.helper.WidgetEventHelperInstanceSelector;
 import com.meesho.cps.service.external.AdService;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,7 +30,6 @@ import java.math.BigDecimal;
 import org.springframework.test.util.ReflectionTestUtils;
 import java.util.HashMap;
 
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.any;
 
 import static com.meesho.cps.constants.TelegrafConstants.*;
@@ -71,14 +67,9 @@ public class WidgetClickEventServiceTest {
     @Mock
     UserCatalogInteractionCacheDao userCatalogInteractionCacheDao;
 
-    @Mock
-    WidgetEventHelperInstanceSelector widgetEventHelperInstanceSelector;
-
     @InjectMocks
     WidgetClickEventService widgetClickEventService;
 
-    @InjectMocks
-    TopOfSearchEventHelper topOfSearchEventHelper;
 
     private BigDecimal commonCpcValue;
     
@@ -92,10 +83,6 @@ public class WidgetClickEventServiceTest {
             .getChargeableCpc(any(), any());
         Mockito.doReturn(multipliedCpcData).when(interactionEventAttributionHelper)
             .getMultipliedCpcData(any(), any(), any());
-        ReflectionTestUtils.setField(topOfSearchEventHelper, "topOfSearchCpcMultiplier",
-            BigDecimal.ONE);
-        Mockito.doReturn(topOfSearchEventHelper).when(widgetEventHelperInstanceSelector)
-            .getWidgetEventHelperInstance((AdWidgetClickEvent) any());
         Mockito.doReturn(DateTimeUtils.getCurrentLocalDateTimeInIST().toLocalDate()).when(campaignHelper)
                 .getLocalDateForDailyCampaignFromLocalDateTime(any());
         Mockito.doNothing().when(telegrafMetricsHelper).increment(any(), any(), any());

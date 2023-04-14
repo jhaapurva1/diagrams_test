@@ -35,27 +35,4 @@ public class InteractionEventAttributionHelperTest {
             BigDecimal.TEN, null, null);
         Assert.assertEquals(expectedMultipliedCpcData, multipliedCpcData);
     }
-
-    @Test
-    public void testForGetMultipliedCpcDataWhenWidgetEventHelperIsDummy() {
-        HashMap<String, BigDecimal> expectedMultipliedCpcData = new HashMap<>();
-        expectedMultipliedCpcData.put(CpcData.MULTIPLIED_CPC, BigDecimal.TEN);
-        expectedMultipliedCpcData.put(CpcData.MULTIPLIER, BigDecimal.ONE);
-        HashMap<String, BigDecimal> multipliedCpcData = interactionEventAttributionHelper.getMultipliedCpcData(
-            BigDecimal.TEN, null, new WidgetEventHelperDummy());
-        Assert.assertEquals(expectedMultipliedCpcData, multipliedCpcData);
-    }
-
-    @Test
-    public void testForGetMultipliedCpcDataWhenWidgetEventHelperIsNotDummy() {
-        PdpRecoEventHelper pdpRecoEventHelper = new PdpRecoEventHelper();
-        ReflectionTestUtils.setField(pdpRecoEventHelper, "pdpRecoCpcMultiplier", BigDecimal.TEN);
-        pdpRecoEventHelper.getCpcMultiplier();
-        HashMap<String, BigDecimal> expectedMultipliedCpcData = new HashMap<>();
-        expectedMultipliedCpcData.put(CpcData.MULTIPLIED_CPC, new BigDecimal(100));
-        expectedMultipliedCpcData.put(CpcData.MULTIPLIER, BigDecimal.TEN);
-        HashMap<String, BigDecimal> multipliedCpcData = interactionEventAttributionHelper.getMultipliedCpcData(
-            BigDecimal.TEN, null, pdpRecoEventHelper);
-        Assert.assertEquals(expectedMultipliedCpcData, multipliedCpcData);
-    }
 }

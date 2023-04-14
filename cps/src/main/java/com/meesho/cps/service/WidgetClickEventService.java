@@ -19,7 +19,6 @@ import com.meesho.cps.factory.AdBillFactory;
 import com.meesho.cps.helper.AdWidgetValidationHelper;
 import com.meesho.cps.helper.CampaignPerformanceHelper;
 import com.meesho.cps.helper.InteractionEventAttributionHelper;
-import com.meesho.cps.helper.WidgetEventHelperInstanceSelector;
 import com.meesho.cps.helper.WidgetEventHelper;
 import com.meesho.cps.service.external.AdService;
 import com.meesho.cps.transformer.PrismEventTransformer;
@@ -62,11 +61,6 @@ public class WidgetClickEventService {
     @Autowired
     private UserCatalogInteractionCacheDao userCatalogInteractionCacheDao;
 
-    @Autowired
-    private WidgetEventHelperInstanceSelector widgetEventHelperInstanceSelector;
-
-    private WidgetEventHelper widgetEventHelper;
-
     public void handle(AdWidgetClickEvent adWidgetClickEvent) throws ExternalRequestFailedException {
         log.debug("processing widget click event: {}", adWidgetClickEvent);
 
@@ -81,7 +75,7 @@ public class WidgetClickEventService {
             return;
         }
 
-        widgetEventHelper= widgetEventHelperInstanceSelector.getWidgetEventHelperInstance(adWidgetClickEvent);
+        WidgetEventHelper widgetEventHelper= new WidgetEventHelper(adWidgetClickEvent);
 
         Long interactionTime = adWidgetClickEvent.getEventTimestamp();
         String userId = adWidgetClickEvent.getUserId();
@@ -168,8 +162,8 @@ public class WidgetClickEventService {
         }
 
         //Set screen and origin
-        adWidgetClickEvent.getProperties().setScreen(widgetEventHelper.getScreen(adWidgetClickEvent));
-        adWidgetClickEvent.getProperties().setOrigin(widgetEventHelper.getOrigin(adWidgetClickEvent));
+        adWidgetClickEvent.getProperties().setScreen(widgetEventHelper.getScreen());
+        adWidgetClickEvent.getProperties().setOrigin(widgetEventHelper.getOrigin());
         adInteractionPrismEvent.setOrigin(adWidgetClickEvent.getProperties().getOrigin());
         adInteractionPrismEvent.setScreen(adWidgetClickEvent.getProperties().getScreen());
 

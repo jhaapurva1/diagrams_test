@@ -44,10 +44,4 @@ public class AdWidgetValidationHelper {
                 Objects.nonNull(adWidgetClickEvent.getProperties().getIsAdWidget()) &&
                 Objects.nonNull(adWidgetClickEvent.getProperties().getPrimaryRealEstate());
     }
-    public static Boolean isTopOfSearchRealEstate(String realEstate) {
-        return Objects.nonNull(realEstate) && realEstate.equals(AdWidgetRealEstates.TEXT_SEARCH);
-    }
-    public static Boolean isPdpRecoRealEstate(String realEstate) {
-        return Objects.nonNull(realEstate) && realEstate.equals(AdWidgetRealEstates.PDP_RECO);
-    }
 }

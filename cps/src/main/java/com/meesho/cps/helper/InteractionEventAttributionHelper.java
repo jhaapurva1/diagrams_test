@@ -223,8 +223,7 @@ public class InteractionEventAttributionHelper {
         }
         BigDecimal multipliedCpc = chargeableCpc;
         BigDecimal multiplier = BigDecimal.ONE;
-        if (Objects.nonNull(widgetEventHelper) && Boolean.FALSE.equals(
-            widgetEventHelper instanceof WidgetEventHelperDummy)) {
+        if (Objects.nonNull(widgetEventHelper)) {
             multipliedCpc = chargeableCpc.multiply(widgetEventHelper.getCpcMultiplier());
             multiplier = widgetEventHelper.getCpcMultiplier();
         }
