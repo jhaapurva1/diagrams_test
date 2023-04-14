@@ -3,19 +3,15 @@ package com.meesho.cps.helper;
 import com.meesho.cps.constants.Constants;
 import com.meesho.cps.constants.Constants.AdWidgets;
 import com.meesho.cps.constants.ConsumerConstants.AdWidgetRealEstates;
+import com.meesho.cps.constants.PdpWidgetPosition;
 import com.meesho.cps.data.entity.kafka.AdWidgetClickEvent;
 import com.meesho.cps.enums.FeedType;
 import java.math.BigDecimal;
 import java.util.Objects;
 import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 
 
-@Slf4j
-@Getter
-@Setter
 public class WidgetEventHelper {
 
     @Value(AdWidgets.TOP_OF_SEARCH_CPC_MULTIPLIER)
@@ -23,24 +19,35 @@ public class WidgetEventHelper {
 
     @Value(AdWidgets.PDP_RECO_CPC_MULTIPLIER)
     private BigDecimal pdpRecoCpcMultiplier;
-
+    
+    @Getter
     private String screen;
+
+    @Getter
     private String origin;
+
+    @Getter
     private BigDecimal cpcMultiplier;
+
+    @Getter
     private String feedType;
+
+    public WidgetEventHelper() {
+        initMembersWithDefaults();
+    }
 
     public WidgetEventHelper(AdWidgetClickEvent adWidgetClickEvent) {
         initMembers(adWidgetClickEvent);
     }
 
-    private void initMembers(AdWidgetClickEvent adWidgetClickEvent) {
-        if (Objects.nonNull(adWidgetClickEvent.getProperties())) {
-            String realEstate = adWidgetClickEvent.getProperties().getPrimaryRealEstate();
-            if (Boolean.TRUE.equals(isTopOfSearchRealEstate(realEstate))) {
-                initMembersForTos(adWidgetClickEvent);
-            } else if (Boolean.TRUE.equals(isPdpRecoRealEstate(realEstate))) {
-                initMembersForPdpReco(adWidgetClickEvent);
-            }
+    public void initMembers(AdWidgetClickEvent adWidgetClickEvent) {
+        String realEstate =
+            Objects.nonNull(adWidgetClickEvent.getProperties()) ? adWidgetClickEvent.getProperties()
+                .getPrimaryRealEstate() : null;
+        if (Boolean.TRUE.equals(isTopOfSearchRealEstate(realEstate))) {
+            initMembersForTos(adWidgetClickEvent);
+        } else if (Boolean.TRUE.equals(isPdpRecoRealEstate(realEstate))) {
+            initMembersForPdpReco(adWidgetClickEvent);
         } else {
             initMembersWithDefaults();
         }
@@ -63,7 +70,16 @@ public class WidgetEventHelper {
         feedType = FeedType.PRODUCT_RECO.getValue();
         origin = AdWidgets.ORIGIN_PDP_RECO;
         cpcMultiplier = pdpRecoCpcMultiplier;
-        screen = AdWidgets.SCREEN_PDP_RECO;
+        PdpWidgetPosition pdpWidgetPosition = null;
+        if (Objects.nonNull(adWidgetClickEvent.getProperties().getWidgetGroupPosition())) {
+            int widgetGroupPosition = adWidgetClickEvent.getProperties().getWidgetGroupPosition();
+            pdpWidgetPosition = PdpWidgetPosition.fromPositionNumber(widgetGroupPosition);
+        }
+        if (Objects.nonNull(pdpWidgetPosition)) {
+            screen = pdpWidgetPosition.positionName();
+        } else {
+            screen = AdWidgets.SCREEN_PDP_RECO;
+        }
     }
 
     private void initMembersWithDefaults() {
