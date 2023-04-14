@@ -19,7 +19,7 @@ public class WidgetEventHelper {
 
     @Value(AdWidgets.PDP_RECO_CPC_MULTIPLIER)
     private BigDecimal pdpRecoCpcMultiplier;
-    
+
     @Getter
     private String screen;
 
