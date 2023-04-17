@@ -138,6 +138,12 @@ public class ApplicationProperties {
     @Value("${minutes_to_query_previous_day_data_from_hbase}")
     private Integer minutesToQueryPreviousDayDataFromHbase;
 
+    @Value("${cps.common.async.executor.core.pool.size}")
+    private Integer commonAsyncExecutorCorePoolSize;
+
+    @Value("${cps.common.async.executor.max.pool.size}")
+    private Integer commonAsyncExecutorMaxPoolSize;
+
     @PostConstruct
     public void init() {
         SchedulerProperty.SchedulerPropertyBuilder schedulerPropertyBuilder = SchedulerProperty.builder();

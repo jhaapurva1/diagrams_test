@@ -2,7 +2,9 @@ package com.meesho.cps.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.benmanes.caffeine.cache.Cache;
 import com.google.common.collect.Lists;
+import com.meesho.ad.client.response.AdViewEventMetadataResponse;
 import com.meesho.ads.lib.data.internal.PaginatedResult;
 import com.meesho.ads.lib.utils.DateTimeUtils;
 import com.meesho.ads.lib.utils.HbaseUtils;
@@ -32,6 +34,7 @@ import com.meesho.cps.transformer.PrismEventTransformer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
