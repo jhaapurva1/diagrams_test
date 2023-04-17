@@ -24,9 +24,9 @@ public enum PdpWidgetPosition {
     }
 
     public static PdpWidgetPosition fromPositionNumber(Integer positionNumber) {
-        for (PdpWidgetPosition pdpWidgetPositions : PdpWidgetPosition.values()) {
-            if (pdpWidgetPositions.positionNumber().equals(positionNumber)) {
-                return pdpWidgetPositions;
+        for (PdpWidgetPosition pdpWidgetPosition : PdpWidgetPosition.values()) {
+            if (pdpWidgetPosition.positionNumber().equals(positionNumber)) {
+                return pdpWidgetPosition;
             }
         }
         return null;
