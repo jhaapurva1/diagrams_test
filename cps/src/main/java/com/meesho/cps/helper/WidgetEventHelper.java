@@ -33,6 +33,10 @@ public class WidgetEventHelper {
     @Getter
     private String feedType;
 
+    WidgetEventHelper(){
+        initMembersWithDefaults();
+    }
+
     public void setContext(AdWidgetClickEvent adWidgetClickEvent) {
         initMembers(adWidgetClickEvent);
     }
