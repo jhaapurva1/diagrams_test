@@ -10,8 +10,9 @@ import java.math.BigDecimal;
 import java.util.Objects;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
-
+@Component
 public class WidgetEventHelper {
 
     @Value(AdWidgets.TOP_OF_SEARCH_CPC_MULTIPLIER)
@@ -32,11 +33,11 @@ public class WidgetEventHelper {
     @Getter
     private String feedType;
 
-    public WidgetEventHelper(AdWidgetClickEvent adWidgetClickEvent) {
+    public void setContext(AdWidgetClickEvent adWidgetClickEvent) {
         initMembers(adWidgetClickEvent);
     }
 
-    public void initMembers(AdWidgetClickEvent adWidgetClickEvent) {
+    private void initMembers(AdWidgetClickEvent adWidgetClickEvent) {
         String realEstate =
             Objects.nonNull(adWidgetClickEvent.getProperties()) ? adWidgetClickEvent.getProperties()
                 .getPrimaryRealEstate() : null;

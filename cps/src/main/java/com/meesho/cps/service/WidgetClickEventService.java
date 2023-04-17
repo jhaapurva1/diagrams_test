@@ -61,6 +61,9 @@ public class WidgetClickEventService {
     @Autowired
     private UserCatalogInteractionCacheDao userCatalogInteractionCacheDao;
 
+    @Autowired
+    private  WidgetEventHelper widgetEventHelper;
+
     public void handle(AdWidgetClickEvent adWidgetClickEvent) throws ExternalRequestFailedException {
         log.debug("processing widget click event: {}", adWidgetClickEvent);
 
@@ -75,7 +78,7 @@ public class WidgetClickEventService {
             return;
         }
 
-        WidgetEventHelper widgetEventHelper= new WidgetEventHelper(adWidgetClickEvent);
+        widgetEventHelper.setContext(adWidgetClickEvent);
 
         Long interactionTime = adWidgetClickEvent.getEventTimestamp();
         String userId = adWidgetClickEvent.getUserId();

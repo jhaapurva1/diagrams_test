@@ -23,8 +23,8 @@ class WidgetEventHelperTest {
                 Properties.builder().primaryRealEstate(AdWidgetRealEstates.TEXT_SEARCH).build())
             .build();
 
-        WidgetEventHelper widgetEventHelper = new WidgetEventHelper(adWidgetClickEvent);
-
+        WidgetEventHelper widgetEventHelper = new WidgetEventHelper();
+        widgetEventHelper.setContext(adWidgetClickEvent);
         assertEquals(FeedType.TEXT_SEARCH.getValue(), widgetEventHelper.getFeedType());
         assertEquals(Constants.AdWidgets.ORIGIN_SEARCH, widgetEventHelper.getOrigin());
         assertEquals(AdWidgets.SCREEN_TOP_OF_SEARCH, widgetEventHelper.getScreen());
@@ -36,7 +36,8 @@ class WidgetEventHelperTest {
             Properties.builder().primaryRealEstate(AdWidgetRealEstates.PDP_RECO)
                 .widgetGroupPosition(6).build()).build();
 
-        WidgetEventHelper widgetEventHelper = new WidgetEventHelper(adWidgetClickEvent);
+        WidgetEventHelper widgetEventHelper = new WidgetEventHelper();
+        widgetEventHelper.setContext(adWidgetClickEvent);
         assertEquals(FeedType.PRODUCT_RECO.getValue(), widgetEventHelper.getFeedType());
         assertEquals(AdWidgets.ORIGIN_PDP_RECO, widgetEventHelper.getOrigin());
         assertEquals(PdpWidgetPosition.AFTER_PRODUCT_DETAILS.positionName(),
@@ -49,7 +50,8 @@ class WidgetEventHelperTest {
             Properties.builder().primaryRealEstate(AdWidgetRealEstates.PDP_RECO)
                 .widgetGroupPosition(1).build()).build();
 
-        WidgetEventHelper widgetEventHelper = new WidgetEventHelper(adWidgetClickEvent);
+        WidgetEventHelper widgetEventHelper = new WidgetEventHelper();
+        widgetEventHelper.setContext(adWidgetClickEvent);
         assertEquals(FeedType.PRODUCT_RECO.getValue(), widgetEventHelper.getFeedType());
         assertEquals(AdWidgets.ORIGIN_PDP_RECO, widgetEventHelper.getOrigin());
         assertNull(widgetEventHelper.getScreen());

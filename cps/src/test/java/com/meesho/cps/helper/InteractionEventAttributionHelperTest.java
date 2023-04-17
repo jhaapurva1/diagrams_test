@@ -40,10 +40,12 @@ public class InteractionEventAttributionHelperTest {
 
     @Test
     public void testForGetMultipliedCpcDataWhenWidgetEventHelperIsNotNull() {
+
         HashMap<String, BigDecimal> expectedMultipliedCpcData = new HashMap<>();
         expectedMultipliedCpcData.put(CpcData.MULTIPLIED_CPC, new BigDecimal(100));
         expectedMultipliedCpcData.put(CpcData.MULTIPLIER, BigDecimal.TEN);
-        WidgetEventHelper widgetEventHelper = new WidgetEventHelper(AdWidgetClickEvent.builder()
+        WidgetEventHelper widgetEventHelper = new WidgetEventHelper();
+        widgetEventHelper.setContext(AdWidgetClickEvent.builder()
             .properties(Properties.builder().primaryRealEstate("pdp_reco").build()).build());
         ReflectionTestUtils.setField(widgetEventHelper, "cpcMultiplier", BigDecimal.TEN);
         HashMap<String, BigDecimal> multipliedCpcData = interactionEventAttributionHelper.getMultipliedCpcData(
