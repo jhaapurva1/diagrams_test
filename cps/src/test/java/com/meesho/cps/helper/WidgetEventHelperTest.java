@@ -1,6 +1,7 @@
 package com.meesho.cps.helper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.meesho.cps.constants.Constants;
 import com.meesho.cps.constants.Constants.AdWidgets;
@@ -46,11 +47,11 @@ class WidgetEventHelperTest {
     void testInitMembersForPdpForInvalidWidgetPosition() {
         AdWidgetClickEvent adWidgetClickEvent = AdWidgetClickEvent.builder().properties(
             Properties.builder().primaryRealEstate(AdWidgetRealEstates.PDP_RECO)
-                .widgetGroupPosition(6).build()).build();
+                .widgetGroupPosition(1).build()).build();
 
         WidgetEventHelper widgetEventHelper = new WidgetEventHelper(adWidgetClickEvent);
         assertEquals(FeedType.PRODUCT_RECO.getValue(), widgetEventHelper.getFeedType());
         assertEquals(AdWidgets.ORIGIN_PDP_RECO, widgetEventHelper.getOrigin());
-        assertEquals(AdWidgets.SCREEN_PDP_RECO, widgetEventHelper.getScreen());
+        assertNull(widgetEventHelper.getScreen());
     }
 }

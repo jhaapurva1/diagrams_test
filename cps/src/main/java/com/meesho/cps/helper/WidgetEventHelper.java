@@ -32,10 +32,6 @@ public class WidgetEventHelper {
     @Getter
     private String feedType;
 
-    public WidgetEventHelper() {
-        initMembersWithDefaults();
-    }
-
     public WidgetEventHelper(AdWidgetClickEvent adWidgetClickEvent) {
         initMembers(adWidgetClickEvent);
     }
@@ -78,7 +74,7 @@ public class WidgetEventHelper {
         if (Objects.nonNull(pdpWidgetPosition)) {
             screen = pdpWidgetPosition.positionName();
         } else {
-            screen = AdWidgets.SCREEN_PDP_RECO;
+            screen = null;
         }
     }
 
