@@ -1,3 +1,3 @@
-@Library('devops-lib@eks_onboarding_v2') _
+@Library('devops-lib') _
 
 eksCICD repo_name: "campaign-performance"
