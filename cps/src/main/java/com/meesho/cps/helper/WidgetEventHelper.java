@@ -95,6 +95,6 @@ public class WidgetEventHelper {
     }
 
     public static Boolean isPdpRecoRealEstate(String realEstate) {
-        return Objects.nonNull(realEstate) && realEstate.equals(AdWidgetRealEstates.PDP_RECO);
+        return Objects.nonNull(realEstate) && realEstate.equals(AdWidgetRealEstates.PDP);
     }
 }

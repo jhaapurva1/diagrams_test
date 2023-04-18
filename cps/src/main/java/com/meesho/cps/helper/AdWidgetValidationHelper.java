@@ -1,6 +1,5 @@
 package com.meesho.cps.helper;
 
-import com.meesho.cps.constants.ConsumerConstants;
 import com.meesho.cps.constants.ConsumerConstants.AdWidgetRealEstates;
 import com.meesho.cps.data.entity.kafka.AdWidgetClickEvent;
 import com.meesho.cps.data.entity.kafka.AdWidgetViewEvent;
@@ -14,7 +13,7 @@ import java.util.Set;
 public class AdWidgetValidationHelper {
 
     private static final Set<String> VALID_REAL_ESTATES = new HashSet<>(
-        Arrays.asList(AdWidgetRealEstates.TEXT_SEARCH, AdWidgetRealEstates.PDP_RECO));
+        Arrays.asList(AdWidgetRealEstates.TEXT_SEARCH, AdWidgetRealEstates.PDP));
 
     public static Boolean isValidAdWidgetViewEvent(AdWidgetViewEvent adWidgetViewEvent) {
         return Objects.nonNull(adWidgetViewEvent.getEventName()) &&
