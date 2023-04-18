@@ -25,11 +25,11 @@ public class AdWidgetValidationHelper {
                 CollectionUtils.isNotEmpty(adWidgetViewEvent.getProperties().getCampaignIds()) &&
                 CollectionUtils.isNotEmpty(adWidgetViewEvent.getProperties().getCatalogIds()) &&
                 Objects.nonNull(adWidgetViewEvent.getProperties().getAppVersionCode()) &&
-                CollectionUtils.isNotEmpty(adWidgetViewEvent.getProperties().getPrimaryRealEstates());
+                CollectionUtils.isNotEmpty(adWidgetViewEvent.getProperties().getSourceScreens());
     }
 
-    public static Boolean isValidWidgetRealEstate(String primaryRealEstate) {
-        return VALID_REAL_ESTATES.contains(primaryRealEstate);
+    public static Boolean isValidWidgetRealEstate(String realEstate) {
+        return VALID_REAL_ESTATES.contains(realEstate);
     }
 
     public static Boolean isValidAdWidgetClickEvent(AdWidgetClickEvent adWidgetClickEvent) {
@@ -42,6 +42,6 @@ public class AdWidgetValidationHelper {
                 Objects.nonNull(adWidgetClickEvent.getProperties().getCatalogId()) &&
                 Objects.nonNull(adWidgetClickEvent.getProperties().getAppVersionCode()) &&
                 Objects.nonNull(adWidgetClickEvent.getProperties().getIsAdWidget()) &&
-                Objects.nonNull(adWidgetClickEvent.getProperties().getPrimaryRealEstate());
+                Objects.nonNull(adWidgetClickEvent.getProperties().getSourceScreen());
     }
 }

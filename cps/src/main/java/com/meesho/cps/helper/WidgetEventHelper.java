@@ -33,7 +33,7 @@ public class WidgetEventHelper {
     @Getter
     private String feedType;
 
-    WidgetEventHelper(){
+    public WidgetEventHelper(){
         initMembersWithDefaults();
     }
 
@@ -44,7 +44,7 @@ public class WidgetEventHelper {
     private void initMembers(AdWidgetClickEvent adWidgetClickEvent) {
         String realEstate =
             Objects.nonNull(adWidgetClickEvent.getProperties()) ? adWidgetClickEvent.getProperties()
-                .getPrimaryRealEstate() : null;
+                .getSourceScreen() : null;
         if (Boolean.TRUE.equals(isTopOfSearchRealEstate(realEstate))) {
             initMembersForTos(adWidgetClickEvent);
         } else if (Boolean.TRUE.equals(isPdpRecoRealEstate(realEstate))) {

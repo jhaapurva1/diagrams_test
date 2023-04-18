@@ -20,7 +20,7 @@ class WidgetEventHelperTest {
     @Test
     void testInitMembersForTos() {
         AdWidgetClickEvent adWidgetClickEvent = AdWidgetClickEvent.builder().properties(
-                Properties.builder().primaryRealEstate(AdWidgetRealEstates.TEXT_SEARCH).build())
+                Properties.builder().sourceScreen(AdWidgetRealEstates.TEXT_SEARCH).build())
             .build();
 
         WidgetEventHelper widgetEventHelper = new WidgetEventHelper();
@@ -33,7 +33,7 @@ class WidgetEventHelperTest {
     @Test
     void testInitMembersForPdpForValidWidgetPosition() {
         AdWidgetClickEvent adWidgetClickEvent = AdWidgetClickEvent.builder().properties(
-            Properties.builder().primaryRealEstate(AdWidgetRealEstates.PDP_RECO)
+            Properties.builder().sourceScreen(AdWidgetRealEstates.PDP_RECO)
                 .widgetGroupPosition(6).build()).build();
 
         WidgetEventHelper widgetEventHelper = new WidgetEventHelper();
@@ -47,7 +47,7 @@ class WidgetEventHelperTest {
     @Test
     void testInitMembersForPdpForInvalidWidgetPosition() {
         AdWidgetClickEvent adWidgetClickEvent = AdWidgetClickEvent.builder().properties(
-            Properties.builder().primaryRealEstate(AdWidgetRealEstates.PDP_RECO)
+            Properties.builder().sourceScreen(AdWidgetRealEstates.PDP_RECO)
                 .widgetGroupPosition(1).build()).build();
 
         WidgetEventHelper widgetEventHelper = new WidgetEventHelper();

@@ -55,9 +55,9 @@ public class WidgetViewEventService {
 
     public void handle(AdWidgetViewEvent adWidgetViewEvent) {
         log.info("Started porcessing of view event: {}", adWidgetViewEvent);
-        if (Boolean.FALSE.equals(AdWidgetValidationHelper.isValidWidgetRealEstate(adWidgetViewEvent.getProperties().getPrimaryRealEstates().get(0)))) {
+        if (Boolean.FALSE.equals(AdWidgetValidationHelper.isValidWidgetRealEstate(adWidgetViewEvent.getProperties().getSourceScreens().get(0)))) {
             log.error("Not a valid event userId {} eventId {} for the real estate {}",
-                    adWidgetViewEvent.getUserId(), adWidgetViewEvent.getEventId(), adWidgetViewEvent.getProperties().getPrimaryRealEstates().get(0));
+                    adWidgetViewEvent.getUserId(), adWidgetViewEvent.getEventId(), adWidgetViewEvent.getProperties().getSourceScreens().get(0));
             statsdMetricManager.incrementCounter(WIDGET_VIEW_EVENT_KEY, String.format(VIEW_EVENT_TAGS,
                     adWidgetViewEvent.getEventName(), adWidgetViewEvent.getProperties().getScreens(), adWidgetViewEvent.getProperties().getOrigins(), INVALID,
                     AdInteractionInvalidReason.NOT_AD_WIDGET));

@@ -69,7 +69,7 @@ public class WidgetViewEventServiceTest {
                         .catalogIds(Collections.singletonList(1L))
                         .origins(Collections.singletonList("origin"))
                         .screens(Collections.singletonList("screen"))
-                        .primaryRealEstates(Collections.singletonList("catalog_search_results"))
+                        .sourceScreens(Collections.singletonList("catalog_search_results"))
                         .build())
                 .build();
     }
@@ -87,7 +87,7 @@ public class WidgetViewEventServiceTest {
     @Test
     public void testHandleNotAdWidget() {
         AdWidgetViewEvent adWidgetViewEvent = getAdWidgetViewEvent();
-        adWidgetViewEvent.getProperties().setPrimaryRealEstates(Collections.singletonList("non-search"));
+        adWidgetViewEvent.getProperties().setSourceScreens(Collections.singletonList("non-search"));
         widgetViewEventService.handle(adWidgetViewEvent);
         Mockito.verify(statsdMetricManager, times(1)).incrementCounter(WIDGET_VIEW_EVENT_KEY, String.format(VIEW_EVENT_TAGS,
                 adWidgetViewEvent.getEventName(), adWidgetViewEvent.getProperties().getScreens(), adWidgetViewEvent.getProperties().getOrigins(), INVALID,

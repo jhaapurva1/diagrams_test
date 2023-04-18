@@ -69,9 +69,9 @@ public class WidgetClickEventService {
 
         // check if valid ad-widget event
         if (Boolean.FALSE.equals(adWidgetClickEvent.getProperties().getIsAdWidget())
-                || Boolean.FALSE.equals(AdWidgetValidationHelper.isValidWidgetRealEstate(adWidgetClickEvent.getProperties().getPrimaryRealEstate()))) {
+                || Boolean.FALSE.equals(AdWidgetValidationHelper.isValidWidgetRealEstate(adWidgetClickEvent.getProperties().getSourceScreen()))) {
             log.error("Not a valid event userId {} eventId {} for the real estate {}",
-                    adWidgetClickEvent.getUserId(), adWidgetClickEvent.getEventId(), adWidgetClickEvent.getProperties().getPrimaryRealEstate());
+                    adWidgetClickEvent.getUserId(), adWidgetClickEvent.getEventId(), adWidgetClickEvent.getProperties().getSourceScreen());
             telegrafMetricsHelper.increment(INTERACTION_EVENT_KEY, String.format(INTERACTION_EVENT_TAGS,
                     adWidgetClickEvent.getEventName(), adWidgetClickEvent.getProperties().getScreen(), adWidgetClickEvent.getProperties().getOrigin(), INVALID,
                     AdInteractionInvalidReason.NOT_AD_WIDGET));
@@ -128,7 +128,7 @@ public class WidgetClickEventService {
         campaignId = campaignDetails.getCampaignId();
         cpc = interactionEventAttributionHelper.getChargeableCpc(cpc, campaignDetails);
         HashMap<String, BigDecimal> multipliedCpcData = interactionEventAttributionHelper.getMultipliedCpcData(
-            cpc, adWidgetClickEvent.getProperties().getPrimaryRealEstate(),widgetEventHelper);
+            cpc, adWidgetClickEvent.getProperties().getSourceScreen(),widgetEventHelper);
         cpc = multipliedCpcData.get(CpcData.MULTIPLIED_CPC);
         if (Objects.isNull(cpc)) {
             log.error("can not process widget interaction event due to null cpc.  {} - {}", campaignId, catalogId);

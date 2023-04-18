@@ -17,6 +17,7 @@ import com.meesho.cps.exception.ExternalRequestFailedException;
 import com.meesho.cps.factory.AdBillFactory;
 import com.meesho.cps.helper.CampaignPerformanceHelper;
 import com.meesho.cps.helper.InteractionEventAttributionHelper;
+import com.meesho.cps.helper.WidgetEventHelper;
 import com.meesho.cps.service.external.AdService;
 import org.junit.Before;
 import org.junit.Test;
@@ -75,6 +76,7 @@ public class WidgetClickEventServiceTest {
     
     @Before
     public void setUp() {
+        ReflectionTestUtils.setField(widgetClickEventService, "widgetEventHelper", new WidgetEventHelper());
         commonCpcValue = new BigDecimal("0.92");
         HashMap<String, BigDecimal> multipliedCpcData = new HashMap<>();
         multipliedCpcData.put(CpcData.MULTIPLIED_CPC, commonCpcValue);
@@ -104,7 +106,7 @@ public class WidgetClickEventServiceTest {
                         .appVersionCode(1)
                         .origin("origin")
                         .screen("screen")
-                        .primaryRealEstate("catalog_search_results")
+                        .sourceScreen("catalog_search_results")
                         .build())
                 .build();
     }
