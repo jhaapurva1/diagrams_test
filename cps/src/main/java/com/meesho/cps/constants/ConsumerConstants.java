@@ -45,7 +45,7 @@ public class ConsumerConstants {
 
     public static class AdWidgetRealEstates {
         public static final String TEXT_SEARCH = "catalog_search_results";
-        public static final String PDP = "single_catalog";
+        public static final String PDP = "single_product";
     }
 
     public static class CampaignUpdateConsumer {
