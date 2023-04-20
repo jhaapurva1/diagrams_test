@@ -8,6 +8,9 @@ import com.meesho.ads.lib.scheduler.AbstractScheduler;
 import com.meesho.commons.enums.CommonConstants;
 import com.meesho.commons.enums.Country;
 import com.meesho.cps.constants.SchedulerType;
+import com.meesho.cps.decorator.AsyncTaskDecorator;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.binder.jvm.ExecutorServiceMetrics;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +22,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.client.*;
 import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.web.client.RestTemplate;
@@ -26,6 +30,7 @@ import org.springframework.web.client.RestTemplate;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.Executor;
 
 /**
  * @author shubham.aggarwal
@@ -70,6 +75,18 @@ public class AppConfig {
         httpComponentsClientHttpRequestFactory.setConnectTimeout(applicationProperties.getApiDefaultConnectTimeout());
         httpComponentsClientHttpRequestFactory.setReadTimeout(applicationProperties.getApiDefaultReadTimeout());
         return httpComponentsClientHttpRequestFactory;
+    }
+
+    @Primary
+    @Bean(name = "commonAsyncTaskExecutor")
+    public Executor asyncExecutor(final MeterRegistry registry) {
+        ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
+        threadPoolTaskExecutor.setCorePoolSize(applicationProperties.getCommonAsyncExecutorCorePoolSize());
+        threadPoolTaskExecutor.setMaxPoolSize(applicationProperties.getCommonAsyncExecutorMaxPoolSize());
+        threadPoolTaskExecutor.setThreadNamePrefix("common-async-pool-");
+        threadPoolTaskExecutor.setTaskDecorator(new AsyncTaskDecorator());
+        threadPoolTaskExecutor.initialize();
+        return ExecutorServiceMetrics.monitor(registry, threadPoolTaskExecutor, "commonAsyncTaskExecutor");
     }
 
     public ThreadPoolTaskScheduler getThreadPoolTaskScheduler() {

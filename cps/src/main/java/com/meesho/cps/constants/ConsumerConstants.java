@@ -15,6 +15,8 @@ public class ConsumerConstants {
     public static class AdServiceKafka {
         public static final String BOOTSTRAP_SERVERS = "${kafka.ad.service.bootstrap.servers}";
         public static final String CONTAINER_FACTORY = "adServiceKafkaListenerContainerFactory";
+        public static final String BATCH_CONTAINER_FACTORY = "adServiceKafkaBatchListenerContainerFactory";
+        public static final String OFFSET_COMMIT_TIME = "${kafka.ad.service.offset.commit.time}";
     }
 
 
@@ -150,6 +152,22 @@ public class ConsumerConstants {
         public static final String MAX_POLL_INTERVAL_MS = "${kafka.display_ad.widget.click.event.consumer.max.poll.interval.ms}";
 
         public static final String BATCH_SIZE = "${kafka.display_ad.widget.click.event.consumer.batch.size}";
+    }
+
+    public static class AdViewCampaignCatalogCacheUpdateEventConsumer {
+        public static final String ID = "${kafka.ad_view_campaign_catalog_cache_update.event.consumer.id}";
+        public static final String TOPIC = "${kafka.ad_view_campaign_catalog_cache_update.event.consumer.topic}";
+        public static final String DEAD_QUEUE_TOPIC = "${kafka.ad_view_campaign_catalog_cache_update.event.consumer.dead.queue.topic}";
+        public static final String AUTO_START = "${kafka.ad_view_campaign_catalog_cache_update.event.consumer.start}";
+        public static final String CONCURRENCY = "${kafka.ad_view_campaign_catalog_cache_update.event.consumer.concurrency}";
+        public static final String MAX_POLL_INTERVAL_MS = "${kafka.ad_view_campaign_catalog_cache_update.event.consumer.max.poll.interval.ms}";
+        public static final String BATCH_SIZE = "${kafka.ad_view_campaign_catalog_cache_update.event.consumer.batch.size}";
+    }
+
+    public static class GenericRedisNotificationsConsumer {
+        public static final String TOPIC = "${redis.generic.notifications.event.consumer.topic}";
+        public static final String PUBSUB_ENABLE = "${redis.generic.notifications.event.pubsub.enable}";
+        public static final String DELIMITER_USED = ",";
     }
 
 }

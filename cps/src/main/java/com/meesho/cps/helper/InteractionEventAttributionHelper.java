@@ -209,7 +209,7 @@ public class InteractionEventAttributionHelper {
     }
     //This returns the cpc to be considered for charging.
     public BigDecimal getChargeableCpc(BigDecimal servingTimeCpc, CampaignDetails campaignDetails) {
-        return Objects.nonNull(campaignDetails.getCpc()) ? campaignDetails.getCpc() : servingTimeCpc;
+        return Objects.isNull(servingTimeCpc) ? campaignDetails.getCpc() : servingTimeCpc;
     }
 
     public HashMap<String, BigDecimal> getMultipliedCpcData(BigDecimal chargeableCpc,

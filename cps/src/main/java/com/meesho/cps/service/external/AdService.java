@@ -23,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import com.github.benmanes.caffeine.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -53,8 +54,9 @@ public class AdService {
             AdServiceClientConfig adServiceClientConfig,
             ApplicationProperties applicationProperties,
             @Qualifier(BeanNames.RestClients.AD_SERVICE) RestTemplate restTemplate,
-            @Qualifier("adServiceViewCampaignCatalogCache") Cache<Long, AdViewEventMetadataResponse.CatalogCampaignMetadata> adsViewCampaignCatalogCache) {
-        this.adViewCampaignCatalogCache = adsViewCampaignCatalogCache;
+            @Qualifier("adViewCampaignCatalogCacheManager") CacheManager adViewCampaignCatalogCacheManager) {
+        this.adViewCampaignCatalogCache = (Cache<Long, AdViewEventMetadataResponse.CatalogCampaignMetadata>)
+                adViewCampaignCatalogCacheManager.getCache("adViewCampaignCatalogCache").getNativeCache();
         this.applicationProperties = applicationProperties;
         this.adsCatalogService = new AdsCatalogService(adServiceClientConfig.getRestConfig(), restTemplate, null);
     }

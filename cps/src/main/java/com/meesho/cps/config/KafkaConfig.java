@@ -61,6 +61,9 @@ public class KafkaConfig {
     @Value(ConsumerConstants.IngestionServiceConfluentKafka.OFFSET_COMMIT_TIME)
     private String offsetCommitTimeIngestionKafka;
 
+    @Value(ConsumerConstants.AdServiceKafka.OFFSET_COMMIT_TIME)
+    private String offsetCommitTimeAdServiceKafka;
+
     private ConsumerFactory<String, String> ingestionConfluentKafkaConsumerFactory() {
         String confluent_jaas_config = String.format(
                 "org.apache.kafka.common.security.plain.PlainLoginModule required\n" +
@@ -175,6 +178,20 @@ public class KafkaConfig {
         concurrentKafkaListenerContainerFactory.setConsumerFactory(adServiceKafkaConsumerFactory());
         concurrentKafkaListenerContainerFactory.setBatchListener(false);
         concurrentKafkaListenerContainerFactory.getContainerProperties().setAckMode(ContainerProperties.AckMode.BATCH);
+
+        log.info("Ad Service kafka consumer created with configs {}",
+                concurrentKafkaListenerContainerFactory.getConsumerFactory().getConfigurationProperties());
+        return concurrentKafkaListenerContainerFactory;
+    }
+
+    @Bean(name = ConsumerConstants.AdServiceKafka.BATCH_CONTAINER_FACTORY)
+    public ConcurrentKafkaListenerContainerFactory<String, String> batchAdServiceKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, String> concurrentKafkaListenerContainerFactory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        concurrentKafkaListenerContainerFactory.setConsumerFactory(adServiceKafkaConsumerFactory());
+        concurrentKafkaListenerContainerFactory.setBatchListener(true);
+        concurrentKafkaListenerContainerFactory.getContainerProperties().setAckMode(ContainerProperties.AckMode.TIME);
+        concurrentKafkaListenerContainerFactory.getContainerProperties().setAckTime(Long.parseLong(offsetCommitTimeAdServiceKafka));
 
         log.info("Ad Service kafka consumer created with configs {}",
                 concurrentKafkaListenerContainerFactory.getConsumerFactory().getConfigurationProperties());
