@@ -92,8 +92,10 @@ public class Constants {
         public static final String SCREEN_MID_FEED_SEARCH = "mid_feed_After_slot_%s";
         public static final String TOP_OF_SEARCH_CPC_MULTIPLIER = "${ad_widget_top_of_search_cpc_multiplier}";
 
-        public static final String ORIGIN_PDP_RECO = "pdp_reco_widget";
-        public static final String PDP_RECO_CPC_MULTIPLIER = "${ad_widget_pdp_reco_cpc_multiplier}";
+        public static final String ORIGIN_PDP = "pdp_widget";
+        public static final String PDP_CPC_MULTIPLIER = "${ad_widget_pdp_cpc_multiplier}";
+        public static final String SCREEN_PDP = "pdp_widget_%s";
+
     }
 
     public static class DailyBudgetConstants {

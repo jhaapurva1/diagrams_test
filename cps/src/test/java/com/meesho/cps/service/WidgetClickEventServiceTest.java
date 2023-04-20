@@ -107,14 +107,14 @@ public class WidgetClickEventServiceTest {
                     .userId("user").eventTimestamp(1L).eventTimeIso("1").properties(
                         AdWidgetClickEvent.Properties.builder().isAdWidget(true).campaignId(1L)
                             .catalogId(1L).appVersionCode(1).origin("origin").screen("screen")
-                            .sourceScreen("catalog_search_results").build()).build();
+                            .sourceScreen(AdWidgetRealEstates.TEXT_SEARCH).build()).build();
                 break;
             case AdWidgetRealEstates.PDP:
                 adWidgetClickEvent = AdWidgetClickEvent.builder().eventId("id").eventName("name")
                     .userId("user").eventTimestamp(1L).eventTimeIso("1").properties(
                         AdWidgetClickEvent.Properties.builder().isAdWidget(true).campaignId(1L)
                             .catalogId(1L).appVersionCode(1).origin("origin").screen("screen")
-                            .sourceScreen("single_catalog").build()).build();
+                            .sourceScreen(AdWidgetRealEstates.PDP).build()).build();
         }
         return adWidgetClickEvent;
     }

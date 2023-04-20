@@ -70,7 +70,7 @@ public class WidgetViewEventServiceTest {
                             .catalogIds(Collections.singletonList(1L))
                             .origins(Collections.singletonList("origin"))
                             .screens(Collections.singletonList("screen"))
-                            .sourceScreens(Collections.singletonList("catalog_search_results"))
+                            .sourceScreens(Collections.singletonList(AdWidgetRealEstates.TEXT_SEARCH))
                             .build()).build();
                 break;
             case AdWidgetRealEstates.PDP:
@@ -81,7 +81,7 @@ public class WidgetViewEventServiceTest {
                             .catalogIds(Collections.singletonList(1L))
                             .origins(Collections.singletonList("origin"))
                             .screens(Collections.singletonList("screen"))
-                            .sourceScreens(Collections.singletonList("single_catalog")).build())
+                            .sourceScreens(Collections.singletonList(AdWidgetRealEstates.PDP)).build())
                     .build();
         }
         return adWidgetViewEvent;
