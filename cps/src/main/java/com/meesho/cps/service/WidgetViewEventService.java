@@ -14,6 +14,7 @@ import com.meesho.cps.data.internal.CampaignCatalogViewCount;
 import com.meesho.cps.helper.AdWidgetValidationHelper;
 import com.meesho.cps.helper.CampaignPerformanceHelper;
 import com.meesho.instrumentation.metric.statsd.StatsdMetricManager;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,7 +67,9 @@ public class WidgetViewEventService {
 
         Map<Long, AdViewEventMetadataResponse.CatalogCampaignMetadata> catalogMetadataMap;
         try {
-            catalogMetadataMap = catalogViewEventService.getCampaignCatalogMetadataFromCatalogIds(adWidgetViewEvent.getProperties().getCatalogIds());
+            catalogMetadataMap =
+                catalogViewEventService.getCampaignCatalogMetadataFromCatalogIds(adWidgetViewEvent.getProperties().getCatalogIds().stream().distinct().collect(
+                    Collectors.toList()));
         } catch (Exception e) {
             log.error("Exception while processing ingestion view events {}", adWidgetViewEvent, e);
             try {
