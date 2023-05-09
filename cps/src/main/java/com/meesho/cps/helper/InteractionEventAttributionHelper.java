@@ -5,7 +5,6 @@ import com.meesho.ad.client.response.CampaignDetails;
 import com.meesho.cps.config.ApplicationProperties;
 import com.meesho.cps.constants.CampaignType;
 import com.meesho.cps.constants.Constants;
-import com.meesho.cps.constants.Constants.AdWidgets;
 import com.meesho.cps.constants.Constants.CpcData;
 import com.meesho.cps.constants.ConsumerConstants;
 import com.meesho.cps.data.entity.hbase.CampaignDatewiseMetrics;
@@ -70,9 +69,6 @@ public class InteractionEventAttributionHelper {
 
     @Value(Constants.Kafka.CATALOG_BUDGET_EXHAUSTED_TOPIC)
     private String catalogBudgetExhaustedTopic;
-
-    @Value(AdWidgets.TOP_OF_SEARCH_CPC_MULTIPLIER)
-    private BigDecimal topOfSearchCpcMultiplier;
 
     public void publishPrismEvent(AdInteractionPrismEvent adInteractionPrismEvent) {
         log.info("publishPrismEvent: {}", adInteractionPrismEvent);
@@ -217,7 +213,7 @@ public class InteractionEventAttributionHelper {
     }
 
     public HashMap<String, BigDecimal> getMultipliedCpcData(BigDecimal chargeableCpc,
-        String realEstate) {
+        String realEstate, WidgetEventHelper widgetEventHelper) {
         HashMap<String, BigDecimal> multipliedCpcData = new HashMap<>();
         if (Objects.isNull(chargeableCpc)) {
             multipliedCpcData.put(CpcData.MULTIPLIED_CPC, null);
@@ -226,9 +222,9 @@ public class InteractionEventAttributionHelper {
         }
         BigDecimal multipliedCpc = chargeableCpc;
         BigDecimal multiplier = BigDecimal.ONE;
-        if (AdWidgetValidationHelper.isTopOfSearchRealEstate(realEstate)) {
-            multipliedCpc = chargeableCpc.multiply(topOfSearchCpcMultiplier);
-            multiplier = topOfSearchCpcMultiplier;
+        if (Objects.nonNull(widgetEventHelper)) {
+            multipliedCpc = chargeableCpc.multiply(widgetEventHelper.getCpcMultiplier());
+            multiplier = widgetEventHelper.getCpcMultiplier();
         }
         multipliedCpcData.put(CpcData.MULTIPLIED_CPC, multipliedCpc);
         multipliedCpcData.put(CpcData.MULTIPLIER, multiplier);

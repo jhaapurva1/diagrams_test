@@ -14,12 +14,12 @@ import com.meesho.cps.data.entity.kafka.AdWidgetClickEvent;
 import com.meesho.cps.data.internal.CampaignCatalogDate;
 import com.meesho.cps.db.redis.dao.UpdatedCampaignCatalogCacheDao;
 import com.meesho.cps.db.redis.dao.UserCatalogInteractionCacheDao;
-import com.meesho.cps.enums.FeedType;
 import com.meesho.cps.exception.ExternalRequestFailedException;
 import com.meesho.cps.factory.AdBillFactory;
 import com.meesho.cps.helper.AdWidgetValidationHelper;
 import com.meesho.cps.helper.CampaignPerformanceHelper;
 import com.meesho.cps.helper.InteractionEventAttributionHelper;
+import com.meesho.cps.helper.WidgetEventHelper;
 import com.meesho.cps.service.external.AdService;
 import com.meesho.cps.transformer.PrismEventTransformer;
 import lombok.extern.slf4j.Slf4j;
@@ -61,20 +61,24 @@ public class WidgetClickEventService {
     @Autowired
     private UserCatalogInteractionCacheDao userCatalogInteractionCacheDao;
 
+    @Autowired
+    private  WidgetEventHelper widgetEventHelper;
+
     public void handle(AdWidgetClickEvent adWidgetClickEvent) throws ExternalRequestFailedException {
         log.debug("processing widget click event: {}", adWidgetClickEvent);
 
         // check if valid ad-widget event
-        if (!adWidgetClickEvent.getProperties().getIsAdWidget()
-                || !AdWidgetValidationHelper.isValidWidgetRealEstate(adWidgetClickEvent.getProperties().getPrimaryRealEstate())) {
+        if (Boolean.FALSE.equals(adWidgetClickEvent.getProperties().getIsAdWidget())
+                || Boolean.FALSE.equals(AdWidgetValidationHelper.isValidWidgetRealEstate(adWidgetClickEvent.getProperties().getSourceScreen()))) {
             log.error("Not a valid event userId {} eventId {} for the real estate {}",
-                    adWidgetClickEvent.getUserId(), adWidgetClickEvent.getEventId(), adWidgetClickEvent.getProperties().getPrimaryRealEstate());
+                    adWidgetClickEvent.getUserId(), adWidgetClickEvent.getEventId(), adWidgetClickEvent.getProperties().getSourceScreen());
             telegrafMetricsHelper.increment(INTERACTION_EVENT_KEY, String.format(INTERACTION_EVENT_TAGS,
                     adWidgetClickEvent.getEventName(), adWidgetClickEvent.getProperties().getScreen(), adWidgetClickEvent.getProperties().getOrigin(), INVALID,
                     AdInteractionInvalidReason.NOT_AD_WIDGET));
             return;
         }
 
+        widgetEventHelper.setContext(adWidgetClickEvent);
 
         Long interactionTime = adWidgetClickEvent.getEventTimestamp();
         String userId = adWidgetClickEvent.getUserId();
@@ -96,7 +100,7 @@ public class WidgetClickEventService {
                 PrismEventTransformer.getInteractionEventForWidgetClick(adWidgetClickEvent, userId, catalogId);
 
         // set feedType
-        String feedType = FeedType.TEXT_SEARCH.getValue();
+        String feedType = widgetEventHelper.getFeedType();
 
         SupplierCampaignCatalogMetaDataResponse response = adService.getSupplierCampaignCatalogMetadata(catalogId, campaignId, userId, feedType);
         log.debug("campaign catalog metadata: {}", response);
@@ -124,7 +128,7 @@ public class WidgetClickEventService {
         campaignId = campaignDetails.getCampaignId();
         cpc = interactionEventAttributionHelper.getChargeableCpc(cpc, campaignDetails);
         HashMap<String, BigDecimal> multipliedCpcData = interactionEventAttributionHelper.getMultipliedCpcData(
-            cpc, adWidgetClickEvent.getProperties().getPrimaryRealEstate());
+            cpc, adWidgetClickEvent.getProperties().getSourceScreen(),widgetEventHelper);
         cpc = multipliedCpcData.get(CpcData.MULTIPLIED_CPC);
         if (Objects.isNull(cpc)) {
             log.error("can not process widget interaction event due to null cpc.  {} - {}", campaignId, catalogId);
@@ -159,6 +163,12 @@ public class WidgetClickEventService {
                     AdInteractionStatus.INVALID.name(), AdInteractionInvalidReason.BUDGET_EXHAUSTED.name());
             return;
         }
+
+        //Set screen and origin
+        adWidgetClickEvent.getProperties().setScreen(widgetEventHelper.getScreen());
+        adWidgetClickEvent.getProperties().setOrigin(widgetEventHelper.getOrigin());
+        adInteractionPrismEvent.setOrigin(adWidgetClickEvent.getProperties().getOrigin());
+        adInteractionPrismEvent.setScreen(adWidgetClickEvent.getProperties().getScreen());
 
         //Perform deduplication
         if(performDedup(billHandler, adWidgetClickEvent, adInteractionPrismEvent, userId, interactionTime)) {
@@ -210,20 +220,8 @@ public class WidgetClickEventService {
                               AdInteractionPrismEvent adInteractionPrismEvent, String userId, Long interactionTime) {
         log.debug("perform dedup: {} {} {} {} {}", billHandler, adWidgetClickEvent, adWidgetClickEvent, userId, interactionTime);
 
-        // Populating the ORIGIN and SCREEN as per the product requirements:
-        // https://docs.google.com/spreadsheets/d/1WOY4CGfMnn5aGgA8kAYLQfU12t6C8dztpF2UhgGKY2E/edit?usp=sharing
-        if(Objects.nonNull(adWidgetClickEvent.getProperties().getWidgetGroupPosition()) &&
-                adWidgetClickEvent.getProperties().getWidgetGroupPosition() > 1) {
-            adWidgetClickEvent.getProperties().setScreen(String.format(Constants.AdWidgets.SCREEN_MID_FEED_SEARCH,
-                    adWidgetClickEvent.getProperties().getWidgetGroupPosition()));
-        } else {
-            adWidgetClickEvent.getProperties().setScreen(Constants.AdWidgets.SCREEN_TOP_OF_SEARCH);
-        }
-        adWidgetClickEvent.getProperties().setOrigin(Constants.AdWidgets.ORIGIN_SEARCH);
         String origin = adWidgetClickEvent.getProperties().getOrigin();
         String screen = adWidgetClickEvent.getProperties().getScreen();
-        adInteractionPrismEvent.setOrigin(origin);
-        adInteractionPrismEvent.setScreen(screen);
 
         if (billHandler.performWindowDeDuplication()) {
             Long id = adWidgetClickEvent.getProperties().getCatalogId();
