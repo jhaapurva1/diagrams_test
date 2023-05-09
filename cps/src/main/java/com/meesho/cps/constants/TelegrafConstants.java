@@ -20,6 +20,7 @@ public class TelegrafConstants {
     // tags placeholder
     public static final String INTERACTION_EVENT_TAGS = "eventName=%s,screen=%s,origin=%s,status=%s,reason=%s";
     public static final String VIEW_EVENT_TAGS = "eventName=%s,screen=%s,origin=%s,status=%s,reason=%s";
+    public static final String WIDGET_VIEW_EVENT_TAGS = "eventName=%s,sourceScreen=%s,screen=%s,origin=%s,status=%s,reason=%s";
     public static final String INTERACTION_EVENT_CPC_TAGS = "eventName=%s,screen=%s,origin=%s";
 
     // tag values

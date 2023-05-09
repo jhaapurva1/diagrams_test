@@ -59,8 +59,8 @@ public class WidgetViewEventService {
         if (Boolean.FALSE.equals(AdWidgetValidationHelper.isValidWidgetRealEstate(adWidgetViewEvent.getProperties().getSourceScreens().get(0)))) {
             log.error("Not a valid event userId {} eventId {} for the real estate {}",
                     adWidgetViewEvent.getUserId(), adWidgetViewEvent.getEventId(), adWidgetViewEvent.getProperties().getSourceScreens().get(0));
-            statsdMetricManager.incrementCounter(WIDGET_VIEW_EVENT_KEY, String.format(VIEW_EVENT_TAGS,
-                    adWidgetViewEvent.getEventName(), adWidgetViewEvent.getProperties().getScreens(), adWidgetViewEvent.getProperties().getOrigins(), INVALID,
+            statsdMetricManager.incrementCounter(WIDGET_VIEW_EVENT_KEY, String.format(WIDGET_VIEW_EVENT_TAGS,
+                    adWidgetViewEvent.getEventName(), adWidgetViewEvent.getProperties().getSourceScreens(), adWidgetViewEvent.getProperties().getScreens(), adWidgetViewEvent.getProperties().getOrigins(), INVALID,
                     AdInteractionInvalidReason.NOT_AD_WIDGET));
             return;
         }
@@ -85,8 +85,8 @@ public class WidgetViewEventService {
         }
 
         if (CollectionUtils.isEmpty(catalogMetadataMap)) {
-            statsdMetricManager.incrementCounter(WIDGET_VIEW_EVENT_KEY, String.format(VIEW_EVENT_TAGS,
-                    adWidgetViewEvent.getEventName(), adWidgetViewEvent.getProperties().getScreens(), adWidgetViewEvent.getProperties().getOrigins(), INVALID,
+            statsdMetricManager.incrementCounter(WIDGET_VIEW_EVENT_KEY, String.format(WIDGET_VIEW_EVENT_TAGS,
+                    adWidgetViewEvent.getEventName(), adWidgetViewEvent.getProperties().getSourceScreens(), adWidgetViewEvent.getProperties().getScreens(), adWidgetViewEvent.getProperties().getOrigins(), INVALID,
                     AdInteractionInvalidReason.CAMPAIGN_INACTIVE));
             return;
         }
@@ -116,8 +116,8 @@ public class WidgetViewEventService {
             if(Objects.isNull(catalogMetadata) || Boolean.FALSE.equals(catalogMetadata.getIsCampaignActive())){
                 log.error("No active ad on catalogIds {} userId {} eventId {}",
                         adWidgetViewEvent.getProperties().getCatalogIds(), adWidgetViewEvent.getUserId(), adWidgetViewEvent.getEventId());
-                statsdMetricManager.incrementCounter(WIDGET_VIEW_EVENT_KEY, String.format(VIEW_EVENT_TAGS,
-                        adWidgetViewEvent.getEventName(), adWidgetViewEvent.getProperties().getScreens(), adWidgetViewEvent.getProperties().getOrigins(), INVALID,
+                statsdMetricManager.incrementCounter(WIDGET_VIEW_EVENT_KEY, String.format(WIDGET_VIEW_EVENT_TAGS,
+                        adWidgetViewEvent.getEventName(), adWidgetViewEvent.getProperties().getSourceScreens(), adWidgetViewEvent.getProperties().getScreens(), adWidgetViewEvent.getProperties().getOrigins(), INVALID,
                         AdInteractionInvalidReason.CAMPAIGN_INACTIVE));
                 continue;
             }
@@ -126,8 +126,8 @@ public class WidgetViewEventService {
             log.info("Processing view event for eventId {} catalogIds {} campaignId {} userId {} appVersionCode {}",
                     adWidgetViewEvent.getEventId(), adWidgetViewEvent.getProperties().getCatalogIds(), campaignId, adWidgetViewEvent.getUserId(),
                     adWidgetViewEvent.getProperties().getAppVersionCode());
-            statsdMetricManager.incrementCounter(WIDGET_VIEW_EVENT_KEY, String.format(VIEW_EVENT_TAGS,
-                    adWidgetViewEvent.getEventName(), adWidgetViewEvent.getProperties().getScreens(), adWidgetViewEvent.getProperties().getOrigins(), VALID, NAN));
+            statsdMetricManager.incrementCounter(WIDGET_VIEW_EVENT_KEY, String.format(WIDGET_VIEW_EVENT_TAGS,
+                    adWidgetViewEvent.getEventName(), adWidgetViewEvent.getProperties().getSourceScreens(), adWidgetViewEvent.getProperties().getScreens(), adWidgetViewEvent.getProperties().getOrigins(), VALID, NAN));
 
 
             String campaignCatalogViewCountKey = getCampaignCatalogKey(campaignId, catalogId, eventDate);

@@ -1,10 +1,6 @@
 package com.meesho.cps.service;
 
-import static com.meesho.cps.constants.TelegrafConstants.INVALID;
-import static com.meesho.cps.constants.TelegrafConstants.NAN;
-import static com.meesho.cps.constants.TelegrafConstants.VALID;
-import static com.meesho.cps.constants.TelegrafConstants.VIEW_EVENT_TAGS;
-import static com.meesho.cps.constants.TelegrafConstants.WIDGET_VIEW_EVENT_KEY;
+import static com.meesho.cps.constants.TelegrafConstants.*;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.times;
 
@@ -103,8 +99,8 @@ public class WidgetViewEventServiceTest {
         AdWidgetViewEvent adWidgetViewEvent = getAdWidgetViewEvent(realEstate);
         adWidgetViewEvent.getProperties().setSourceScreens(Collections.singletonList("non-search"));
         widgetViewEventService.handle(adWidgetViewEvent);
-        Mockito.verify(statsdMetricManager, times(1)).incrementCounter(WIDGET_VIEW_EVENT_KEY, String.format(VIEW_EVENT_TAGS,
-                adWidgetViewEvent.getEventName(), adWidgetViewEvent.getProperties().getScreens(), adWidgetViewEvent.getProperties().getOrigins(), INVALID,
+        Mockito.verify(statsdMetricManager, times(1)).incrementCounter(WIDGET_VIEW_EVENT_KEY, String.format(WIDGET_VIEW_EVENT_TAGS,
+                adWidgetViewEvent.getEventName(),adWidgetViewEvent.getProperties().getSourceScreens(), adWidgetViewEvent.getProperties().getScreens(), adWidgetViewEvent.getProperties().getOrigins(), INVALID,
                 AdInteractionInvalidReason.NOT_AD_WIDGET));
     }
 
@@ -123,8 +119,8 @@ public class WidgetViewEventServiceTest {
         AdWidgetViewEvent adWidgetViewEvent = getAdWidgetViewEvent(realEstate);
         Mockito.doReturn(getCampaignCatalogMetadataMap(false)).when(catalogViewEventService).getCampaignCatalogMetadataFromCatalogIds(any());
         widgetViewEventService.handle(adWidgetViewEvent);
-        Mockito.verify(statsdMetricManager, times(1)).incrementCounter(WIDGET_VIEW_EVENT_KEY, String.format(VIEW_EVENT_TAGS,
-                adWidgetViewEvent.getEventName(), adWidgetViewEvent.getProperties().getScreens(), adWidgetViewEvent.getProperties().getOrigins(), INVALID,
+        Mockito.verify(statsdMetricManager, times(1)).incrementCounter(WIDGET_VIEW_EVENT_KEY, String.format(WIDGET_VIEW_EVENT_TAGS,
+                adWidgetViewEvent.getEventName(), adWidgetViewEvent.getProperties().getSourceScreens(), adWidgetViewEvent.getProperties().getScreens(), adWidgetViewEvent.getProperties().getOrigins(), INVALID,
                 AdInteractionInvalidReason.CAMPAIGN_INACTIVE));
 
     }
@@ -134,8 +130,8 @@ public class WidgetViewEventServiceTest {
     public void testHandleActiveCampaign(String realEstate) throws ExternalRequestFailedException {
         AdWidgetViewEvent adWidgetViewEvent = getAdWidgetViewEvent(realEstate);
         widgetViewEventService.handle(adWidgetViewEvent);
-        Mockito.verify(statsdMetricManager, times(1)).incrementCounter(WIDGET_VIEW_EVENT_KEY, String.format(VIEW_EVENT_TAGS,
-                adWidgetViewEvent.getEventName(), adWidgetViewEvent.getProperties().getScreens(), adWidgetViewEvent.getProperties().getOrigins(), VALID, NAN));
+        Mockito.verify(statsdMetricManager, times(1)).incrementCounter(WIDGET_VIEW_EVENT_KEY, String.format(WIDGET_VIEW_EVENT_TAGS,
+                adWidgetViewEvent.getEventName(), adWidgetViewEvent.getProperties().getSourceScreens(), adWidgetViewEvent.getProperties().getScreens(), adWidgetViewEvent.getProperties().getOrigins(), VALID, NAN));
 
     }
 
@@ -146,8 +142,8 @@ public class WidgetViewEventServiceTest {
         Mockito.doReturn(100L).when(applicationProperties).getBatchInterval();
         widgetViewEventService.handle(adWidgetViewEvent);
         Mockito.verify(catalogViewEventService, times(0)).writeToHbase(any());
-        Mockito.verify(statsdMetricManager, times(1)).incrementCounter(WIDGET_VIEW_EVENT_KEY, String.format(VIEW_EVENT_TAGS,
-                adWidgetViewEvent.getEventName(), adWidgetViewEvent.getProperties().getScreens(), adWidgetViewEvent.getProperties().getOrigins(), VALID, NAN));
+        Mockito.verify(statsdMetricManager, times(1)).incrementCounter(WIDGET_VIEW_EVENT_KEY, String.format(WIDGET_VIEW_EVENT_TAGS,
+                adWidgetViewEvent.getEventName(), adWidgetViewEvent.getProperties().getSourceScreens(), adWidgetViewEvent.getProperties().getScreens(), adWidgetViewEvent.getProperties().getOrigins(), VALID, NAN));
 
     }
 
@@ -159,8 +155,8 @@ public class WidgetViewEventServiceTest {
         widgetViewEventService.handle(adWidgetViewEvent);
         CampaignCatalogViewCount campaignCatalogViewCount = CampaignCatalogViewCount.builder().campaignId(1L).catalogId(1L).count(1).date(localDate).build();
         Mockito.verify(catalogViewEventService, times(1)).writeToHbase(Collections.singletonList(campaignCatalogViewCount));
-        Mockito.verify(statsdMetricManager, times(1)).incrementCounter(WIDGET_VIEW_EVENT_KEY, String.format(VIEW_EVENT_TAGS,
-                adWidgetViewEvent.getEventName(), adWidgetViewEvent.getProperties().getScreens(), adWidgetViewEvent.getProperties().getOrigins(), VALID, NAN));
+        Mockito.verify(statsdMetricManager, times(1)).incrementCounter(WIDGET_VIEW_EVENT_KEY, String.format(WIDGET_VIEW_EVENT_TAGS,
+                adWidgetViewEvent.getEventName(), adWidgetViewEvent.getProperties().getSourceScreens(), adWidgetViewEvent.getProperties().getScreens(), adWidgetViewEvent.getProperties().getOrigins(), VALID, NAN));
 
     }
 
@@ -170,14 +166,14 @@ public class WidgetViewEventServiceTest {
         AdWidgetViewEvent adWidgetViewEvent = getAdWidgetViewEvent(realEstate);
         Mockito.doReturn(10L).when(applicationProperties).getBatchInterval();
         widgetViewEventService.handle(adWidgetViewEvent);
-        Mockito.verify(statsdMetricManager, times(1)).incrementCounter(WIDGET_VIEW_EVENT_KEY, String.format(VIEW_EVENT_TAGS,
-                adWidgetViewEvent.getEventName(), adWidgetViewEvent.getProperties().getScreens(), adWidgetViewEvent.getProperties().getOrigins(), VALID, NAN));
+        Mockito.verify(statsdMetricManager, times(1)).incrementCounter(WIDGET_VIEW_EVENT_KEY, String.format(WIDGET_VIEW_EVENT_TAGS,
+                adWidgetViewEvent.getEventName(), adWidgetViewEvent.getProperties().getSourceScreens(), adWidgetViewEvent.getProperties().getScreens(), adWidgetViewEvent.getProperties().getOrigins(), VALID, NAN));
         Thread.sleep(10);
         widgetViewEventService.handle(adWidgetViewEvent);
         CampaignCatalogViewCount campaignCatalogViewCount = CampaignCatalogViewCount.builder().campaignId(1L).catalogId(1L).count(2).date(localDate).build();
         Mockito.verify(catalogViewEventService, times(1)).writeToHbase(Collections.singletonList(campaignCatalogViewCount));
-        Mockito.verify(statsdMetricManager, times(2)).incrementCounter(WIDGET_VIEW_EVENT_KEY, String.format(VIEW_EVENT_TAGS,
-                adWidgetViewEvent.getEventName(), adWidgetViewEvent.getProperties().getScreens(), adWidgetViewEvent.getProperties().getOrigins(), VALID, NAN));
+        Mockito.verify(statsdMetricManager, times(2)).incrementCounter(WIDGET_VIEW_EVENT_KEY, String.format(WIDGET_VIEW_EVENT_TAGS,
+                adWidgetViewEvent.getEventName(), adWidgetViewEvent.getProperties().getSourceScreens(), adWidgetViewEvent.getProperties().getScreens(), adWidgetViewEvent.getProperties().getOrigins(), VALID, NAN));
 
     }
 
