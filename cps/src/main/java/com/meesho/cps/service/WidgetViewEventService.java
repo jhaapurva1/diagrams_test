@@ -14,6 +14,7 @@ import com.meesho.cps.data.internal.CampaignCatalogViewCount;
 import com.meesho.cps.helper.AdWidgetValidationHelper;
 import com.meesho.cps.helper.CampaignPerformanceHelper;
 import com.meesho.instrumentation.metric.statsd.StatsdMetricManager;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,18 +56,20 @@ public class WidgetViewEventService {
 
     public void handle(AdWidgetViewEvent adWidgetViewEvent) {
         log.info("Started porcessing of view event: {}", adWidgetViewEvent);
-        if (!AdWidgetValidationHelper.isValidWidgetRealEstate(adWidgetViewEvent.getProperties().getPrimaryRealEstates().get(0))) {
+        if (Boolean.FALSE.equals(AdWidgetValidationHelper.isValidWidgetRealEstate(adWidgetViewEvent.getProperties().getSourceScreens().get(0)))) {
             log.error("Not a valid event userId {} eventId {} for the real estate {}",
-                    adWidgetViewEvent.getUserId(), adWidgetViewEvent.getEventId(), adWidgetViewEvent.getProperties().getPrimaryRealEstates().get(0));
-            statsdMetricManager.incrementCounter(WIDGET_VIEW_EVENT_KEY, String.format(VIEW_EVENT_TAGS,
-                    adWidgetViewEvent.getEventName(), adWidgetViewEvent.getProperties().getScreens(), adWidgetViewEvent.getProperties().getOrigins(), INVALID,
+                    adWidgetViewEvent.getUserId(), adWidgetViewEvent.getEventId(), adWidgetViewEvent.getProperties().getSourceScreens().get(0));
+            statsdMetricManager.incrementCounter(WIDGET_VIEW_EVENT_KEY, String.format(WIDGET_VIEW_EVENT_TAGS,
+                    adWidgetViewEvent.getEventName(), adWidgetViewEvent.getProperties().getSourceScreens(), adWidgetViewEvent.getProperties().getScreens(), adWidgetViewEvent.getProperties().getOrigins(), INVALID,
                     AdInteractionInvalidReason.NOT_AD_WIDGET));
             return;
         }
 
         Map<Long, AdViewEventMetadataResponse.CatalogCampaignMetadata> catalogMetadataMap;
         try {
-            catalogMetadataMap = catalogViewEventService.getCampaignCatalogMetadataFromCatalogIds(adWidgetViewEvent.getProperties().getCatalogIds());
+            catalogMetadataMap =
+                catalogViewEventService.getCampaignCatalogMetadataFromCatalogIds(adWidgetViewEvent.getProperties().getCatalogIds().stream().distinct().collect(
+                    Collectors.toList()));
         } catch (Exception e) {
             log.error("Exception while processing ingestion view events {}", adWidgetViewEvent, e);
             try {
@@ -82,8 +85,8 @@ public class WidgetViewEventService {
         }
 
         if (CollectionUtils.isEmpty(catalogMetadataMap)) {
-            statsdMetricManager.incrementCounter(WIDGET_VIEW_EVENT_KEY, String.format(VIEW_EVENT_TAGS,
-                    adWidgetViewEvent.getEventName(), adWidgetViewEvent.getProperties().getScreens(), adWidgetViewEvent.getProperties().getOrigins(), INVALID,
+            statsdMetricManager.incrementCounter(WIDGET_VIEW_EVENT_KEY, String.format(WIDGET_VIEW_EVENT_TAGS,
+                    adWidgetViewEvent.getEventName(), adWidgetViewEvent.getProperties().getSourceScreens(), adWidgetViewEvent.getProperties().getScreens(), adWidgetViewEvent.getProperties().getOrigins(), INVALID,
                     AdInteractionInvalidReason.CAMPAIGN_INACTIVE));
             return;
         }
@@ -110,11 +113,11 @@ public class WidgetViewEventService {
         for (Long catalogId : adWidgetViewEvent.getProperties().getCatalogIds()) {
 
             AdViewEventMetadataResponse.CatalogCampaignMetadata catalogMetadata = catalogMetadataMap.get(catalogId);
-            if(Objects.isNull(catalogMetadata) || !catalogMetadata.getIsCampaignActive()){
+            if(Objects.isNull(catalogMetadata) || Boolean.FALSE.equals(catalogMetadata.getIsCampaignActive())){
                 log.error("No active ad on catalogIds {} userId {} eventId {}",
                         adWidgetViewEvent.getProperties().getCatalogIds(), adWidgetViewEvent.getUserId(), adWidgetViewEvent.getEventId());
-                statsdMetricManager.incrementCounter(WIDGET_VIEW_EVENT_KEY, String.format(VIEW_EVENT_TAGS,
-                        adWidgetViewEvent.getEventName(), adWidgetViewEvent.getProperties().getScreens(), adWidgetViewEvent.getProperties().getOrigins(), INVALID,
+                statsdMetricManager.incrementCounter(WIDGET_VIEW_EVENT_KEY, String.format(WIDGET_VIEW_EVENT_TAGS,
+                        adWidgetViewEvent.getEventName(), adWidgetViewEvent.getProperties().getSourceScreens(), adWidgetViewEvent.getProperties().getScreens(), adWidgetViewEvent.getProperties().getOrigins(), INVALID,
                         AdInteractionInvalidReason.CAMPAIGN_INACTIVE));
                 continue;
             }
@@ -123,8 +126,8 @@ public class WidgetViewEventService {
             log.info("Processing view event for eventId {} catalogIds {} campaignId {} userId {} appVersionCode {}",
                     adWidgetViewEvent.getEventId(), adWidgetViewEvent.getProperties().getCatalogIds(), campaignId, adWidgetViewEvent.getUserId(),
                     adWidgetViewEvent.getProperties().getAppVersionCode());
-            statsdMetricManager.incrementCounter(WIDGET_VIEW_EVENT_KEY, String.format(VIEW_EVENT_TAGS,
-                    adWidgetViewEvent.getEventName(), adWidgetViewEvent.getProperties().getScreens(), adWidgetViewEvent.getProperties().getOrigins(), VALID, NAN));
+            statsdMetricManager.incrementCounter(WIDGET_VIEW_EVENT_KEY, String.format(WIDGET_VIEW_EVENT_TAGS,
+                    adWidgetViewEvent.getEventName(), adWidgetViewEvent.getProperties().getSourceScreens(), adWidgetViewEvent.getProperties().getScreens(), adWidgetViewEvent.getProperties().getOrigins(), VALID, NAN));
 
 
             String campaignCatalogViewCountKey = getCampaignCatalogKey(campaignId, catalogId, eventDate);

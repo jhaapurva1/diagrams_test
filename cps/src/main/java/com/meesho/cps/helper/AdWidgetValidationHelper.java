@@ -1,6 +1,5 @@
 package com.meesho.cps.helper;
 
-import com.meesho.cps.constants.ConsumerConstants;
 import com.meesho.cps.constants.ConsumerConstants.AdWidgetRealEstates;
 import com.meesho.cps.data.entity.kafka.AdWidgetClickEvent;
 import com.meesho.cps.data.entity.kafka.AdWidgetViewEvent;
@@ -13,7 +12,8 @@ import java.util.Set;
 
 public class AdWidgetValidationHelper {
 
-    private static final Set<String> VALID_REAL_ESTATES = new HashSet<>(Arrays.asList(ConsumerConstants.AdWidgetRealEstates.TEXT_SEARCH));
+    private static final Set<String> VALID_REAL_ESTATES = new HashSet<>(
+        Arrays.asList(AdWidgetRealEstates.TEXT_SEARCH, AdWidgetRealEstates.PDP));
 
     public static Boolean isValidAdWidgetViewEvent(AdWidgetViewEvent adWidgetViewEvent) {
         return Objects.nonNull(adWidgetViewEvent.getEventName()) &&
@@ -24,11 +24,11 @@ public class AdWidgetValidationHelper {
                 CollectionUtils.isNotEmpty(adWidgetViewEvent.getProperties().getCampaignIds()) &&
                 CollectionUtils.isNotEmpty(adWidgetViewEvent.getProperties().getCatalogIds()) &&
                 Objects.nonNull(adWidgetViewEvent.getProperties().getAppVersionCode()) &&
-                CollectionUtils.isNotEmpty(adWidgetViewEvent.getProperties().getPrimaryRealEstates());
+                CollectionUtils.isNotEmpty(adWidgetViewEvent.getProperties().getSourceScreens());
     }
 
-    public static Boolean isValidWidgetRealEstate(String primaryRealEstate) {
-        return VALID_REAL_ESTATES.contains(primaryRealEstate);
+    public static Boolean isValidWidgetRealEstate(String realEstate) {
+        return VALID_REAL_ESTATES.contains(realEstate);
     }
 
     public static Boolean isValidAdWidgetClickEvent(AdWidgetClickEvent adWidgetClickEvent) {
@@ -41,9 +41,6 @@ public class AdWidgetValidationHelper {
                 Objects.nonNull(adWidgetClickEvent.getProperties().getCatalogId()) &&
                 Objects.nonNull(adWidgetClickEvent.getProperties().getAppVersionCode()) &&
                 Objects.nonNull(adWidgetClickEvent.getProperties().getIsAdWidget()) &&
-                Objects.nonNull(adWidgetClickEvent.getProperties().getPrimaryRealEstate());
-    }
-    public static Boolean isTopOfSearchRealEstate(String realEstate) {
-        return realEstate.equals(AdWidgetRealEstates.TEXT_SEARCH);
+                Objects.nonNull(adWidgetClickEvent.getProperties().getSourceScreen());
     }
 }
