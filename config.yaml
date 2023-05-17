@@ -4,7 +4,7 @@ repo_name: campaign-performance
 maintainer: akhil.gupta
 skip_sonar: false
 build_tool: docker
-dockerBuildVersion: maven-3.3-jdk-8
+dockerBuildVersion: maven-graalvm
 arch: amd64
 excludedModules:
   - cps-client
