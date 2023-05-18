@@ -9,16 +9,14 @@ import com.meesho.cps.constants.Constants.CpcData;
 import com.meesho.cps.constants.ConsumerConstants;
 import com.meesho.cps.data.entity.hbase.CampaignDatewiseMetrics;
 import com.meesho.cps.data.entity.hbase.CampaignMetrics;
+import com.meesho.cps.data.entity.hbase.CatalogCPCDiscount;
 import com.meesho.cps.data.entity.hbase.SupplierWeekWiseMetrics;
 import com.meesho.cps.data.entity.internal.BudgetUtilisedData;
 import com.meesho.cps.data.entity.kafka.AdInteractionPrismEvent;
 import com.meesho.cps.data.entity.kafka.BudgetExhaustedEvent;
 import com.meesho.cps.data.entity.kafka.CatalogBudgetExhaustEvent;
 import com.meesho.cps.data.entity.kafka.SupplierWeeklyBudgetExhaustedEvent;
-import com.meesho.cps.db.hbase.repository.CampaignCatalogDateMetricsRepository;
-import com.meesho.cps.db.hbase.repository.CampaignDatewiseMetricsRepository;
-import com.meesho.cps.db.hbase.repository.CampaignMetricsRepository;
-import com.meesho.cps.db.hbase.repository.SupplierWeekWiseMetricsRepository;
+import com.meesho.cps.db.hbase.repository.*;
 import com.meesho.cps.service.KafkaService;
 import com.meesho.cps.service.external.PrismService;
 import java.util.HashMap;
@@ -54,6 +52,9 @@ public class InteractionEventAttributionHelper {
 
     @Autowired
     CampaignCatalogDateMetricsRepository campaignCatalogDateMetricsRepository;
+
+    @Autowired
+    CatalogCPCDiscountRepository catalogCPCDiscountRepository;
 
     @Autowired
     KafkaService kafkaService;
@@ -208,8 +209,13 @@ public class InteractionEventAttributionHelper {
         }
     }
     //This returns the cpc to be considered for charging.
-    public BigDecimal getChargeableCpc(BigDecimal servingTimeCpc, CampaignDetails campaignDetails) {
-        return Objects.isNull(servingTimeCpc) ? campaignDetails.getCpc() : servingTimeCpc;
+    public BigDecimal getChargeableCpc(BigDecimal servingTimeCpc, CampaignDetails campaignDetails, Long catalogId) {
+        BigDecimal chargeableCPC = Objects.isNull(servingTimeCpc) ? campaignDetails.getCpc() : servingTimeCpc;
+        CatalogCPCDiscount catalogCPCDiscount = catalogCPCDiscountRepository.get(catalogId);
+        if (Objects.nonNull(catalogCPCDiscount) && Objects.nonNull(chargeableCPC)) {
+            chargeableCPC = chargeableCPC.multiply(BigDecimal.ONE.subtract(BigDecimal.valueOf(catalogCPCDiscount.getDiscount())));
+        }
+        return chargeableCPC;
     }
 
     public HashMap<String, BigDecimal> getMultipliedCpcData(BigDecimal chargeableCpc,

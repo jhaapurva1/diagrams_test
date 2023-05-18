@@ -79,6 +79,21 @@ public class ApplicationProperties {
     @Value(Constants.Cron.CAMPAIGN_PERFORMANCE_ES_INDEXING.BATCH_SIZE)
     private Map<String, Integer> campaignPerformanceHbaseESCountryAndCronBatchSizeMap;
 
+    @Value(Constants.Cron.CATALOG_CPC_DISCOUNT.MONITOR_CODE)
+    private Map<String, String> catalogCPCDiscountCountryAndCronitorCodeMap;
+
+    @Value(Constants.Cron.CATALOG_CPC_DISCOUNT.ENABLE_SCHEDULER)
+    private Map<String, Boolean> catalogCPCDiscountCountryAndCronEnableMap;
+
+    @Value(Constants.Cron.CATALOG_CPC_DISCOUNT.CRON_EXPRESSION)
+    private Map<String, String> catalogCPCDiscountCountryAndCronExpMap;
+
+    @Value(Constants.Cron.CATALOG_CPC_DISCOUNT.BATCH_SIZE)
+    private Map<String, Integer> catalogCPCDiscountCountryAndCronBatchSizeMap;
+
+    @Value(Constants.Cron.CATALOG_CPC_DISCOUNT.PROCESS_BATCH_SIZE)
+    private Map<String, Integer> catalogCPCDiscountCountryAndCronProcessBatchSizeMap;
+
     private Map<String, Map<String, SchedulerProperty>> schedulerTypeCountryAndPropertyMap = new HashMap<>();
 
     @Value("#{'${log_disabled_paths}'.split(',')}")
@@ -189,6 +204,13 @@ public class ApplicationProperties {
                         processBatchSize =
                                 adsDeductionCampaignSupplierCountryAndCronProcessBatchSizeMap
                                         .get(country.getCountryCode());
+                        break;
+                    case CATALOG_CPC_DISCOUNT:
+                        enableCron = catalogCPCDiscountCountryAndCronEnableMap.get(country.getCountryCode());
+                        cronitorCode = catalogCPCDiscountCountryAndCronitorCodeMap.get(country.getCountryCode());
+                        cronExpression = catalogCPCDiscountCountryAndCronExpMap.get(country.getCountryCode());
+                        batchSize = catalogCPCDiscountCountryAndCronBatchSizeMap.get(country.getCountryCode());
+                        processBatchSize = catalogCPCDiscountCountryAndCronProcessBatchSizeMap.get(country.getCountryCode());
                         break;
                 }
                 Map<String, SchedulerProperty> countryAndSchedulerPropertyMap =

@@ -4,10 +4,12 @@ import com.meesho.ads.lib.utils.DateTimeUtils;
 import com.meesho.cps.data.entity.hbase.CampaignCatalogDateMetrics;
 import com.meesho.cps.data.entity.hbase.CampaignDatewiseMetrics;
 import com.meesho.cps.data.entity.hbase.CampaignMetrics;
+import com.meesho.cps.data.entity.hbase.CatalogCPCDiscount;
 import com.meesho.cps.data.presto.CampaignCatalogReconciledMetricsPrestoData;
 import com.meesho.cps.data.request.CampaignCatalogDateMetricsSaveRequest;
 import com.meesho.cps.data.request.CampaignDatewiseMetricsSaveRequest;
 import com.meesho.cps.data.request.CampaignMetricsSaveRequest;
+import com.meesho.cps.data.request.CatalogCPCDiscountSaveRequest;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -93,6 +95,13 @@ public class DebugTransformer {
                 .campaignId(request.getCampaignId())
                 .budgetUtilised(request.getBudgetUtilised())
                 .date(DateTimeUtils.getCurrentLocalDateTimeInIST().toLocalDate())
+                .build();
+    }
+
+    public static CatalogCPCDiscount transform(CatalogCPCDiscountSaveRequest request) {
+        return CatalogCPCDiscount.builder()
+                .catalogId(request.getCatalogId())
+                .discount(request.getDiscount())
                 .build();
     }
 
