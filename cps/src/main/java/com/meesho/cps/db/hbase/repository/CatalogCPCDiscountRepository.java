@@ -75,6 +75,8 @@ public class CatalogCPCDiscountRepository {
 
         try (Table table = getTable()) {
             table.put(puts);
+        } catch (TableNotFoundException ex) {
+            log.error("TableNotFoundException while fetching Hbase table instance for {}", getTable(), ex);
         } catch (IOException e) {
             log.error("IOException in put CatalogCPCDiscount", e);
             throw new HbaseException(e.getMessage());
