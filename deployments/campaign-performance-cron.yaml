@@ -1,0 +1,58 @@
+---
+
+app_name: campaign-performance-cron
+app_port: 7070
+health_check: /health
+module: cps
+bu: supply
+team: supplier-ads
+priority: p1
+initialDelaySeconds: 60
+replica_count: 1
+cron: true
+environment:
+  prd:
+    as_enabled: false
+    as_min: 1
+    as_max: 1
+    appMetrics: true
+    deployment_args:
+      - -Dspring.profiles.active=prd
+      - -XX:+UseG1GC
+      - -XX:+AlwaysPreTouch
+      - -XX:+PrintGCDateStamps
+      - -XX:+PrintGCDetails
+      - -XX:+PrintGCApplicationStoppedTime
+      - -XX:+PrintGCApplicationConcurrentTime
+      - -XX:+PrintHeapAtGC
+      - -Xloggc:/var/log/gc.log
+      - -XX:+UseGCLogFileRotation
+      - -XX:NumberOfGCLogFiles=5
+      - -XX:GCLogFileSize=9000k
+    jobs:
+      - adsdeduction:
+          schedule: "0 */6 * * *"
+          cpu_limit: 2
+          cpu_request: 1
+          memory_limit: 4G
+          memory_request: 2G
+          command:
+            - /bin/sh
+            - -c
+            - java -javaagent:/opt/jmx_exporter.jar=8880:/jmx/jmx-config.yaml -Xms1G -Xmx3G -XX:+AlwaysPreTouch  -jar /opt/target/cps.jar ads_deduction_campaign_supplier
+      - cpgnperfesindex:
+          schedule: "0 */2 * * *"
+          cpu_limit: 2
+          cpu_request: 1
+          memory_limit: 4G
+          memory_request: 2G
+          command:
+            - /bin/sh
+            - -c
+            - java -javaagent:/opt/jmx_exporter.jar=8880:/jmx/jmx-config.yaml -Xms1G -Xmx3G -XX:+AlwaysPreTouch  -jar /opt/target/cps.jar.jar campaign_performance_es_indexing
+    concurrencyPolicy: Forbid
+    successfulJobsHistoryLimit: 0
+    failedJobsHistoryLimit: 0
+    startingDeadlineSeconds: 400
+    backoffLimit: 5
+    restartPolicy: Never
