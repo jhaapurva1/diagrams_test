@@ -133,11 +133,15 @@ public class IngestionConfluentKafkaViewEventsListener implements ApplicationLis
                     log.error("Failed to push to dead queue event {}", eachAdViewEvent);
                 }
             }
+            statsdMetricManager.incrementCounter(VIEW_EVENT_KEY, adViewEvents.size(), String.format(VIEW_EVENT_TAGS, NAN, NAN, NAN, INVALID,
+                    NAN));
             return;
         }
 
         if (CollectionUtils.isEmpty(catalogMetadataMap)) {
             // No active campaign found for catalogs
+            statsdMetricManager.incrementCounter(VIEW_EVENT_KEY, adViewEvents.size(), String.format(VIEW_EVENT_TAGS, NAN, NAN, NAN, INVALID,
+                    AdInteractionInvalidReason.CAMPAIGN_INACTIVE));
             return;
         }
 
