@@ -49,7 +49,7 @@ environment:
           command:
             - /bin/sh
             - -c
-            - java -javaagent:/opt/jmx_exporter.jar=8880:/jmx/jmx-config.yaml -Xms1G -Xmx3G -XX:+AlwaysPreTouch  -jar /opt/target/cps.jar.jar campaign_performance_es_indexing
+            - java -javaagent:/opt/jmx_exporter.jar=8880:/jmx/jmx-config.yaml -Xms1G -Xmx3G -XX:+AlwaysPreTouch  -jar /opt/target/cps.jar campaign_performance_es_indexing
     concurrencyPolicy: Forbid
     successfulJobsHistoryLimit: 0
     failedJobsHistoryLimit: 0
