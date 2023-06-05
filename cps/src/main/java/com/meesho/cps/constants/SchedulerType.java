@@ -9,5 +9,14 @@ public enum SchedulerType {
     REAL_ESTATE_METADATA_CACHE_SYNC,
     CAMPAIGN_PERFORMANCE_ES_INDEXING,
     ADS_DEDUCTION_CAMPAIGN_SUPPLIER,
-    CATALOG_CPC_DISCOUNT
+    CATALOG_CPC_DISCOUNT,
+    UNKNOWN;
+
+    public static SchedulerType getInstance(String name) {
+        try {
+            return SchedulerType.valueOf(name.toUpperCase());
+        } catch (Exception ignored) {
+        }
+        return SchedulerType.UNKNOWN;
+    }
 }

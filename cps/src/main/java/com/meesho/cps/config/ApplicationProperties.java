@@ -159,6 +159,9 @@ public class ApplicationProperties {
     @Value("${cps.common.async.executor.max.pool.size}")
     private Integer commonAsyncExecutorMaxPoolSize;
 
+    @Value("${cron.app.termination.delay.milliseconds}")
+    private Long cronAppTerminationDelayMilliseconds;
+
     @PostConstruct
     public void init() {
         SchedulerProperty.SchedulerPropertyBuilder schedulerPropertyBuilder = SchedulerProperty.builder();
