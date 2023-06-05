@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 @Data
@@ -17,10 +18,10 @@ import java.sql.Timestamp;
 public class CatalogCPCDiscountPrestoData {
 
     @DataLakeColumn(name = "catalog_id")
-    private Long catalogId;
+    private Integer catalogId;
 
     @DataLakeColumn(name = "discount")
-    private Double discount;
+    private BigDecimal discount;
 
     @DataLakeColumn(name = "created_at")
     private Timestamp created_at;

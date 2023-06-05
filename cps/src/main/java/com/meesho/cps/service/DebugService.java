@@ -228,7 +228,7 @@ public class DebugService {
         return catalogCPCDiscount;
     }
 
-    public CatalogCPCDiscount getCatalogCPCDiscount(Long catalogId) {
+    public CatalogCPCDiscount getCatalogCPCDiscount(Integer catalogId) {
         return catalogCPCDiscountRepository.get(catalogId);
     }
 

@@ -40,19 +40,19 @@ public class CatalogCPCDiscountRepository {
 
     private CatalogCPCDiscount mapper(Result result) {
         CatalogCPCDiscount catalogCPCDiscount = new CatalogCPCDiscount();
-        catalogCPCDiscount.setCatalogId(HbaseUtils.getColumnAsLong(COLUMN_FAMILY, COLUMN_CATALOG_ID, result));
-        catalogCPCDiscount.setDiscount(HbaseUtils.getColumnAsDouble(COLUMN_FAMILY, COLUMN_DISCOUNT, result));
+        catalogCPCDiscount.setCatalogId(HbaseUtils.getColumnAsInteger(COLUMN_FAMILY, COLUMN_CATALOG_ID, result));
+        catalogCPCDiscount.setDiscount(HbaseUtils.getColumnAsBigDecimal(COLUMN_FAMILY, COLUMN_DISCOUNT, result));
         return catalogCPCDiscount;
     }
 
     private Put mapper(CatalogCPCDiscount catalogCPCDiscount) {
         Put put = new Put(Bytes.toBytes(catalogCPCDiscount.getRowKey()));
-        HbaseUtils.addLongColumn(COLUMN_FAMILY, COLUMN_CATALOG_ID, catalogCPCDiscount.getCatalogId(), put);
-        HbaseUtils.addDoubleColumn(COLUMN_FAMILY, COLUMN_DISCOUNT, catalogCPCDiscount.getDiscount(), put);
+        HbaseUtils.addIntegerColumn(COLUMN_FAMILY, COLUMN_CATALOG_ID, catalogCPCDiscount.getCatalogId(), put);
+        HbaseUtils.addBigDecimalColumn(COLUMN_FAMILY, COLUMN_DISCOUNT, catalogCPCDiscount.getDiscount(), put);
         return put;
     }
 
-    public CatalogCPCDiscount get(Long catalogId) {
+    public CatalogCPCDiscount get(Integer catalogId) {
         Get get = new Get(Bytes.toBytes(CatalogCPCDiscount.generateRowKey(catalogId)));
         try (Table table = getTable()) {
             Result result = table.get(get);

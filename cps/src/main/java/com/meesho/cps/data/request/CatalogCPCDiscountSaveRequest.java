@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -14,9 +15,9 @@ public class CatalogCPCDiscountSaveRequest {
 
     @NotNull
     @JsonProperty("catalog_id")
-    private Long catalogId;
+    private Integer catalogId;
 
     @NotNull
     @JsonProperty("discount")
-    private Double discount;
+    private BigDecimal discount;
 }

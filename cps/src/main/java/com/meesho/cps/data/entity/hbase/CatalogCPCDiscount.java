@@ -8,6 +8,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -15,13 +17,13 @@ import lombok.NoArgsConstructor;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CatalogCPCDiscount {
 
-    private Long catalogId;
-    private Double discount;
+    private Integer catalogId;
+    private BigDecimal discount;
 
     @JsonIgnore
     private String rowKey;
 
-    public static String generateRowKey(Long catalogId) {
+    public static String generateRowKey(Integer catalogId) {
         return HashingUtils.generateRowKeyWithHashedId(catalogId.toString());
     }
 

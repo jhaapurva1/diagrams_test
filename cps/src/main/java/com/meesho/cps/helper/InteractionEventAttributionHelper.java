@@ -210,12 +210,15 @@ public class InteractionEventAttributionHelper {
     }
     //This returns the cpc to be considered for charging.
     public BigDecimal getChargeableCpc(BigDecimal servingTimeCpc, CampaignDetails campaignDetails, Long catalogId) {
-        BigDecimal chargeableCPC = Objects.isNull(servingTimeCpc) ? campaignDetails.getCpc() : servingTimeCpc;
-        CatalogCPCDiscount catalogCPCDiscount = catalogCPCDiscountRepository.get(catalogId);
-        if (Objects.nonNull(catalogCPCDiscount) && Objects.nonNull(chargeableCPC)) {
-            chargeableCPC = chargeableCPC.multiply(BigDecimal.ONE.subtract(BigDecimal.valueOf(catalogCPCDiscount.getDiscount())));
+        /*
+        CatalogCPCDiscount catalogCPCDiscount = catalogCPCDiscountRepository.get(catalogId.intValue());
+        if (Objects.nonNull(catalogCPCDiscount) && Objects.nonNull(chargeableCPC)
+                && catalogCPCDiscount.getDiscount().compareTo(BigDecimal.ZERO) >= 0 && catalogCPCDiscount.getDiscount().compareTo(BigDecimal.ONE) <= 0) {
+            chargeableCPC = chargeableCPC.multiply(BigDecimal.ONE.subtract(catalogCPCDiscount.getDiscount()));
         }
-        return chargeableCPC;
+
+         */
+        return Objects.isNull(servingTimeCpc) ? campaignDetails.getCpc() : servingTimeCpc;
     }
 
     public HashMap<String, BigDecimal> getMultipliedCpcData(BigDecimal chargeableCpc,

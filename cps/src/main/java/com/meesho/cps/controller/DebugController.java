@@ -106,7 +106,7 @@ public class DebugController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     @RequestMapping(value = Constants.API.DEBUG_API.GET_CATALOG_CPC_DISCOUNT, method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public CatalogCPCDiscount getCatalogCPCDiscount(@RequestParam("catalogId") Long catalogId) throws Exception {
+    public CatalogCPCDiscount getCatalogCPCDiscount(@RequestParam("catalogId") Integer catalogId) throws Exception {
         return debugService.getCatalogCPCDiscount(catalogId);
     }
 
