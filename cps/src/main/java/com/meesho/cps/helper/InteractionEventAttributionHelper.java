@@ -141,7 +141,7 @@ public class InteractionEventAttributionHelper {
     public void sendBudgetExhaustedEvent(Long campaignId, Long catalogId) {
         BudgetExhaustedEvent budgetExhaustedEvent = BudgetExhaustedEvent.builder().catalogId(catalogId).campaignId(campaignId).build();
         try {
-            kafkaService.sendMessage(budgetExhaustedTopic, String.valueOf(campaignId),
+            kafkaService.sendMessageToMq(119L, String.valueOf(campaignId),
                     objectMapper.writeValueAsString(budgetExhaustedEvent));
         } catch (Exception e) {
             log.error("Exception while sending budgetExhausted event {}", budgetExhaustedEvent, e);

@@ -2,6 +2,7 @@ package com.meesho.cps;
 
 import com.meesho.cps.db.redis.dao.RealEstateMetadataCacheDao;
 
+import com.meesho.mq.client.MqClientConfiguration;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -13,7 +14,9 @@ import org.springframework.context.annotation.Bean;
 import java.util.Arrays;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Import;
 
+@Import(MqClientConfiguration.class)
 @SpringBootApplication(exclude = {KafkaAutoConfiguration.class, DataSourceAutoConfiguration.class}, scanBasePackages = {
         "com.meesho"})
 @Slf4j

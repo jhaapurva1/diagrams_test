@@ -18,6 +18,7 @@ import com.meesho.cps.data.entity.hbase.CampaignMetrics;
 import com.meesho.cps.data.entity.kafka.DayWisePerformancePrismEvent;
 import com.meesho.cps.data.entity.mysql.CampaignPerformance;
 import com.meesho.cps.data.internal.CampaignCatalogDate;
+import com.meesho.cps.data.request.BudgetExhaustedEventRequest;
 import com.meesho.cps.data.request.CampaignCatalogDateMetricsSaveRequest;
 import com.meesho.cps.data.request.CampaignDatewiseMetricsSaveRequest;
 import com.meesho.cps.data.request.CampaignMetricsSaveRequest;
@@ -28,6 +29,7 @@ import com.meesho.cps.db.hbase.repository.CampaignMetricsRepository;
 import com.meesho.cps.db.mysql.dao.CampaignPerformanceDao;
 import com.meesho.cps.db.redis.dao.UpdatedCampaignCatalogCacheDao;
 import com.meesho.cps.helper.BackfillCampaignHelper;
+import com.meesho.cps.helper.InteractionEventAttributionHelper;
 import com.meesho.cps.service.external.PrismService;
 import com.meesho.cps.transformer.DebugTransformer;
 import com.meesho.cps.transformer.PrismEventTransformer;
@@ -86,6 +88,9 @@ public class DebugService {
 
     @Autowired
     private UpdatedCampaignCatalogCacheDao updatedCampaignCatalogCacheDao;
+
+    @Autowired
+    InteractionEventAttributionHelper interactionEventAttributionHelper;
 
     @Value(ConsumerConstants.DayWisePerformanceEventsConsumer.TOPIC)
     String dayWisePerformanceEventsConsumerTopic;
@@ -222,6 +227,10 @@ public class DebugService {
             prismService.publishEvent(Constants.PrismEventNames.DAY_WISE_PERF_EVENTS, batchEventLists.get(i-1));
             log.info("Backfill event batch processed "+ i);
         }
+    }
+
+    public void sendBudgetExhaustedEvent(BudgetExhaustedEventRequest request) {
+        interactionEventAttributionHelper.sendBudgetExhaustedEvent(request.getCampaignId(), request.getCatalogId());
     }
 
 }
