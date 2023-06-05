@@ -20,7 +20,7 @@ import java.util.List;
 @Repository
 public class CatalogCPCDiscountRepository {
 
-    private static final String TABLE_NAME = "catalog_cpc_discount";
+    private static final String TABLE_NAME = "catalog_cpc_discount_preprod";
     private static final byte[] COLUMN_FAMILY = Bytes.toBytes("cf");
     private static final byte[] COLUMN_CATALOG_ID = Bytes.toBytes("catalog_id");
     private static final byte[] COLUMN_DISCOUNT = Bytes.toBytes("discount");
