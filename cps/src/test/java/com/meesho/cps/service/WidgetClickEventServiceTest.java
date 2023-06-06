@@ -85,7 +85,7 @@ public class WidgetClickEventServiceTest {
         multipliedCpcData.put(CpcData.MULTIPLIED_CPC, commonCpcValue);
         multipliedCpcData.put(CpcData.MULTIPLIER, BigDecimal.ONE);
         Mockito.doReturn(commonCpcValue).when(interactionEventAttributionHelper)
-            .getChargeableCpc(any(), any());
+            .getChargeableCpc(any(), any(), any());
         Mockito.doReturn(multipliedCpcData).when(interactionEventAttributionHelper)
             .getMultipliedCpcData(any(), any(), any());
         Mockito.doReturn(DateTimeUtils.getCurrentLocalDateTimeInIST().toLocalDate()).when(campaignHelper)

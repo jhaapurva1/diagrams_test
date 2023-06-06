@@ -4,9 +4,11 @@ import com.meesho.cps.constants.Constants;
 import com.meesho.cps.data.entity.hbase.CampaignCatalogDateMetrics;
 import com.meesho.cps.data.entity.hbase.CampaignDatewiseMetrics;
 import com.meesho.cps.data.entity.hbase.CampaignMetrics;
+import com.meesho.cps.data.entity.hbase.CatalogCPCDiscount;
 import com.meesho.cps.data.request.CampaignCatalogDateMetricsSaveRequest;
 import com.meesho.cps.data.request.CampaignDatewiseMetricsSaveRequest;
 import com.meesho.cps.data.request.CampaignMetricsSaveRequest;
+import com.meesho.cps.data.request.CatalogCPCDiscountSaveRequest;
 import com.meesho.cps.service.DebugService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,6 +100,23 @@ public class DebugController {
             method = RequestMethod.GET)
     public void postBackfillCampaignCatalogDayPerformanceEventsToPrism(@RequestParam("path") String path) {
         debugService.BackillCampaignCatalogDayPerformanceEventsToPrism(path);
+    }
+
+    @ApiOperation(value = Constants.API.DEBUG_API.GET_CATALOG_CPC_DISCOUNT, notes = "debug api to get catalog cpc discount",
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = Constants.API.DEBUG_API.GET_CATALOG_CPC_DISCOUNT, method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public CatalogCPCDiscount getCatalogCPCDiscount(@RequestParam("catalogId") Integer catalogId) throws Exception {
+        return debugService.getCatalogCPCDiscount(catalogId);
+    }
+
+    @ApiOperation(value = Constants.API.DEBUG_API.SAVE_CATALOG_CPC_DISCOUNT, notes = "debug api to save catalog cpc discount",
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = Constants.API.DEBUG_API.SAVE_CATALOG_CPC_DISCOUNT, method = RequestMethod.POST,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public CatalogCPCDiscount saveCatalogCPCDiscount(@Valid @RequestBody CatalogCPCDiscountSaveRequest request)
+            throws Exception {
+        return debugService.saveCatalogCPCDiscount(request);
     }
 
 }

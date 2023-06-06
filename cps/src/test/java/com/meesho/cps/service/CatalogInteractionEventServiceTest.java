@@ -289,7 +289,7 @@ public class CatalogInteractionEventServiceTest {
         Mockito.doReturn(getSampleSupplierCampaignCatalogMetaDataResponseForNewRequests(2)).when(adService).getSupplierCampaignCatalogMetadata(any(), any(), any(), any());
         Mockito.doReturn(clickBillHandler).when(adBillFactory).getBillHandlerForBillVersion(any());
         Mockito.doNothing().when(interactionEventAttributionHelper).sendCatalogBudgetExhaustEvent(any(), any());
-        Mockito.doReturn(BigDecimal.valueOf(0.42)).when(interactionEventAttributionHelper).getChargeableCpc(any(), any());
+        Mockito.doReturn(BigDecimal.valueOf(0.42)).when(interactionEventAttributionHelper).getChargeableCpc(any(), any(), any());
         AdInteractionEvent adInteractionEvent = getSampleNewAdInteractionEvent("ad_click");
         Long catalogId = adInteractionEvent.getProperties().getId();
         catalogInteractionEventService.handle(adInteractionEvent);
