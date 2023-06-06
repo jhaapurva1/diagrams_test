@@ -36,6 +36,8 @@ public class Constants {
             public static final String CAMPAIGN_PERFORMANCE_MIGRATE = "/campaign_performance/migrate";
             public static final String GET_CAMPAIGN_DATEWISE_METRICS = "/campaign_datewise_metrics/get";
             public static final String BACKFILL_CAMPAIGN_CATALOG_DAY_PERFORMANCE_EVENT = "/backfill/campaign_catalog_day_performance_events";
+            public static final String SAVE_CATALOG_CPC_DISCOUNT = "/catalog_cpc_discount/save";
+            public static final String GET_CATALOG_CPC_DISCOUNT = "/catalog_cpc_discount/get";
         }
 
         public static class PrismService {
@@ -72,6 +74,14 @@ public class Constants {
             public static final String ENABLE_SCHEDULER = "#{${scheduler.ads.deduction.campaign.supplier.enable}}";
             public static final String BATCH_SIZE = "#{${scheduler.ads.deduction.campaign.supplier.batch.size}}";
             public static final String PROCESS_BATCH_SIZE = "#{${scheduler.ads.deduction.campaign.supplier.process.batch.size}}";
+        }
+
+        public static class CATALOG_CPC_DISCOUNT {
+            public static final String MONITOR_CODE = "#{${scheduler.catalog_cpc_discount.monitor.code}}";
+            public static final String CRON_EXPRESSION = "#{${scheduler.catalog_cpc_discount.cron.expression}}";
+            public static final String ENABLE_SCHEDULER = "#{${scheduler.catalog_cpc_discount.enable}}";
+            public static final String BATCH_SIZE = "#{${scheduler.catalog_cpc_discount.batch.size}}";
+            public static final String PROCESS_BATCH_SIZE = "#{${scheduler.catalog_cpc_discount.process.batch.size}}";
         }
     }
 

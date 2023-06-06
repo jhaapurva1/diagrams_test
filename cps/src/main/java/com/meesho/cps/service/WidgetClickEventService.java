@@ -126,7 +126,7 @@ public class WidgetClickEventService {
         Integer billVersion = campaignDetails.getBillVersion();
         CampaignType campaignType = CampaignType.fromValue(campaignDetails.getCampaignType());
         campaignId = campaignDetails.getCampaignId();
-        cpc = interactionEventAttributionHelper.getChargeableCpc(cpc, campaignDetails);
+        cpc = interactionEventAttributionHelper.getChargeableCpc(cpc, campaignDetails, catalogId);
         HashMap<String, BigDecimal> multipliedCpcData = interactionEventAttributionHelper.getMultipliedCpcData(
             cpc, adWidgetClickEvent.getProperties().getSourceScreen(),widgetEventHelper);
         cpc = multipliedCpcData.get(CpcData.MULTIPLIED_CPC);
