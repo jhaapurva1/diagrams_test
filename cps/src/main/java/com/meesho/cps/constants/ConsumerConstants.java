@@ -101,7 +101,6 @@ public class ConsumerConstants {
         public static final String CONCURRENCY = "${kafka.ingestion.view.event.consumer.concurrency}";
         public static final String MAX_POLL_INTERVAL_MS = "${kafka.ingestion.view.event.consumer.max.poll.interval.ms}";
         public static final String BATCH_SIZE = "${kafka.ingestion.view.event.consumer.batch.size}";
-        public static final String PARTITION_ASSIGNOR_STRATEGY = "${kafka.ingestion.view.event.consumer.partition.assignment.strategy}";
     }
 
     public static class PrestoConsumer {
