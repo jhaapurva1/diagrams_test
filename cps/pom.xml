@@ -160,7 +160,7 @@
         <dependency>
             <groupId>com.meesho</groupId>
             <artifactId>mq-client-blocking</artifactId>
-            <version>2.3.12.RELEASE.6</version>
+            <version>2.3.12.RELEASE.7</version>
         </dependency>
 
         <!-- Swagger -->
