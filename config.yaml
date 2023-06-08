@@ -15,6 +15,7 @@ environment:
   prd:
     deployment_order:
       - campaign-performance
+      - campaign-performance-cron
       - campaign-performance-consumer
       - campaign-performance-scheduler
   dev:
