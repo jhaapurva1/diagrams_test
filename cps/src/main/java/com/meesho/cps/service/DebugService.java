@@ -11,10 +11,7 @@ import com.meesho.ads.lib.utils.HbaseUtils;
 import com.meesho.cps.config.ApplicationProperties;
 import com.meesho.cps.constants.Constants;
 import com.meesho.cps.constants.ConsumerConstants;
-import com.meesho.cps.data.entity.hbase.CampaignCatalogDateMetrics;
-import com.meesho.cps.data.entity.hbase.CampaignCatalogMetrics;
-import com.meesho.cps.data.entity.hbase.CampaignDatewiseMetrics;
-import com.meesho.cps.data.entity.hbase.CampaignMetrics;
+import com.meesho.cps.data.entity.hbase.*;
 import com.meesho.cps.data.entity.kafka.DayWisePerformancePrismEvent;
 import com.meesho.cps.data.entity.mysql.CampaignPerformance;
 import com.meesho.cps.data.internal.CampaignCatalogDate;
@@ -22,10 +19,8 @@ import com.meesho.cps.data.request.BudgetExhaustedEventRequest;
 import com.meesho.cps.data.request.CampaignCatalogDateMetricsSaveRequest;
 import com.meesho.cps.data.request.CampaignDatewiseMetricsSaveRequest;
 import com.meesho.cps.data.request.CampaignMetricsSaveRequest;
-import com.meesho.cps.db.hbase.repository.CampaignCatalogDateMetricsRepository;
-import com.meesho.cps.db.hbase.repository.CampaignCatalogMetricsRepository;
-import com.meesho.cps.db.hbase.repository.CampaignDatewiseMetricsRepository;
-import com.meesho.cps.db.hbase.repository.CampaignMetricsRepository;
+import com.meesho.cps.data.request.CatalogCPCDiscountSaveRequest;
+import com.meesho.cps.db.hbase.repository.*;
 import com.meesho.cps.db.mysql.dao.CampaignPerformanceDao;
 import com.meesho.cps.db.redis.dao.UpdatedCampaignCatalogCacheDao;
 import com.meesho.cps.helper.BackfillCampaignHelper;
@@ -70,6 +65,9 @@ public class DebugService {
 
     @Autowired
     CampaignDatewiseMetricsRepository campaignDatewiseMetricsRepository;
+
+    @Autowired
+    CatalogCPCDiscountRepository catalogCPCDiscountRepository;
 
     @Autowired
     CampaignPerformanceDao campaignPerformanceDao;
@@ -227,6 +225,16 @@ public class DebugService {
             prismService.publishEvent(Constants.PrismEventNames.DAY_WISE_PERF_EVENTS, batchEventLists.get(i-1));
             log.info("Backfill event batch processed "+ i);
         }
+    }
+
+    public CatalogCPCDiscount saveCatalogCPCDiscount(CatalogCPCDiscountSaveRequest request) {
+        CatalogCPCDiscount catalogCPCDiscount = DebugTransformer.transform(request);
+        catalogCPCDiscountRepository.putAll(Collections.singletonList(catalogCPCDiscount));
+        return catalogCPCDiscount;
+    }
+
+    public CatalogCPCDiscount getCatalogCPCDiscount(Integer catalogId) {
+        return catalogCPCDiscountRepository.get(catalogId);
     }
 
     public void sendBudgetExhaustedEvent(BudgetExhaustedEventRequest request) {

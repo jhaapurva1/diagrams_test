@@ -50,6 +50,16 @@ environment:
             - /bin/sh
             - -c
             - java -javaagent:/opt/jmx_exporter.jar=8880:/jmx/jmx-config.yaml -Xms1G -Xmx3G -XX:+AlwaysPreTouch  -jar /opt/target/cps.jar campaign_performance_es_indexing
+      - catalogcpcdiscnt:
+          schedule: "0 */6 * * *"
+          cpu_limit: 2
+          cpu_request: 1
+          memory_limit: 4G
+          memory_request: 2G
+          command:
+            - /bin/sh
+            - -c
+            - java -javaagent:/opt/jmx_exporter.jar=8880:/jmx/jmx-config.yaml -Xms1G -Xmx3G -XX:+AlwaysPreTouch  -jar /opt/target/cps.jar catalog_cpc_discount
     concurrencyPolicy: Forbid
     successfulJobsHistoryLimit: 0
     failedJobsHistoryLimit: 0

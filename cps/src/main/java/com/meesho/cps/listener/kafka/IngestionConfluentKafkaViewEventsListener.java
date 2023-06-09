@@ -71,7 +71,8 @@ public class IngestionConfluentKafkaViewEventsListener implements ApplicationLis
             concurrency = ConsumerConstants.IngestionViewEventsConsumer.CONCURRENCY,
             properties = {
                     ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG + "=" + ConsumerConstants.IngestionViewEventsConsumer.MAX_POLL_INTERVAL_MS,
-                    ConsumerConfig.MAX_POLL_RECORDS_CONFIG + "=" + ConsumerConstants.IngestionViewEventsConsumer.BATCH_SIZE
+                    ConsumerConfig.MAX_POLL_RECORDS_CONFIG + "=" + ConsumerConstants.IngestionViewEventsConsumer.BATCH_SIZE,
+                    ConsumerConfig.PARTITION_ASSIGNMENT_STRATEGY_CONFIG + "=" + ConsumerConstants.IngestionViewEventsConsumer.PARTITION_ASSIGNOR_STRATEGY
             }
     )
     @DigestLogger(metricType = MetricType.METHOD, tagSet = "className=ingestionConfluentViewEventsConsumer")
