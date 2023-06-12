@@ -5,11 +5,11 @@
     <parent>
         <groupId>com.meesho</groupId>
         <artifactId>campaign-performance-service</artifactId>
-        <version>0.0.139-RELEASE</version>
+        <version>0.0.140-RELEASE</version>
     </parent>
     <groupId>com.meesho</groupId>
     <artifactId>cps</artifactId>
-    <version>0.0.139-RELEASE</version>
+    <version>0.0.140-RELEASE</version>
     <name>cps</name>
     <description>Campaign Performance Service</description>
     <properties>
@@ -156,6 +156,11 @@
             <groupId>org.apache.avro</groupId>
             <artifactId>avro-maven-plugin</artifactId>
             <version>${avro.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.meesho</groupId>
+            <artifactId>mq-client-blocking</artifactId>
+            <version>2.3.12.RELEASE.7</version>
         </dependency>
 
         <!-- Swagger -->
