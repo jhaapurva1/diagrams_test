@@ -11,6 +11,7 @@ import com.meesho.cps.helper.ValidationHelper;
 import com.meesho.cps.service.CatalogInteractionEventService;
 import com.meesho.instrumentation.annotation.DigestLogger;
 import com.meesho.instrumentation.enums.MetricType;
+import com.meesho.mq.client.annotation.MqListener;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -45,16 +46,13 @@ public class AdInteractionEventListener extends BaseKafkaListener<AdInteractionE
     @Value(ConsumerConstants.DelayedRetryConsumer.TOPIC)
     String delayedRetryConsumerTopic;
 
-    @KafkaListener(id = ConsumerConstants.InteractionEventsConsumer.ID,
-            containerFactory = ConsumerConstants.AdServiceKafka.CONTAINER_FACTORY, topics =
-            ConsumerConstants.InteractionEventsConsumer.TOPIC, autoStartup =
-            ConsumerConstants.InteractionEventsConsumer.AUTO_START, concurrency =
-            ConsumerConstants.InteractionEventsConsumer.CONCURRENCY, properties = {
-            ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG + "=" +
-                    ConsumerConstants.InteractionEventsConsumer.MAX_POLL_INTERVAL_MS,
-            ConsumerConfig.MAX_POLL_RECORDS_CONFIG + "=" + ConsumerConstants.InteractionEventsConsumer.BATCH_SIZE})
-    @DigestLogger(metricType = MetricType.METHOD, tagSet = "consumer=AdInteractionEventListener")
+    @MqListener(mqId = ConsumerConstants.InteractionEventsConsumer.MQ_ID, type = String.class)
     public void listen(ConsumerRecord<String, String> consumerRecord) {
+        digestLoggerProxy(consumerRecord);
+    }
+
+    @DigestLogger(metricType = MetricType.METHOD, tagSet = "consumer=AdInteractionEventListener")
+    public void digestLoggerProxy(ConsumerRecord<String, String> consumerRecord){
         super.listen(consumerRecord);
     }
 

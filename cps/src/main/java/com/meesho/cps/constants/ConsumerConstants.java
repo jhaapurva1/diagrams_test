@@ -78,6 +78,7 @@ public class ConsumerConstants {
         public static final String CONCURRENCY = "${kafka.adserver.interaction.event.consumer.concurrency}";
         public static final String MAX_POLL_INTERVAL_MS = "${kafka.adserver.interaction.event.consumer.max.poll.interval.ms}";
         public static final String BATCH_SIZE = "${kafka.adserver.interaction.event.consumer.batch.size}";
+        public static final String MQ_ID = "${kafka.adserver.interaction.event.consumer.mq.id}";
     }
 
     public static class DayWisePerformanceEventsConsumer {

@@ -12,6 +12,7 @@ import com.meesho.cps.config.ApplicationProperties;
 import com.meesho.cps.constants.Constants;
 import com.meesho.cps.constants.ConsumerConstants;
 import com.meesho.cps.data.entity.hbase.*;
+import com.meesho.cps.data.entity.kafka.AdInteractionEvent;
 import com.meesho.cps.data.entity.kafka.DayWisePerformancePrismEvent;
 import com.meesho.cps.data.entity.mysql.CampaignPerformance;
 import com.meesho.cps.data.internal.CampaignCatalogDate;
@@ -92,6 +93,9 @@ public class DebugService {
 
     @Value(ConsumerConstants.DayWisePerformanceEventsConsumer.TOPIC)
     String dayWisePerformanceEventsConsumerTopic;
+
+    @Value(Constants.Kafka.INTERACTION_EVENT_MQ_ID)
+    Long interactionEventMqID;
 
     public CampaignCatalogDateMetrics saveCampaignCatalogMetrics(
             CampaignCatalogDateMetricsSaveRequest campaignCatalogMetricsSaveRequest) throws Exception {
@@ -239,6 +243,12 @@ public class DebugService {
 
     public void sendBudgetExhaustedEvent(BudgetExhaustedEventRequest request) {
         interactionEventAttributionHelper.sendBudgetExhaustedEvent(request.getCampaignId(), request.getCatalogId());
+    }
+
+    public void publishKafkaInteractionEvent(AdInteractionEvent adInteractionEvent) throws JsonProcessingException {
+        kafkaService.sendMessageToMq(interactionEventMqID,
+                adInteractionEvent.getProperties().getId().toString(),
+                objectMapper.writeValueAsString(adInteractionEvent));
     }
 
 }

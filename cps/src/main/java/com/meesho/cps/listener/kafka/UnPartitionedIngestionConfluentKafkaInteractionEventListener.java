@@ -44,6 +44,9 @@ public class UnPartitionedIngestionConfluentKafkaInteractionEventListener {
     @Value(ConsumerConstants.InteractionEventsConsumer.TOPIC)
     String interactionEventsConsumerTopic;
 
+    @Value(com.meesho.cps.constants.Constants.Kafka.INTERACTION_EVENT_MQ_ID)
+    Long interactionEventMqID;
+
     @KafkaListener(id = ConsumerConstants.IngestionInteractionEventsConsumer.CONFLUENT_CONSUMER_ID, containerFactory =
             ConsumerConstants.IngestionServiceConfluentKafka.CONTAINER_FACTORY, topics = {
             "#{'${kafka.ingestion.interaction.event.consumer.topics}'.split(',')}"}, autoStartup =
@@ -69,7 +72,7 @@ public class UnPartitionedIngestionConfluentKafkaInteractionEventListener {
 
             AdInteractionEvent adInteractionEvent = objectMapper.readValue(value, AdInteractionEvent.class);
 
-            kafkaService.sendMessage(interactionEventsConsumerTopic,
+            kafkaService.sendMessageToMq(interactionEventMqID,
                     adInteractionEvent.getProperties().getId().toString(),
                     objectMapper.writeValueAsString(adInteractionEvent));
 
