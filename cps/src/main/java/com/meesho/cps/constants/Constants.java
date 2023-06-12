@@ -38,6 +38,7 @@ public class Constants {
             public static final String BACKFILL_CAMPAIGN_CATALOG_DAY_PERFORMANCE_EVENT = "/backfill/campaign_catalog_day_performance_events";
             public static final String SAVE_CATALOG_CPC_DISCOUNT = "/catalog_cpc_discount/save";
             public static final String GET_CATALOG_CPC_DISCOUNT = "/catalog_cpc_discount/get";
+            public static final String SEND_BUDGET_EXHAUSTED_EVENT = "/budget_exhausted_event/send";
         }
 
         public static class PrismService {
@@ -138,7 +139,7 @@ public class Constants {
     }
 
     public static class Kafka {
-        public static final String BUDGET_EXHAUSTED_TOPIC = "${kafka.budget_exhausted.topic}";
+        public static final String BUDGET_EXHAUSTED_MQ_ID= "${kafka.budget_exhausted.mq.id}";
 
         public static final String ADS_COST_DEDUCTION_TOPIC = "${kafka.ads.cost.deduction.topic}";
 

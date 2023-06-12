@@ -5,6 +5,7 @@ import com.meesho.cps.data.entity.hbase.CampaignCatalogDateMetrics;
 import com.meesho.cps.data.entity.hbase.CampaignDatewiseMetrics;
 import com.meesho.cps.data.entity.hbase.CampaignMetrics;
 import com.meesho.cps.data.entity.hbase.CatalogCPCDiscount;
+import com.meesho.cps.data.request.BudgetExhaustedEventRequest;
 import com.meesho.cps.data.request.CampaignCatalogDateMetricsSaveRequest;
 import com.meesho.cps.data.request.CampaignDatewiseMetricsSaveRequest;
 import com.meesho.cps.data.request.CampaignMetricsSaveRequest;
@@ -117,6 +118,15 @@ public class DebugController {
     public CatalogCPCDiscount saveCatalogCPCDiscount(@Valid @RequestBody CatalogCPCDiscountSaveRequest request)
             throws Exception {
         return debugService.saveCatalogCPCDiscount(request);
+    }
+
+    @ApiOperation(value =  Constants.API.DEBUG_API.SEND_BUDGET_EXHAUSTED_EVENT,
+            notes = "Sends budget exhausted event",
+            consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(path = Constants.API.DEBUG_API.SEND_BUDGET_EXHAUSTED_EVENT,
+            method = RequestMethod.POST)
+    public void sendBudgetExhaustedEvent(@Valid @RequestBody BudgetExhaustedEventRequest request) {
+        debugService.sendBudgetExhaustedEvent(request);
     }
 
 }

@@ -62,8 +62,8 @@ public class InteractionEventAttributionHelper {
     @Autowired
     ObjectMapper objectMapper;
 
-    @Value(Constants.Kafka.BUDGET_EXHAUSTED_TOPIC)
-    String budgetExhaustedTopic;
+    @Value(Constants.Kafka.BUDGET_EXHAUSTED_MQ_ID)
+    Long budgetExhaustedMqID;
 
     @Value(Constants.Kafka.SUPPLIER_WEEKLY_BUDGET_EXHAUSTED_TOPIC)
     private String suppliersWeeklyBudgetExhaustedTopic;
@@ -142,7 +142,7 @@ public class InteractionEventAttributionHelper {
     public void sendBudgetExhaustedEvent(Long campaignId, Long catalogId) {
         BudgetExhaustedEvent budgetExhaustedEvent = BudgetExhaustedEvent.builder().catalogId(catalogId).campaignId(campaignId).build();
         try {
-            kafkaService.sendMessage(budgetExhaustedTopic, String.valueOf(campaignId),
+            kafkaService.sendMessageToMq(budgetExhaustedMqID, String.valueOf(campaignId),
                     objectMapper.writeValueAsString(budgetExhaustedEvent));
         } catch (Exception e) {
             log.error("Exception while sending budgetExhausted event {}", budgetExhaustedEvent, e);
