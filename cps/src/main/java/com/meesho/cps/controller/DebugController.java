@@ -5,6 +5,7 @@ import com.meesho.cps.data.entity.hbase.CampaignCatalogDateMetrics;
 import com.meesho.cps.data.entity.hbase.CampaignDatewiseMetrics;
 import com.meesho.cps.data.entity.hbase.CampaignMetrics;
 import com.meesho.cps.data.entity.hbase.CatalogCPCDiscount;
+import com.meesho.cps.data.entity.kafka.AdInteractionEvent;
 import com.meesho.cps.data.request.BudgetExhaustedEventRequest;
 import com.meesho.cps.data.request.CampaignCatalogDateMetricsSaveRequest;
 import com.meesho.cps.data.request.CampaignDatewiseMetricsSaveRequest;
@@ -127,6 +128,15 @@ public class DebugController {
             method = RequestMethod.POST)
     public void sendBudgetExhaustedEvent(@Valid @RequestBody BudgetExhaustedEventRequest request) {
         debugService.sendBudgetExhaustedEvent(request);
+    }
+
+    @ApiOperation(value = Constants.API.DEBUG_API.PRODUCE_KAFKA, notes = "debug api to kafka",
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = Constants.API.DEBUG_API.PRODUCE_KAFKA, method = RequestMethod.POST,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public void publishKafkaInteractionEvent( @RequestBody AdInteractionEvent adInteractionEvent)
+            throws Exception {
+        debugService.publishKafkaInteractionEvent(adInteractionEvent);
     }
 
 }
