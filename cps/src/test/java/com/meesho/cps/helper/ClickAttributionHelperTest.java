@@ -63,18 +63,20 @@ public class ClickAttributionHelperTest {
     @InjectMocks
     private InteractionEventAttributionHelper interactionEventAttributionHelper;
 
+    private Long campaignBudgetExhaustedMqID;
+
 
     @Before
     public void setUp() throws JsonProcessingException {
+        campaignBudgetExhaustedMqID = 119L;
         Mockito.doNothing().when(prismService).publishEvent(any(), any());
         Mockito.doReturn(null).when(kafkaService).sendMessage("weeklyBudgetExhaustedTopic", String.valueOf(1L), "");
-        Mockito.doReturn(null).when(kafkaService).sendMessage("campaignBudgetExhaustedTopic", String.valueOf(1L), "");
         Mockito.doReturn("").when(objectMapper).writeValueAsString(any());
         Mockito.doReturn(BigDecimal.valueOf(100)).when(campaignDatewiseMetricsRepository).incrementBudgetUtilised(any(), any(), any());
         Mockito.doReturn(BigDecimal.valueOf(50)).when(campaignCatalogDateMetricsRepository).incrementBudgetUtilised(any(), any(), any(), any());
         Mockito.doReturn(BigDecimal.valueOf(1000)).when(campaignMetricsRepository).incrementBudgetUtilised(any(), any());
         Mockito.doReturn(BigDecimal.valueOf(200)).when(supplierWeekWiseMetricsRepository).incrementBudgetUtilised(any(), any(), any());
-        ReflectionTestUtils.setField(interactionEventAttributionHelper, "budgetExhaustedTopic", "campaignBudgetExhaustedTopic");
+        ReflectionTestUtils.setField(interactionEventAttributionHelper, "budgetExhaustedMqID", campaignBudgetExhaustedMqID);
         ReflectionTestUtils.setField(interactionEventAttributionHelper, "suppliersWeeklyBudgetExhaustedTopic", "weeklyBudgetExhaustedTopic");
     }
 
@@ -122,14 +124,14 @@ public class ClickAttributionHelperTest {
     @Test
     public void testSendBudgetExhaustedEventSuccess() {
         interactionEventAttributionHelper.sendBudgetExhaustedEvent(1L, 1L);
-        Mockito.verify(kafkaService, Mockito.times(1)).sendMessage("campaignBudgetExhaustedTopic", String.valueOf(1L), "");
+        Mockito.verify(kafkaService, Mockito.times(1)).sendMessageToMq(campaignBudgetExhaustedMqID, String.valueOf(1L), "");
     }
 
     @Test(expected = Exception.class)
     public void testSendBudgetExhaustedEventException() {
         Mockito.doThrow(Exception.class).when(kafkaService).sendMessage(any(), any(), any());
         interactionEventAttributionHelper.sendBudgetExhaustedEvent(1L, 1L);
-        Mockito.verify(kafkaService, Mockito.times(1)).sendMessage("campaignBudgetExhaustedTopic", String.valueOf(1L), "");
+        Mockito.verify(kafkaService, Mockito.times(1)).sendMessageToMq(campaignBudgetExhaustedMqID, String.valueOf(1L), "");
     }
 
 
@@ -197,7 +199,7 @@ public class ClickAttributionHelperTest {
         Mockito.doReturn(SupplierWeekWiseMetrics.builder().budgetUtilised(BigDecimal.ONE).build()).when(supplierWeekWiseMetricsRepository).get(1L, LocalDate.now());
         Mockito.doReturn(campaignDatewiseMetrics).when(campaignDatewiseMetricsRepository).get(1L, LocalDate.now());
         Boolean isBudgetExhausted = interactionEventAttributionHelper.initialiseAndCheckIsBudgetExhausted(campaignDetails, LocalDate.now(), LocalDate.now(), BigDecimal.TEN, 1L);
-        Mockito.verify(kafkaService, Mockito.times(1)).sendMessage("campaignBudgetExhaustedTopic", String.valueOf(1L), "");
+        Mockito.verify(kafkaService, Mockito.times(1)).sendMessageToMq(campaignBudgetExhaustedMqID, String.valueOf(1L), "");
         Assert.assertTrue(isBudgetExhausted);
     }
 
@@ -208,7 +210,7 @@ public class ClickAttributionHelperTest {
         Mockito.doReturn(SupplierWeekWiseMetrics.builder().budgetUtilised(BigDecimal.ONE).build()).when(supplierWeekWiseMetricsRepository).get(1L, LocalDate.now());
         Mockito.doReturn(campaignMetrics).when(campaignMetricsRepository).get(1L);
         Boolean isBudgetExhausted = interactionEventAttributionHelper.initialiseAndCheckIsBudgetExhausted(campaignDetails, LocalDate.now(), LocalDate.now(), BigDecimal.TEN, 1L);
-        Mockito.verify(kafkaService, Mockito.times(1)).sendMessage("campaignBudgetExhaustedTopic", String.valueOf(1L), "");
+        Mockito.verify(kafkaService, Mockito.times(1)).sendMessageToMq(campaignBudgetExhaustedMqID, String.valueOf(1L), "");
         Assert.assertTrue(isBudgetExhausted);
     }
 }
