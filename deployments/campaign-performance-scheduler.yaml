@@ -58,10 +58,10 @@ environment:
     as_enabled: false
     as_min: 1
     as_max: 1
-    cpu_limit: 1
-    cpu_request: 100m
-    memory_limit: 1G
-    memory_request: 200M
+    cpu_limit: 4
+    cpu_request: 3
+    memory_limit: 12G
+    memory_request: 10G
     deploymentStrategy: recreate
     appMetrics: true
     deployment_args:

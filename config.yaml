@@ -32,6 +32,7 @@ environment:
       - campaign-performance-new
       - campaign-performance-consumer
       - campaign-performance-scheduler
+      - campaign-performance-new-scheduler
   ftr:
     deployment_order:
       - campaign-performance
