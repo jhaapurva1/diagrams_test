@@ -1,29 +1,17 @@
 package com.meesho.cps.helper;
 
-import com.meesho.ads.lib.utils.DateTimeUtils;
 import com.meesho.ads.lib.utils.EncodingUtils;
 import com.meesho.cps.config.ApplicationProperties;
 import com.meesho.cps.constants.Constants;
-import com.meesho.cps.constants.DBConstants;
-import com.meesho.cps.data.entity.hbase.CampaignCatalogDateMetrics;
-import com.meesho.cps.data.internal.ElasticFiltersRequest;
-import com.meesho.cps.data.internal.PerformancePojo;
-import com.meesho.cpsclient.request.CampaignCatalogPerformanceRequest;
-import com.meesho.cpsclient.request.CampaignPerformanceRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.elasticsearch.search.aggregations.AggregationBuilder;
-import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.time.temporal.TemporalAdjusters;
-import java.util.*;
 
 /**
  * @author shubham.aggarwal
@@ -55,81 +43,6 @@ public class CampaignPerformanceHelper {
         return eventTime.toLocalTime().isBefore(resetTime);
     }
 
-    public List<AggregationBuilder> createAggregations() {
-        List<AggregationBuilder> aggregationBuilders = new ArrayList<>();
-        aggregationBuilders.add(AggregationBuilders.sum(Constants.ESConstants.TOTAL_CLICKS).field(DBConstants.ElasticSearch.CLICKS));
-        aggregationBuilders.add(AggregationBuilders.sum(Constants.ESConstants.TOTAL_VIEWS).field(DBConstants.ElasticSearch.VIEWS));
-        aggregationBuilders.add(AggregationBuilders.sum(Constants.ESConstants.TOTAL_SHARES).field(DBConstants.ElasticSearch.SHARES));
-        aggregationBuilders.add(AggregationBuilders.sum(Constants.ESConstants.TOTAL_WISHLIST).field(DBConstants.ElasticSearch.WISHLIST));
-        aggregationBuilders.add(AggregationBuilders.sum(Constants.ESConstants.TOTAL_ORDERS).field(DBConstants.ElasticSearch.ORDERS));
-        aggregationBuilders.add(AggregationBuilders.sum(Constants.ESConstants.TOTAL_REVENUE).field(DBConstants.ElasticSearch.REVENUE));
-        aggregationBuilders.add(AggregationBuilders.sum(Constants.ESConstants.TOTAL_BUDGET_UTILISED).field(DBConstants.ElasticSearch.BUDGET_UTILISED));
-        return aggregationBuilders;
-    }
-
-    public List<AggregationBuilder> createGraphAggregations() {
-        List<AggregationBuilder> aggregationBuilders = new ArrayList<>();
-        aggregationBuilders.add(AggregationBuilders.sum(Constants.ESConstants.TOTAL_CLICKS).field(DBConstants.ElasticSearch.CLICKS));
-        aggregationBuilders.add(AggregationBuilders.sum(Constants.ESConstants.TOTAL_VIEWS).field(DBConstants.ElasticSearch.VIEWS));
-        aggregationBuilders.add(AggregationBuilders.sum(Constants.ESConstants.TOTAL_ORDERS).field(DBConstants.ElasticSearch.ORDERS));
-        aggregationBuilders.add(AggregationBuilders.sum(Constants.ESConstants.TOTAL_SHARES).field(DBConstants.ElasticSearch.SHARES));
-        aggregationBuilders.add(AggregationBuilders.sum(Constants.ESConstants.TOTAL_WISHLIST).field(DBConstants.ElasticSearch.WISHLIST));
-        return aggregationBuilders;
-    }
-
-    public List<AggregationBuilder> createBucketAggregations(String term, String fieldName, Integer size) {
-        AggregationBuilder aggregationBuilderRoot = AggregationBuilders.terms(term).field(fieldName).size(size);
-        List<AggregationBuilder> aggregationBuilders = createAggregations();
-
-        for (AggregationBuilder aggregationBuilder : aggregationBuilders) {
-            aggregationBuilderRoot.subAggregation(aggregationBuilder);
-        }
-
-        return Collections.singletonList(aggregationBuilderRoot);
-    }
-
-    public List<AggregationBuilder> createGraphBucketAggregations(String term, String fieldName, Integer size) {
-        AggregationBuilder aggregationBuilderRoot = AggregationBuilders.terms(term).field(fieldName).size(size);
-        List<AggregationBuilder> aggregationBuilders = createGraphAggregations();
-
-        for (AggregationBuilder aggregationBuilder : aggregationBuilders) {
-            aggregationBuilderRoot.subAggregation(aggregationBuilder);
-        }
-        return Collections.singletonList(aggregationBuilderRoot);
-    }
-
-    public List<ElasticFiltersRequest.RangeFilter> addTillDateRangeFilter() {
-        List<ElasticFiltersRequest.RangeFilter> rangeFilters = new ArrayList<>();
-        rangeFilters.add(ElasticFiltersRequest.RangeFilter.builder()
-                .gte(applicationProperties.getCampaignDatewiseMetricsReferenceDate().format(DateTimeFormatter.ofPattern(Constants.ESConstants.MONTH_DATE_FORMAT)))
-                .lte(LocalDate.now().format(DateTimeFormatter.ofPattern(Constants.ESConstants.MONTH_DATE_FORMAT))).fieldName(DBConstants.ElasticSearch.MONTH)
-                .format(Constants.ESConstants.MONTH_DATE_FORMAT).build());
-        return rangeFilters;
-    }
-
-    public List<ElasticFiltersRequest.RangeFilter> addMonthWiseRangeFilter(LocalDate startDate, LocalDate endDate) {
-        List<ElasticFiltersRequest.RangeFilter> rangeFilters = new ArrayList<>();
-        rangeFilters.add(ElasticFiltersRequest.RangeFilter.builder()
-                .gt(startDate.with(TemporalAdjusters.lastDayOfMonth()).format(DateTimeFormatter.ofPattern(Constants.ESConstants.MONTH_DATE_FORMAT)))
-                .lt(endDate.with(TemporalAdjusters.firstDayOfMonth()).format(DateTimeFormatter.ofPattern(Constants.ESConstants.MONTH_DATE_FORMAT)))
-                .fieldName(DBConstants.ElasticSearch.MONTH).format(Constants.ESConstants.MONTH_DATE_FORMAT).build());
-        return rangeFilters;
-    }
-
-    public List<ElasticFiltersRequest.RangeFilter> addDateWiseRangeFilters(LocalDate startDate, LocalDate endDate) {
-        List<ElasticFiltersRequest.RangeFilter> rangeFilters = new ArrayList<>();
-        if ((startDate.getMonth() == endDate.getMonth()) && (startDate.getYear() == endDate.getYear())) {
-            rangeFilters.add(ElasticFiltersRequest.RangeFilter.builder().gte(startDate).lte(endDate)
-                    .fieldName(DBConstants.ElasticSearch.DATE).format(Constants.ESConstants.DAY_DATE_FORMAT).build());
-        } else {
-            rangeFilters.add(ElasticFiltersRequest.RangeFilter.builder().fieldName(DBConstants.ElasticSearch.DATE).gte(startDate)
-                    .lte(startDate.with(TemporalAdjusters.lastDayOfMonth())).format(Constants.ESConstants.DAY_DATE_FORMAT).build());
-            rangeFilters.add(ElasticFiltersRequest.RangeFilter.builder().fieldName(DBConstants.ElasticSearch.DATE).format(Constants.ESConstants.DAY_DATE_FORMAT)
-                    .gte(endDate.with(TemporalAdjusters.firstDayOfMonth())).lte(endDate).build());
-        }
-        return rangeFilters;
-    }
-
     public String decodeCursor(String encodedCursor) {
         String cursor = null;
         try {
@@ -154,64 +67,4 @@ public class CampaignPerformanceHelper {
         return cursor;
     }
 
-    public List<LocalDate> getDatesForHBaseQuery(LocalDate startDate, LocalDate endDate) {
-        List<LocalDate> hBaseQueryDates = new ArrayList<>(2);
-        int differenceBetweenCurrentDateAndRequestEndDate = LocalDate.now().compareTo(endDate);
-        Calendar now = Calendar.getInstance();
-        int minutesPassedForCurrentDay = ((now.get(Calendar.HOUR_OF_DAY) * 60) + now.get(Calendar.MINUTE));
-
-        if (differenceBetweenCurrentDateAndRequestEndDate == 0) {
-            hBaseQueryDates.add(endDate);
-            if (startDate.isEqual(endDate)) {
-                return hBaseQueryDates;
-            }
-            if (minutesPassedForCurrentDay <= applicationProperties.getMinutesToQueryPreviousDayDataFromHbase()) {
-                hBaseQueryDates.add(endDate.minusDays(1));
-            }
-        } else if (differenceBetweenCurrentDateAndRequestEndDate == 1
-                && minutesPassedForCurrentDay <= applicationProperties.getMinutesToQueryPreviousDayDataFromHbase()) {
-            hBaseQueryDates.add(endDate);
-        }
-
-        return hBaseQueryDates;
-    }
-
-    public void addDatesToRequest(CampaignPerformanceRequest campaignPerformanceRequest) {
-        campaignPerformanceRequest.setStartDate(applicationProperties.getCampaignDatewiseMetricsReferenceDate());
-        campaignPerformanceRequest.setEndDate(LocalDate.now());
-    }
-
-    public void addDatesToRequest(CampaignCatalogPerformanceRequest campaignPerformanceRequest) {
-        campaignPerformanceRequest.setStartDate(applicationProperties.getCampaignDatewiseMetricsReferenceDate());
-        campaignPerformanceRequest.setEndDate(LocalDate.now());
-    }
-
-    public PerformancePojo getAggregatedCampaignCatalogDateMetrics(List<CampaignCatalogDateMetrics> campaignCatalogDateMetricsList) {
-        long clickCount = 0L;
-        long sharesCount = 0L;
-        long wishlistCount = 0L;
-        long viewCount = 0L;
-        BigDecimal budgetUtilised = BigDecimal.ZERO;
-        int orders = 0;
-        BigDecimal revenue = BigDecimal.ZERO;
-        for (CampaignCatalogDateMetrics campaignCatalogDateMetrics : campaignCatalogDateMetricsList) {
-            clickCount += Optional.ofNullable(campaignCatalogDateMetrics.getClickCount()).orElse(0L);
-            sharesCount += Optional.ofNullable(campaignCatalogDateMetrics.getSharesCount()).orElse(0L);
-            wishlistCount += Optional.ofNullable(campaignCatalogDateMetrics.getWishlistCount()).orElse(0L);
-            viewCount += Optional.ofNullable(campaignCatalogDateMetrics.getViewCount()).orElse(0L);
-            budgetUtilised = budgetUtilised.add(Optional.ofNullable(campaignCatalogDateMetrics.getBudgetUtilised())
-                                                        .orElse(BigDecimal.ZERO));
-            orders += Optional.ofNullable(campaignCatalogDateMetrics.getOrders()).orElse(0);
-            revenue = revenue.add(Optional.ofNullable(campaignCatalogDateMetrics.getRevenue()).orElse(BigDecimal.ZERO));
-        }
-        return PerformancePojo.builder()
-                .totalClicks(clickCount)
-                .totalShares(sharesCount)
-                .totalWishlist(wishlistCount)
-                .totalViews(viewCount)
-                .totalBudgetUtilised(budgetUtilised)
-                .totalOrders(orders)
-                .totalRevenue(revenue)
-                .build();
-    }
 }

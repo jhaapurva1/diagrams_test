@@ -18,7 +18,7 @@ import java.sql.Timestamp;
 public class CatalogCPCDiscountPrestoData {
 
     @DataLakeColumn(name = "catalog_id")
-    private Integer catalogId;
+    private Long catalogId;
 
     @DataLakeColumn(name = "discount")
     private BigDecimal discount;

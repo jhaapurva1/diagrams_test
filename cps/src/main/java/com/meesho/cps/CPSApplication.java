@@ -1,7 +1,5 @@
 package com.meesho.cps;
 
-import com.meesho.cps.db.redis.dao.RealEstateMetadataCacheDao;
-
 import com.meesho.mq.client.MqClientConfiguration;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -33,12 +31,6 @@ public class CPSApplication {
             String[] beanNames = applicationContext.getBeanDefinitionNames();
             Arrays.sort(beanNames);
             Arrays.stream(beanNames).forEach(System.out::println);
-
-            log.info("Caching RealEstateMetadata");
-            RealEstateMetadataCacheDao realEstateMetadataCacheDao =
-                    applicationContext.getBean(RealEstateMetadataCacheDao.class);
-            realEstateMetadataCacheDao.init();
-            log.info("Caching latest feed tables");
         };
     }
 

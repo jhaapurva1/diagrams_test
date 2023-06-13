@@ -1,9 +1,8 @@
 package com.meesho.cps.service;
 
 import com.meesho.cps.constants.BillVersion;
-import com.meesho.cps.data.entity.hbase.CampaignCatalogDateMetrics;
+import com.meesho.cps.data.entity.mongodb.collection.CampaignCatalogDateMetrics;
 
-import java.math.BigDecimal;
 import java.util.Set;
 
 /**

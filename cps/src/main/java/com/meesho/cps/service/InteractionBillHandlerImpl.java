@@ -2,7 +2,7 @@ package com.meesho.cps.service;
 
 import com.meesho.cps.constants.BillVersion;
 import com.meesho.cps.constants.ConsumerConstants;
-import com.meesho.cps.data.entity.hbase.CampaignCatalogDateMetrics;
+import com.meesho.cps.data.entity.mongodb.collection.CampaignCatalogDateMetrics;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -31,8 +31,7 @@ public class InteractionBillHandlerImpl implements BillHandler {
 
     @Override
     public Long getTotalInteractions(CampaignCatalogDateMetrics baseCampaignMetrics) {
-        return baseCampaignMetrics.getClickCount() + baseCampaignMetrics.getSharesCount() +
-                baseCampaignMetrics.getWishlistCount();
+        return baseCampaignMetrics.getClicks() + baseCampaignMetrics.getShares() + baseCampaignMetrics.getWishlists();
     }
 
     @Override

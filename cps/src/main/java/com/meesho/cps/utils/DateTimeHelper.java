@@ -11,10 +11,6 @@ public class DateTimeHelper {
 
     public static final DateTimeFormatter dateTimeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    private static final SimpleDateFormat hbaseDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-
-    public static String getDateInYYYYMMDDFormat(String date) throws Exception {
-        return hbaseDateFormat.format(hbaseDateFormat.parse(date));
-    }
+    public static final String MONGO_DATE_FORMAT = "yyyy-MM-dd";
 
 }

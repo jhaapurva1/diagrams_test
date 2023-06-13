@@ -94,7 +94,7 @@ public class CatalogInteractionEventService {
         SupplierCampaignCatalogMetaDataResponse.SupplierMetadata supplierMetadata = response.getSupplierMetadata();
 
         if (Objects.isNull(catalogMetadata) || Objects.isNull(catalogMetadata.getCampaignDetails())) {
-            log.error("No active ad on catalogId {}", catalogId);
+            log.warn("No active ad on catalogId {}", catalogId);
             adInteractionPrismEvent.setStatus(AdInteractionStatus.INVALID);
             adInteractionPrismEvent.setReason(AdInteractionInvalidReason.CAMPAIGN_INACTIVE);
             interactionEventAttributionHelper.publishPrismEvent(adInteractionPrismEvent);
@@ -113,7 +113,7 @@ public class CatalogInteractionEventService {
         campaignId = campaignDetails.getCampaignId();
         cpc = interactionEventAttributionHelper.getChargeableCpc(cpc, campaignDetails, catalogId);
         if (Objects.isNull(cpc)) {
-            log.error("can not process interaction event due to null cpc.  {} - {}", campaignId, catalogId);
+            log.warn("can not process interaction event due to null cpc.  {} - {}", campaignId, catalogId);
             adInteractionPrismEvent.setStatus(AdInteractionStatus.INVALID);
             adInteractionPrismEvent.setReason(AdInteractionInvalidReason.CPC_NOT_FOUND);
             interactionEventAttributionHelper.publishPrismEvent(adInteractionPrismEvent);
@@ -148,7 +148,7 @@ public class CatalogInteractionEventService {
         }
 
         if (interactionEventAttributionHelper.initialiseAndCheckIsBudgetExhausted(campaignDetails, weekStartDate, eventDate, weeklyBudgetUtilisationLimit, catalogId)) {
-            log.error("Budget exhausted for catalogId {}", catalogId);
+            log.warn("Budget exhausted for catalogId {}", catalogId);
             adInteractionPrismEvent.setStatus(AdInteractionStatus.INVALID);
             adInteractionPrismEvent.setReason(AdInteractionInvalidReason.BUDGET_EXHAUSTED);
             interactionEventAttributionHelper.publishPrismEvent(adInteractionPrismEvent);
@@ -186,9 +186,9 @@ public class CatalogInteractionEventService {
         }
 
         //Update campaign catalog date metrics
-        interactionEventAttributionHelper.incrementInteractionCount(campaignId, catalogId, eventDate, adInteractionEvent.getEventName());
+        interactionEventAttributionHelper.incrementInteractionCount(supplierId, campaignId, catalogId, eventDate, adInteractionEvent.getEventName());
         // Update budget utilised
-        BudgetUtilisedData budgetUtilised = interactionEventAttributionHelper.modifyAndGetBudgetUtilised(cpc, campaignId, catalogId, eventDate, campaignType);
+        BudgetUtilisedData budgetUtilised = interactionEventAttributionHelper.modifyAndGetBudgetUtilised(cpc, supplierId, campaignId, catalogId, eventDate, campaignType);
 
         if (budgetUtilised.getCampaignBudgetUtilised().compareTo(totalBudget) >= 0) {
             interactionEventAttributionHelper.sendBudgetExhaustedEvent(campaignId, catalogId);

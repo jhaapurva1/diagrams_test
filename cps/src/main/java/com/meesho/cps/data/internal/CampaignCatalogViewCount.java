@@ -14,6 +14,7 @@ import java.time.LocalDate;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CampaignCatalogViewCount {
 
+    private Long supplierId;
     private Long campaignId;
     private Long catalogId;
     private LocalDate date;

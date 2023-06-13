@@ -6,7 +6,6 @@ package com.meesho.cps.constants;
  */
 public class Constants {
 
-    public static final String ADS_COST_DEDUCTION_EVENT_TYPE = "SUPPLIER";
     public static final String[] CAMPAIGN_CATALOG_DATE_FORMAT = new String[]{"campaign_id", "catalog_id", "date"};
 
     public static class API {
@@ -14,7 +13,6 @@ public class Constants {
         public static final Integer HBASE_BATCH_SIZE = 30;
         public static final String HEALTH_CHECK_ENDPOINT = "/health";
         public static final String MANUAL_SCHEDULER_START = "/api/v1/scheduler/start";
-        public static final String MIGRATE_CAMPAIGN_PERFORMANCE = "/api/v1/migrate-campaign-performance";
 
         // performance metrics apis
         public static final String SUPPLIER_PERFORMANCE = "/supplier/performance";
@@ -57,26 +55,12 @@ public class Constants {
             public static final String PROCESS_BATCH_SIZE = "#{${scheduler.campaign.performance.process.batch.size}}";
         }
 
-        public static class REAL_ESTATE_METADATA_CACHE_SYNC {
-            public static final String MONITOR_CODE = "#{${scheduler.real_estate_metadata.cache.sync.monitor.code}}";
-            public static final String CRON_EXPRESSION = "#{${scheduler.real_estate_metadata.cache.sync.cron.expression}}";
-            public static final String ENABLE_SCHEDULER = "#{${scheduler.real_estate_metadata.cache.sync.enable}}";
-            public static final String BATCH_SIZE = "#{${scheduler.real_estate_metadata.cache.sync.batch.size}}";
-        }
-
-        public static class CAMPAIGN_PERFORMANCE_ES_INDEXING {
-            public static final String MONITOR_CODE = "#{${scheduler.campaign_performance_es_indexing.monitor.code}}";
-            public static final String CRON_EXPRESSION = "#{${scheduler.campaign_performance_es_indexing.cron.expression}}";
-            public static final String ENABLE_SCHEDULER = "#{${scheduler.campaign_performance_es_indexing.enable}}";
-            public static final String BATCH_SIZE = "#{${scheduler.campaign_performance_es_indexing.batch.size}}";
-        }
-
-        public static class ADS_DEDUCTION_CAMPAIGN_SUPPLIER {
-            public static final String MONITOR_CODE = "#{${scheduler.ads.deduction.campaign.supplier.monitor.code}}";
-            public static final String CRON_EXPRESSION = "#{${scheduler.ads.deduction.campaign.supplier.cron.expression}}";
-            public static final String ENABLE_SCHEDULER = "#{${scheduler.ads.deduction.campaign.supplier.enable}}";
-            public static final String BATCH_SIZE = "#{${scheduler.ads.deduction.campaign.supplier.batch.size}}";
-            public static final String PROCESS_BATCH_SIZE = "#{${scheduler.ads.deduction.campaign.supplier.process.batch.size}}";
+        public static class DAY_WISE_PERF_EVENTS {
+            public static final String MONITOR_CODE = "#{${scheduler.day.wise.perf.events.monitor.code}}";
+            public static final String CRON_EXPRESSION = "#{${scheduler.day.wise.perf.events.cron.expression}}";
+            public static final String ENABLE_SCHEDULER = "#{${scheduler.day.wise.perf.events.enable}}";
+            public static final String BATCH_SIZE = "#{${scheduler.day.wise.perf.events.batch.size}}";
+            public static final String PROCESS_BATCH_SIZE = "#{${scheduler.day.wise.perf.events.process.batch.size}}";
         }
 
         public static class CATALOG_CPC_DISCOUNT {
@@ -86,12 +70,12 @@ public class Constants {
             public static final String BATCH_SIZE = "#{${scheduler.catalog_cpc_discount.batch.size}}";
             public static final String PROCESS_BATCH_SIZE = "#{${scheduler.catalog_cpc_discount.process.batch.size}}";
         }
+
     }
 
     public static class PrismEventNames {
         public static final String AD_INTERACTIONS = "ad_interaction_events";
         public static final String DAY_WISE_PERF_EVENTS = "campaign_catalog_day_performance_events";
-        public static final String HBASE_PRESTO_TABLE_NAME = "scrap.campaign_catalog_reconciled_metrics";
     }
 
     public static class DefaultRealEstateMetaData {
@@ -113,31 +97,6 @@ public class Constants {
 
     public static class DailyBudgetConstants {
         public static final String TIME_FORMAT = "HH:mm:ss";
-    }
-
-    public static class ESConstants {
-        public static final String BY_CAMPAIGN = "by_campaign";
-        public static final String BY_CATALOG = "by_catalog";
-        public static final String BY_DATE = "by_date";
-        public static final String DAY_DATE_FORMAT = "yyyy-MM-dd";
-        public static final String MONTH_DATE_FORMAT = "yyyy-MM";
-        public static final String TOTAL_VIEWS = "total_views";
-        public static final String TOTAL_CLICKS = "total_clicks";
-        public static final String TOTAL_SHARES = "total_shares";
-        public static final String TOTAL_WISHLIST = "total_wishlist";
-        public static final String TOTAL_ORDERS = "total_orders";
-        public static final String TOTAL_REVENUE = "total_revenues";
-        public static final String TOTAL_BUDGET_UTILISED = "total_budget_utilised";
-    }
-
-    public static class ESFieldNames {
-        public static final String CAMPAIGN_DATE = "date";
-        public static final String BUDGET_UTILISED = "budget_utilised";
-        public static final String ID = "_id";
-        public static final String CAMPAIGN_ID = "campaign_id";
-        public static final String SUPPLIER_ID = "supplier_id";
-        public static final String CATALOG_ID = "catalog_id";
-
     }
 
     public static class Kafka {

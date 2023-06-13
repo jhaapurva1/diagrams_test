@@ -7,9 +7,10 @@ import com.meesho.ads.lib.helper.TelegrafMetricsHelper;
 import com.meesho.ads.lib.utils.DateTimeUtils;
 import com.meesho.cps.config.ApplicationProperties;
 import com.meesho.cps.constants.CampaignType;
-import com.meesho.cps.data.entity.hbase.CampaignCatalogDateMetrics;
 import com.meesho.cps.data.entity.internal.BudgetUtilisedData;
 import com.meesho.cps.data.entity.kafka.AdInteractionEvent;
+import com.meesho.cps.data.entity.mongodb.collection.CampaignCatalogDateMetrics;
+import com.meesho.cps.db.mongodb.dao.CampaignCatalogDateMetricsDao;
 import com.meesho.cps.db.redis.dao.UpdatedCampaignCatalogCacheDao;
 import com.meesho.cps.db.redis.dao.UserCatalogInteractionCacheDao;
 import com.meesho.cps.exception.ExternalRequestFailedException;
@@ -25,10 +26,10 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.data.util.Pair;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashMap;
 
 import static org.mockito.ArgumentMatchers.*;
 
@@ -68,6 +69,9 @@ public class CatalogInteractionEventServiceTest {
 
     @Mock
     private InteractionEventAttributionHelper interactionEventAttributionHelper;
+
+    @Mock
+    private CampaignCatalogDateMetricsDao campaignCatalogDateMetricsDao;
 
     @InjectMocks
     private CatalogInteractionEventService catalogInteractionEventService;
@@ -145,23 +149,23 @@ public class CatalogInteractionEventServiceTest {
                 .supplierMetadata(supplierMetadata).build();
     }
 
-    public CampaignCatalogDateMetrics getSampleCampaignCatalogMetrics() {
+    public CampaignCatalogDateMetrics getSampleDocument() {
         CampaignCatalogDateMetrics campaignCatalogDateMetrics = new CampaignCatalogDateMetrics();
         campaignCatalogDateMetrics.setCatalogId(3L);
         campaignCatalogDateMetrics.setCampaignId(1L);
-        campaignCatalogDateMetrics.setDate(LocalDate.now());
-        campaignCatalogDateMetrics.setClickCount(20L);
+        campaignCatalogDateMetrics.setDate(LocalDate.now().toString());
+        campaignCatalogDateMetrics.setClicks(20L);
         return campaignCatalogDateMetrics;
     }
 
-    public CampaignCatalogDateMetrics getSampleCampaignCatalogMetricsForBillShares() {
+    public CampaignCatalogDateMetrics getSampleDocumentForBillShares() {
         CampaignCatalogDateMetrics campaignCatalogDateMetrics = new CampaignCatalogDateMetrics();
         campaignCatalogDateMetrics.setCatalogId(3L);
         campaignCatalogDateMetrics.setCampaignId(1L);
-        campaignCatalogDateMetrics.setDate(LocalDate.now());
-        campaignCatalogDateMetrics.setClickCount(2L);
-        campaignCatalogDateMetrics.setSharesCount(3L);
-        campaignCatalogDateMetrics.setWishlistCount(4L);
+        campaignCatalogDateMetrics.setDate(LocalDate.now().toString());
+        campaignCatalogDateMetrics.setClicks(2L);
+        campaignCatalogDateMetrics.setShares(3L);
+        campaignCatalogDateMetrics.setWishlists(4L);
         return campaignCatalogDateMetrics;
     }
 
@@ -178,8 +182,8 @@ public class CatalogInteractionEventServiceTest {
     @Test
     public void testForBillVersionOneStopCampaign() throws ExternalRequestFailedException {
         Mockito.doReturn(getSampleSupplierCampaignCatalogMetaDataResponse(1)).when(adService).getSupplierCampaignCatalogMetadata(any(), any(), any(), any());
-        CampaignCatalogDateMetrics campaignCatalogDateMetrics = getSampleCampaignCatalogMetrics();
-        campaignCatalogDateMetrics.setClickCount(22L);
+        CampaignCatalogDateMetrics document = getSampleDocument();
+        document.setClicks(22L);
         catalogInteractionEventService.handle(getSampleAdInteractionEvent("ad_click"));
     }
 
@@ -204,24 +208,24 @@ public class CatalogInteractionEventServiceTest {
     @Test
     public void testForBillVersionSharesForClickStopCampaign() throws ExternalRequestFailedException {
         Mockito.doReturn(getSampleSupplierCampaignCatalogMetaDataResponse(2)).when(adService).getSupplierCampaignCatalogMetadata(any(), any(), any(), any());
-        CampaignCatalogDateMetrics campaignCatalogDateMetrics = getSampleCampaignCatalogMetricsForBillShares();
-        campaignCatalogDateMetrics.setClickCount(14L);
+        CampaignCatalogDateMetrics document = getSampleDocumentForBillShares();
+        document.setClicks(14L);
         catalogInteractionEventService.handle(getSampleAdInteractionEvent("ad_click"));
     }
 
     @Test
     public void testForBillVersionSharesForSharesStopCampaign() throws ExternalRequestFailedException {
         Mockito.doReturn(getSampleSupplierCampaignCatalogMetaDataResponse(2)).when(adService).getSupplierCampaignCatalogMetadata(any(), any(), any(), any());
-        CampaignCatalogDateMetrics campaignCatalogDateMetrics = getSampleCampaignCatalogMetricsForBillShares();
-        campaignCatalogDateMetrics.setSharesCount(15L);
+        CampaignCatalogDateMetrics document = getSampleDocumentForBillShares();
+        document.setShares(15L);
         catalogInteractionEventService.handle(getSampleAdInteractionEvent("ad_shared"));
     }
 
     @Test
     public void testForBillVersionSharesForWishlistStopCampaign() throws ExternalRequestFailedException {
         Mockito.doReturn(getSampleSupplierCampaignCatalogMetaDataResponse(2)).when(adService).getSupplierCampaignCatalogMetadata(any(), any(), any(), any());
-        CampaignCatalogDateMetrics campaignCatalogDateMetrics = getSampleCampaignCatalogMetricsForBillShares();
-        campaignCatalogDateMetrics.setWishlistCount(16L);
+        CampaignCatalogDateMetrics document = getSampleDocumentForBillShares();
+        document.setWishlists(16L);
         catalogInteractionEventService.handle(getSampleAdInteractionEvent("ad_wishlisted"));
     }
 
@@ -234,8 +238,8 @@ public class CatalogInteractionEventServiceTest {
     @Test
     public void testForBillVersionOneStopCampaignNew() throws ExternalRequestFailedException {
         Mockito.doReturn(getSampleSupplierCampaignCatalogMetaDataResponseForNewRequests(1)).when(adService).getSupplierCampaignCatalogMetadata(any(), any(), any(), any());
-        CampaignCatalogDateMetrics campaignCatalogDateMetrics = getSampleCampaignCatalogMetrics();
-        campaignCatalogDateMetrics.setClickCount(22L);
+        CampaignCatalogDateMetrics document = getSampleDocument();
+        document.setClicks(22L);
         catalogInteractionEventService.handle(getSampleNewAdInteractionEvent("ad_click"));
     }
 
@@ -260,24 +264,24 @@ public class CatalogInteractionEventServiceTest {
     @Test
     public void testForBillVersionSharesForClickStopCampaignNew() throws ExternalRequestFailedException {
         Mockito.doReturn(getSampleSupplierCampaignCatalogMetaDataResponseForNewRequests(2)).when(adService).getSupplierCampaignCatalogMetadata(any(), any(), any(), any());
-        CampaignCatalogDateMetrics campaignCatalogDateMetrics = getSampleCampaignCatalogMetricsForBillShares();
-        campaignCatalogDateMetrics.setClickCount(14L);
+        CampaignCatalogDateMetrics document = getSampleDocumentForBillShares();
+        document.setClicks(14L);
         catalogInteractionEventService.handle(getSampleNewAdInteractionEvent("ad_click"));
     }
 
     @Test
     public void testForBillVersionSharesForSharesStopCampaignNew() throws ExternalRequestFailedException {
         Mockito.doReturn(getSampleSupplierCampaignCatalogMetaDataResponseForNewRequests(2)).when(adService).getSupplierCampaignCatalogMetadata(any(), any(), any(), any());
-        CampaignCatalogDateMetrics campaignCatalogDateMetrics = getSampleCampaignCatalogMetricsForBillShares();
-        campaignCatalogDateMetrics.setSharesCount(15L);
+        CampaignCatalogDateMetrics document = getSampleDocumentForBillShares();
+        document.setShares(15L);
         catalogInteractionEventService.handle(getSampleNewAdInteractionEvent("ad_shared"));
     }
 
     @Test
     public void testForBillVersionSharesForWishlistStopCampaignNew() throws ExternalRequestFailedException {
         Mockito.doReturn(getSampleSupplierCampaignCatalogMetaDataResponseForNewRequests(2)).when(adService).getSupplierCampaignCatalogMetadata(any(), any(), any(), any());
-        CampaignCatalogDateMetrics campaignCatalogDateMetrics = getSampleCampaignCatalogMetricsForBillShares();
-        campaignCatalogDateMetrics.setWishlistCount(16L);
+        CampaignCatalogDateMetrics document = getSampleDocumentForBillShares();
+        document.setWishlists(16L);
         catalogInteractionEventService.handle(getSampleNewAdInteractionEvent("ad_wishlisted"));
     }
 
@@ -285,7 +289,7 @@ public class CatalogInteractionEventServiceTest {
     public void testCatalogBudgetExhaust() throws ExternalRequestFailedException {
         Mockito.doReturn(BudgetUtilisedData.builder().campaignBudgetUtilised(BigDecimal.valueOf(800))
                 .catalogBudgetUtilised(BigDecimal.valueOf(100)).build()).when(interactionEventAttributionHelper)
-                .modifyAndGetBudgetUtilised(any(), any(), any(), any(), any());
+                .modifyAndGetBudgetUtilised(any(), any(), any(), any(), any(), any());
         Mockito.doReturn(getSampleSupplierCampaignCatalogMetaDataResponseForNewRequests(2)).when(adService).getSupplierCampaignCatalogMetadata(any(), any(), any(), any());
         Mockito.doReturn(clickBillHandler).when(adBillFactory).getBillHandlerForBillVersion(any());
         Mockito.doNothing().when(interactionEventAttributionHelper).sendCatalogBudgetExhaustEvent(any(), any());

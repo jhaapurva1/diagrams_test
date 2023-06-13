@@ -152,7 +152,7 @@ public class IngestionConfluentKafkaViewEventsListener implements ApplicationLis
         if (currentTime >= startTime.get() + applicationProperties.getBatchInterval()) {
             ack.acknowledge();
             List<CampaignCatalogViewCount> campaignCatalogViewCountList = new ArrayList<>(campaignCatalogViewCountMap.get().values());
-            catalogViewEventService.writeToHbase(campaignCatalogViewCountList);
+            catalogViewEventService.writeToMongo(campaignCatalogViewCountList);
             campaignCatalogViewCountMap.set(new HashMap<>());
             startTime.set(System.currentTimeMillis());
         }
@@ -175,7 +175,7 @@ public class IngestionConfluentKafkaViewEventsListener implements ApplicationLis
             Long catalogId = adViewEvent.getProperties().getId();
             AdViewEventMetadataResponse.CatalogCampaignMetadata catalogMetadata = catalogMetadataMap.get(catalogId);
             if(Objects.isNull(catalogMetadata) || !catalogMetadata.getIsCampaignActive()){
-                log.error("No active ad on catalogId {} userId {} eventId {}",adViewEvent.getProperties().getId(),adViewEvent.getUserId(),adViewEvent.getEventId());
+                log.warn("No active ad on catalogId {} userId {} eventId {}",adViewEvent.getProperties().getId(),adViewEvent.getUserId(),adViewEvent.getEventId());
                 statsdMetricManager.incrementCounter(VIEW_EVENT_KEY, String.format(VIEW_EVENT_TAGS,
                         adViewEvent.getEventName(), adViewEvent.getProperties().getScreen(), adViewEvent.getProperties().getOrigin(), INVALID,
                         AdInteractionInvalidReason.CAMPAIGN_INACTIVE));
@@ -194,7 +194,7 @@ public class IngestionConfluentKafkaViewEventsListener implements ApplicationLis
 
             CampaignCatalogViewCount campaignCatalogViewCount =
                     campaignCatalogViewCountMapTillNow.getOrDefault(campaignCatalogViewCountKey, CampaignCatalogViewCount.builder()
-                            .campaignId(campaignId).catalogId(catalogId).date(eventDate).count(0).build());
+                            .campaignId(campaignId).catalogId(catalogId).date(eventDate).supplierId(catalogMetadata.getSupplierId()).count(0).build());
             campaignCatalogViewCount.setCount(campaignCatalogViewCount.getCount() + 1);
             campaignCatalogViewCountMapTillNow.put(campaignCatalogViewCountKey, campaignCatalogViewCount);
         }

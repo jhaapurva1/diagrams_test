@@ -15,7 +15,7 @@ public class CatalogCPCDiscountSaveRequest {
 
     @NotNull
     @JsonProperty("catalog_id")
-    private Integer catalogId;
+    private Long catalogId;
 
     @NotNull
     @JsonProperty("discount")

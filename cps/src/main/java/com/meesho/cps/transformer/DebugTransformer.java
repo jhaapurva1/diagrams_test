@@ -1,15 +1,15 @@
 package com.meesho.cps.transformer;
 
 import com.meesho.ads.lib.utils.DateTimeUtils;
-import com.meesho.cps.data.entity.hbase.CampaignCatalogDateMetrics;
-import com.meesho.cps.data.entity.hbase.CampaignDatewiseMetrics;
-import com.meesho.cps.data.entity.hbase.CampaignMetrics;
-import com.meesho.cps.data.entity.hbase.CatalogCPCDiscount;
+import com.meesho.cps.data.entity.mongodb.collection.CampaignDateWiseMetrics;
+import com.meesho.cps.data.entity.mongodb.collection.CampaignMetrics;
+import com.meesho.cps.data.entity.mongodb.collection.CatalogCPCDiscount;
+import com.meesho.cps.data.entity.mongodb.collection.CampaignCatalogDateMetrics;
 import com.meesho.cps.data.presto.CampaignCatalogReconciledMetricsPrestoData;
-import com.meesho.cps.data.request.CampaignCatalogDateMetricsSaveRequest;
-import com.meesho.cps.data.request.CampaignDatewiseMetricsSaveRequest;
+import com.meesho.cps.data.request.CampaignDateWiseMetricsSaveRequest;
 import com.meesho.cps.data.request.CampaignMetricsSaveRequest;
 import com.meesho.cps.data.request.CatalogCPCDiscountSaveRequest;
+import com.meesho.cps.data.request.CampaignCatalogDateMetricsSaveRequest;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -28,22 +28,21 @@ public class DebugTransformer {
             campaignCatalogDateMetrics = new CampaignCatalogDateMetrics();
             campaignCatalogDateMetrics.setCampaignId(campaignCatalogMetricsSaveRequest.getCampaignId());
             campaignCatalogDateMetrics.setCatalogId(campaignCatalogMetricsSaveRequest.getCatalogId());
+            campaignCatalogDateMetrics.setSupplierId(campaignCatalogMetricsSaveRequest.getSupplierId());
+            campaignCatalogDateMetrics.setDate(campaignCatalogMetricsSaveRequest.getDate().toString());
         }
         if (Objects.nonNull(campaignCatalogMetricsSaveRequest.getClickCount()))
-            campaignCatalogDateMetrics.setClickCount(campaignCatalogMetricsSaveRequest.getClickCount());
+            campaignCatalogDateMetrics.setClicks(campaignCatalogMetricsSaveRequest.getClickCount());
 
         if (Objects.nonNull(campaignCatalogMetricsSaveRequest.getSharesCount()))
-            campaignCatalogDateMetrics.setSharesCount(campaignCatalogMetricsSaveRequest.getSharesCount());
+            campaignCatalogDateMetrics.setShares(campaignCatalogMetricsSaveRequest.getSharesCount());
 
         if (Objects.nonNull(campaignCatalogMetricsSaveRequest.getWishlistCount()))
-            campaignCatalogDateMetrics.setWishlistCount(
+            campaignCatalogDateMetrics.setWishlists(
                     campaignCatalogMetricsSaveRequest.getWishlistCount());
 
         if (Objects.nonNull(campaignCatalogMetricsSaveRequest.getViewCount()))
-            campaignCatalogDateMetrics.setViewCount(campaignCatalogMetricsSaveRequest.getViewCount());
-
-        if (Objects.nonNull(campaignCatalogMetricsSaveRequest.getDate()))
-            campaignCatalogDateMetrics.setDate(campaignCatalogMetricsSaveRequest.getDate());
+            campaignCatalogDateMetrics.setViews(campaignCatalogMetricsSaveRequest.getViewCount());
 
         if (Objects.nonNull(campaignCatalogMetricsSaveRequest.getOrders()))
             campaignCatalogDateMetrics.setOrders(campaignCatalogMetricsSaveRequest.getOrders());
@@ -57,30 +56,43 @@ public class DebugTransformer {
         return campaignCatalogDateMetrics;
     }
 
+
     public static CampaignCatalogDateMetrics convertCampaignCatalogMetricsFromCampaignCatalogPrestoMetrics(
             CampaignCatalogReconciledMetricsPrestoData campaignCatalogMetricsSaveRequest,
-            CampaignCatalogDateMetrics campaignCatalogDateMetrics) {
+            CampaignCatalogDateMetrics campaignCatalogDateMetrics, Long supplierId) {
         if (Objects.isNull(campaignCatalogDateMetrics)) {
             campaignCatalogDateMetrics = new CampaignCatalogDateMetrics();
             campaignCatalogDateMetrics.setCampaignId(campaignCatalogMetricsSaveRequest.getCampaignId());
             campaignCatalogDateMetrics.setCatalogId(campaignCatalogMetricsSaveRequest.getCatalogId());
         }
+        campaignCatalogDateMetrics.setSupplierId(supplierId);
         if (Objects.nonNull(campaignCatalogMetricsSaveRequest.getClickCount()))
-            campaignCatalogDateMetrics.setClickCount(campaignCatalogMetricsSaveRequest.getClickCount());
+            campaignCatalogDateMetrics.setClicks(campaignCatalogMetricsSaveRequest.getClickCount());
 
         if (Objects.nonNull(campaignCatalogMetricsSaveRequest.getSharesCount()))
-            campaignCatalogDateMetrics.setSharesCount(campaignCatalogMetricsSaveRequest.getSharesCount());
+            campaignCatalogDateMetrics.setShares(campaignCatalogMetricsSaveRequest.getSharesCount());
 
         if (Objects.nonNull(campaignCatalogMetricsSaveRequest.getWishlistCount()))
-            campaignCatalogDateMetrics.setWishlistCount(campaignCatalogMetricsSaveRequest.getWishlistCount());
+            campaignCatalogDateMetrics.setWishlists(campaignCatalogMetricsSaveRequest.getWishlistCount());
 
         if (Objects.nonNull(campaignCatalogMetricsSaveRequest.getEventDate()))
-            campaignCatalogDateMetrics.setDate(LocalDate.parse(campaignCatalogMetricsSaveRequest.getEventDate()));
+            campaignCatalogDateMetrics.setDate(LocalDate.parse(campaignCatalogMetricsSaveRequest.getEventDate()).toString());
 
         if (Objects.nonNull(campaignCatalogMetricsSaveRequest.getBudgetUtilised()))
             campaignCatalogDateMetrics.setBudgetUtilised(BigDecimal.valueOf(campaignCatalogMetricsSaveRequest.getBudgetUtilised()));
 
         return campaignCatalogDateMetrics;
+    }
+
+    public static CatalogCPCDiscount transform(CatalogCPCDiscountSaveRequest request, CatalogCPCDiscount catalogCPCDiscount) {
+        if (Objects.isNull(catalogCPCDiscount)) {
+            catalogCPCDiscount = new CatalogCPCDiscount();
+        }
+
+        catalogCPCDiscount.setCatalogId(request.getCatalogId());
+        catalogCPCDiscount.setDiscount(request.getDiscount());
+
+        return catalogCPCDiscount;
     }
 
     public static CampaignMetrics transform(CampaignMetricsSaveRequest request) {
@@ -90,11 +102,11 @@ public class DebugTransformer {
                 .build();
     }
 
-    public static CampaignDatewiseMetrics transform(CampaignDatewiseMetricsSaveRequest request) {
-        return CampaignDatewiseMetrics.builder()
+    public static CampaignDateWiseMetrics transform(CampaignDateWiseMetricsSaveRequest request) {
+        return CampaignDateWiseMetrics.builder()
                 .campaignId(request.getCampaignId())
                 .budgetUtilised(request.getBudgetUtilised())
-                .date(DateTimeUtils.getCurrentLocalDateTimeInIST().toLocalDate())
+                .date(DateTimeUtils.getCurrentLocalDateTimeInIST().toLocalDate().toString())
                 .build();
     }
 

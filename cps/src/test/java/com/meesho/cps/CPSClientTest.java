@@ -29,11 +29,10 @@ public class CPSClientTest {
 
         SupplierPerformanceRequest request = SupplierPerformanceRequest.builder().supplierId(1L).build();
         CampaignPerformanceRequest campaignPerformanceRequest = CampaignPerformanceRequest.builder()
-            .campaignDetails(Lists.newArrayList(CampaignPerformanceRequest.CampaignDetails.builder()
-                .campaignId(1L)
-                .catalogIds(Lists.newArrayList(11L))
-                .build()))
-            .build();
+                .campaignDetails(Lists.newArrayList(CampaignPerformanceRequest.CampaignDetails.builder()
+                    .campaignId(1L)
+                    .build()))
+                .build();
 
         CPSClientService cpsClientService = new CPSClientService(restConfig, restTemplate, null);
         ServiceResponse<SupplierPerformanceResponse> supplierPerformanceResponseServiceResponse =

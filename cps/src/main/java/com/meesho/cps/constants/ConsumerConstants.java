@@ -50,17 +50,6 @@ public class ConsumerConstants {
         public static final String PDP = "single_product";
     }
 
-    public static class CampaignUpdateConsumer {
-        public static final String ID = "${kafka.campaign_catalog_update.event.consumer.id}";
-        public static final String TOPIC = "${kafka.campaign_catalog_update.event.consumer.topic}";
-        public static final String RETRY_TOPIC = "${kafka.campaign_catalog_update.event.consumer.retry.topic}";
-        public static final String DEAD_TOPIC = "${kafka.campaign_catalog_update.event.consumer.dead.queue.topic}";
-        public static final String AUTO_START = "${kafka.campaign_catalog_update.event.consumer.start}";
-        public static final String CONCURRENCY = "${kafka.campaign_catalog_update.event.consumer.concurrency}";
-        public static final String MAX_POLL_INTERVAL_MS = "${kafka.campaign_catalog_update.event.consumer.max.poll.interval.ms}";
-        public static final String BATCH_SIZE = "${kafka.campaign_catalog_update.event.consumer.batch.size}";
-    }
-
     public static class IngestionInteractionEventsConsumer {
         public static final String CONFLUENT_CONSUMER_ID = "${kafka.ingestion.interaction.event.consumer.confluent.id}";
         public static final String DEAD_QUEUE_TOPIC = "${kafka.ingestion.interaction.event.consumer.dead.queue.topic}";

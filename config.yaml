@@ -15,22 +15,27 @@ environment:
   prd:
     deployment_order:
       - campaign-performance
+      - campaign-performance-new
       - campaign-performance-cron
       - campaign-performance-consumer
       - campaign-performance-scheduler
+      - campaign-performance-new-scheduler
   dev:
     deployment_order:
       - campaign-performance
+      - campaign-performance-new
       - campaign-performance-consumer
       - campaign-performance-scheduler
   int:
     deployment_order:
       - campaign-performance
+      - campaign-performance-new
       - campaign-performance-consumer
       - campaign-performance-scheduler
   ftr:
     deployment_order:
       - campaign-performance
+      - campaign-performance-new
       - campaign-performance-consumer
       - campaign-performance-scheduler
 notify_channel: supplier-ads-ci-alerts

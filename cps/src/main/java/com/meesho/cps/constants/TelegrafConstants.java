@@ -6,13 +6,12 @@ package com.meesho.cps.constants;
  */
 public class TelegrafConstants {
 
-    public static final String SERVICE_NAME = "campaignPerformance";
+    public static final String SERVICE_NAME = "campaignPerformanceNew";
 
     public static final String INTERACTION_EVENT_KEY = SERVICE_NAME + "InteractionEvent";
     public static final String VIEW_EVENT_KEY = SERVICE_NAME + "ViewEvent";
     public static final String INTERACTION_EVENT_CPC_KEY = SERVICE_NAME + "InteractionEventCPC";
     public static final String VIEW_INCREMENTS = SERVICE_NAME + "ViewIncrements";
-
     public static final String WIDGET_VIEW_EVENT_KEY = SERVICE_NAME + "WidgetViewEvent";
 
     public static final String WIDGET_CLICK_EVENT_KEY = SERVICE_NAME + "WidgetClickEvent";

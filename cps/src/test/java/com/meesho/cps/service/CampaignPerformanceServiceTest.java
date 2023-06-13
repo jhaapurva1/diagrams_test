@@ -1,20 +1,22 @@
 package com.meesho.cps.service;
 
-import com.meesho.cps.data.entity.hbase.CampaignCatalogDateMetrics;
-import com.meesho.cps.data.entity.hbase.SupplierWeekWiseMetrics;
-import com.meesho.cps.data.internal.ElasticFiltersRequest;
-import com.meesho.cps.data.internal.PerformancePojo;
-import com.meesho.cps.db.elasticsearch.ElasticSearchRepository;
-import com.meesho.cps.db.hbase.repository.CampaignCatalogDateMetricsRepository;
-import com.meesho.cps.db.hbase.repository.CampaignDatewiseMetricsRepository;
-import com.meesho.cps.db.hbase.repository.CampaignMetricsRepository;
-import com.meesho.cps.db.hbase.repository.SupplierWeekWiseMetricsRepository;
+import com.meesho.cps.config.ApplicationProperties;
+import com.meesho.cps.data.entity.mongodb.collection.CampaignCatalogDateMetrics;
+import com.meesho.cps.data.entity.mongodb.collection.SupplierWeekWiseMetrics;
+import com.meesho.cps.data.entity.mongodb.projection.CampaignCatalogLevelMetrics;
+import com.meesho.cps.data.entity.mongodb.projection.CampaignLevelMetrics;
+import com.meesho.cps.data.entity.mongodb.projection.DateLevelMetrics;
+import com.meesho.cps.data.internal.BasePerformanceMetrics;
+import com.meesho.cps.db.mongodb.dao.CampaignCatalogDateMetricsDao;
+import com.meesho.cps.db.mongodb.dao.CampaignDateWiseMetricsDao;
+import com.meesho.cps.db.mongodb.dao.CampaignMetricsDao;
+import com.meesho.cps.db.mongodb.dao.SupplierWeekWiseMetricsDao;
 import com.meesho.cps.helper.CampaignPerformanceHelper;
 import com.meesho.cps.transformer.CampaignPerformanceTransformer;
 import com.meesho.cpsclient.request.*;
 import com.meesho.cpsclient.response.*;
-import org.assertj.core.util.Lists;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -22,15 +24,13 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.beans.BeanUtils;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import static org.mockito.ArgumentMatchers.*;
 
@@ -39,22 +39,22 @@ import static org.mockito.ArgumentMatchers.*;
 public class CampaignPerformanceServiceTest {
 
     @Mock
-    private CampaignMetricsRepository campaignMetricsRepository;
+    private CampaignMetricsDao campaignMetricsDao;
 
     @Mock
-    private CampaignDatewiseMetricsRepository campaignDatewiseMetricsRepository;
+    private CampaignDateWiseMetricsDao campaignDateWiseMetricsDao;
 
     @Mock
-    private SupplierWeekWiseMetricsRepository supplierWeekWiseMetricsRepository;
+    private SupplierWeekWiseMetricsDao supplierWeekWiseMetricsDao;
 
     @Mock
-    private CampaignCatalogDateMetricsRepository campaignCatalogDateMetricsRepository;
+    private CampaignCatalogDateMetricsDao campaignCatalogDateMetricsDao;
 
     @Mock
     private CampaignPerformanceHelper campaignPerformanceHelper;
 
     @Mock
-    private ElasticSearchRepository elasticSearchRepository;
+    private ApplicationProperties applicationProperties;
 
     @Spy
     private CampaignPerformanceTransformer campaignPerformanceTransformer;
@@ -62,38 +62,51 @@ public class CampaignPerformanceServiceTest {
     @InjectMocks
     private CampaignPerformanceService campaignPerformanceService;
 
-    @Test
-    public void testGetCampaignPerformanceMetrics() throws IOException {
-        Mockito.doReturn(Collections.singletonList(LocalDate.now())).when(campaignPerformanceHelper).getDatesForHBaseQuery(any(), any());
-        Mockito.doReturn(Arrays.asList(getSampleCampaignCatalogDateMetrics(9L,1L, LocalDate.now()),
-                                       getSampleCampaignCatalogDateMetrics(9L, 2L, LocalDate.now()),
-                                       getSampleCampaignCatalogDateMetrics(8L, 3L, LocalDate.now()),
-                                       getSampleCampaignCatalogDateMetrics(8L,4L, LocalDate.now())))
-               .when(campaignCatalogDateMetricsRepository).get(anyMap(), anyList());
-        Mockito.doReturn(getSamplePerformancePojoForCampaignPerformanceMetrics()).when(campaignPerformanceHelper).getAggregatedCampaignCatalogDateMetrics(anyList());
+    private static final Long VIEW_COUNTS = 100L;
+    private static final Long CLICK_COUNTS = 10L;
+    private static final BigDecimal BUDGET_UTILISED = BigDecimal.valueOf(5).setScale(2, RoundingMode.HALF_UP);
+    private static final Integer ORDER_COUNTS = 1;
+    private static final BigDecimal REVENUE = BigDecimal.valueOf(100).setScale(2, RoundingMode.HALF_UP);
 
-        CampaignPerformanceResponse actualResponse = campaignPerformanceService.getCampaignPerformanceMetrics(getSampleCampaignPerformanceRequest());
+    @Before
+    public void setUp() {
+        Mockito.doReturn(LocalDate.now()).when(applicationProperties).getCampaignDatewiseMetricsReferenceDate();
+        Mockito.doReturn(Arrays.asList(getSampleCampaignLevelMetrics(1L),
+                getSampleCampaignLevelMetrics(2L))).when(campaignCatalogDateMetricsDao).getCampaignLevelMetrics(any(), any(), any());
+        Mockito.doReturn(Arrays.asList(getSampleCampaignCatalogLevelMetrics(1L),
+                getSampleCampaignCatalogLevelMetrics(2L))).when(campaignCatalogDateMetricsDao).getCampaignCatalogLevelMetrics(any(), anyList(), any(), any());
+    }
+
+    @Test
+    public void testGetCampaignPerformanceMetrics() {
+        CampaignPerformanceResponse actualResponse = campaignPerformanceService.getCampaignPerformanceMetrics(getSampleCampaignPerformanceRequest(LocalDate.now(), LocalDate.now()));
+        Assert.assertEquals(getExpectedCampaignPerformanceResponse(), actualResponse);
+    }
+
+    @Test
+    public void testGetCampaignPerformanceMetricsWhenDateRangeIsNotProvided() {
+        CampaignPerformanceResponse actualResponse = campaignPerformanceService.getCampaignPerformanceMetrics(getSampleCampaignPerformanceRequest(null, null));
         Assert.assertEquals(getExpectedCampaignPerformanceResponse(), actualResponse);
     }
 
     @Test
     public void testGetCampaignCatalogPerformanceMetrics() throws IOException {
-        Mockito.doReturn(Collections.singletonList(LocalDate.now())).when(campaignPerformanceHelper).getDatesForHBaseQuery(any(), any());
-        Mockito.doReturn(Arrays.asList(getSampleCampaignCatalogDateMetrics(9L,1L, LocalDate.now()),
-                                       getSampleCampaignCatalogDateMetrics(9L, 2L, LocalDate.now())))
-                .when(campaignCatalogDateMetricsRepository).get(anyMap(), anyList());
-        Mockito.doReturn(getSamplePerformancePojoForCampaignCatalogPerformanceMetrics()).when(campaignPerformanceHelper).getAggregatedCampaignCatalogDateMetrics(anyList());
+        CampaignCatalogPerformanceResponse actualResponse = campaignPerformanceService.getCampaignCatalogPerformanceMetrics(getSampleCampaignCatalogPerformanceRequest(LocalDate.now(), LocalDate.now()));
+        Assert.assertEquals(getExpectedCampaignCatalogPerformanceResponse(), actualResponse);
+    }
 
-        CampaignCatalogPerformanceResponse actualResponse = campaignPerformanceService.getCampaignCatalogPerformanceMetrics(getSampleCampaignCatalogPerformanceRequest());
+    @Test
+    public void testGetCampaignCatalogPerformanceMetricsWhenDateRangeIsNotProvided() throws IOException {
+        CampaignCatalogPerformanceResponse actualResponse = campaignPerformanceService.getCampaignCatalogPerformanceMetrics(getSampleCampaignCatalogPerformanceRequest(null, null));
         Assert.assertEquals(getExpectedCampaignCatalogPerformanceResponse(), actualResponse);
     }
 
     @Test
     public void testGetBudgetUtilised() {
-        Mockito.doReturn(new ArrayList<>()).when(campaignMetricsRepository).getAll(any());
-        Mockito.doReturn(new ArrayList<>()).when(campaignDatewiseMetricsRepository).getAll(any(), any());
-        Mockito.doReturn(getSampleSupplierWeekWiseMetrics()).when(supplierWeekWiseMetricsRepository).getAll(any(), any());
-        Mockito.doReturn(null).when(campaignPerformanceHelper).getLocalDateForDailyCampaignFromLocalDateTime(any());
+        Mockito.doReturn(new ArrayList<>()).when(campaignMetricsDao).findAllByCampaignIdsIn(any());
+        Mockito.doReturn(new ArrayList<>()).when(campaignDateWiseMetricsDao).findAllByCampaignIdsInAndDate(any(), any());
+        Mockito.doReturn(getSampleSupplierWeekWiseMetrics()).when(supplierWeekWiseMetricsDao).findAllBySupplierIdAndWeekStartDate(any(), any());
+        Mockito.doReturn(LocalDate.now()).when(campaignPerformanceHelper).getLocalDateForDailyCampaignFromLocalDateTime(any());
 
         BudgetUtilisedResponse actualResponse = campaignPerformanceService.getBudgetUtilised(getSampleBudgetUtilisedRequest());
         Assert.assertEquals(getExpectedBudgetUtilisedResponse(), actualResponse);
@@ -102,8 +115,7 @@ public class CampaignPerformanceServiceTest {
 
     @Test
     public void testDateLevelBudgetUtilised() {
-        Mockito.doReturn(CampaignCatalogDateMetrics.builder().catalogId(1L).budgetUtilised(BigDecimal.valueOf(1000)).build())
-                .when(campaignCatalogDateMetricsRepository).get(any(), (Long) any(), any());
+        Mockito.doReturn(getSampleMasterPerformanceDocument(1L, 1L, LocalDate.now())).when(campaignCatalogDateMetricsDao).find(any(), any(), any());
         CampaignCatalogDateLevelBudgetUtilisedResponse actualResponse =
                 campaignPerformanceService.getDateLevelBudgetUtilised(getDateLevelBudgetUtilisedRequest());
         CampaignCatalogDateLevelBudgetUtilisedResponse expectedResponse = getExpectedDateLevelBudgetUtilisedResponse();
@@ -112,146 +124,45 @@ public class CampaignPerformanceServiceTest {
 
     @Test
     public void testGetCampaignCatalogPerfDateWise() throws IOException {
-        Mockito.doReturn(Collections.singletonList(LocalDate.now())).when(campaignPerformanceHelper).getDatesForHBaseQuery(any(), any());
-        Mockito.doReturn(Arrays.asList(getSampleCampaignCatalogDateMetrics(9L,1L, LocalDate.now()),
-                                       getSampleCampaignCatalogDateMetrics(9L, 2L, LocalDate.now())))
-                .when(campaignCatalogDateMetricsRepository).get(anyMap(), anyList());
-        Mockito.doReturn(getSamplePerformancePojoForCampaignCatalogPerfDateWise()).when(campaignPerformanceHelper).getAggregatedCampaignCatalogDateMetrics(anyList());
-
-        CampaignPerformanceDatewiseResponse actualResponse = campaignPerformanceService.getCampaignCatalogPerfDateWise(getSampleCampaignCatalogPerfDatawiseRequest());
-        Assert.assertEquals(getExpectedCampaignPerformanceDatewiseResponse(), actualResponse);
+        Mockito.doReturn(Collections.singletonList(getSampleDateLevelMetrics(LocalDate.now()))).when(campaignCatalogDateMetricsDao).getDateLevelMetrics(any(), any(), any());
+        CampaignPerformanceDatewiseResponse actualResponse = campaignPerformanceService.getCampaignCatalogPerfDateWise(getSampleCampaignCatalogPerfDateWiseRequest());
+        Assert.assertEquals(getExpectedCampaignPerformanceDateWiseResponse(), actualResponse);
     }
 
-    private CampaignPerformanceRequest getSampleCampaignPerformanceRequest() {
+    private CampaignPerformanceRequest getSampleCampaignPerformanceRequest(LocalDate startDate, LocalDate endDate) {
         return CampaignPerformanceRequest.builder()
                 .campaignDetails(Arrays.asList(
-                    CampaignPerformanceRequest.CampaignDetails.builder()
-                        .campaignId(9L)
-                        .catalogIds(Arrays.asList(1L, 2L))
-                        .build(),
-                    CampaignPerformanceRequest.CampaignDetails.builder()
-                        .campaignId(8L)
-                        .catalogIds(Arrays.asList(3L, 4L))
-                        .build()))
-                .startDate(LocalDate.now())
-                .endDate(LocalDate.now())
+                        CampaignPerformanceRequest.CampaignDetails.builder().campaignId(1L).build(),
+                        CampaignPerformanceRequest.CampaignDetails.builder().campaignId(2L).build()))
+                .startDate(startDate)
+                .endDate(endDate)
                 .build();
     }
 
-    private CampaignCatalogPerformanceRequest getSampleCampaignCatalogPerformanceRequest() {
+    private CampaignCatalogPerformanceRequest getSampleCampaignCatalogPerformanceRequest(LocalDate startDate, LocalDate endDate) {
         return CampaignCatalogPerformanceRequest.builder()
-                .campaignId(9L)
+                .campaignId(1L)
                 .catalogIds(Arrays.asList(1L, 2L))
-                .startDate(LocalDate.now())
-                .endDate(LocalDate.now())
+                .startDate(startDate)
+                .endDate(endDate)
                 .build();
     }
 
-    private CampaignPerformanceResponse getExpectedCampaignPerformanceResponse() {
-        return CampaignPerformanceResponse.builder()
-                .campaigns(Arrays.asList(
-                    CampaignPerformanceResponse.CampaignDetails.builder()
-                        .campaignId(9L)
-                        .revenue(BigDecimal.valueOf(20).setScale(2, RoundingMode.HALF_UP))
-                        .budgetUtilised(BigDecimal.valueOf(20).setScale(2, RoundingMode.HALF_UP))
-                        .roi(BigDecimal.ONE.setScale(2, RoundingMode.HALF_UP))
-                        .orderCount(20)
-                        .totalViews(0L)
-                        .totalClicks(0L)
-                        .build(),
-                    CampaignPerformanceResponse.CampaignDetails.builder()
-                        .campaignId(8L)
-                        .revenue(BigDecimal.valueOf(20).setScale(2, RoundingMode.HALF_UP))
-                        .budgetUtilised(BigDecimal.valueOf(20).setScale(2, RoundingMode.HALF_UP))
-                        .roi(BigDecimal.ONE.setScale(2, RoundingMode.HALF_UP))
-                        .orderCount(20)
-                        .totalViews(0L)
-                        .totalClicks(0L)
-                        .build()))
+    private SupplierPerformanceRequest getSampleSupplierPerformanceRequest(LocalDate startDate, LocalDate endDate) {
+        return SupplierPerformanceRequest.builder()
+                .supplierId(1L)
+                .startDate(startDate)
+                .endDate(endDate)
                 .build();
     }
 
-    private CampaignCatalogPerformanceResponse getExpectedCampaignCatalogPerformanceResponse() {
-        return CampaignCatalogPerformanceResponse.builder()
-                .catalogs(Arrays.asList(
-                    CampaignCatalogPerformanceResponse.CatalogDetails.builder()
-                        .campaignId(9L)
-                        .catalogId(1L)
-                        .revenue(BigDecimal.TEN.setScale(2, RoundingMode.HALF_UP))
-                        .budgetUtilised(BigDecimal.TEN.setScale(2, RoundingMode.HALF_UP))
-                        .roi(BigDecimal.ONE.setScale(2, RoundingMode.HALF_UP))
-                        .orderCount(10)
-                        .totalViews(0L)
-                        .totalClicks(0L)
-                        .build(),
-                    CampaignCatalogPerformanceResponse.CatalogDetails.builder()
-                        .campaignId(9L)
-                        .catalogId(2L)
-                        .revenue(BigDecimal.TEN.setScale(2, RoundingMode.HALF_UP))
-                        .budgetUtilised(BigDecimal.TEN.setScale(2, RoundingMode.HALF_UP))
-                        .roi(BigDecimal.ONE.setScale(2, RoundingMode.HALF_UP))
-                        .orderCount(10)
-                        .totalViews(0L)
-                        .totalClicks(0L)
-                        .build()))
-                .build();
-    }
-
-    private CampaignPerformanceDatewiseResponse getExpectedCampaignPerformanceDatewiseResponse() {
-        return CampaignPerformanceDatewiseResponse.builder()
-                .campaignId(9L)
-                .dateCatalogsMap(Collections.singletonMap(LocalDate.now(),
-                    CampaignPerformanceDatewiseResponse.GraphDetails.builder()
-                    .orders(20)
-                    .views(0L)
-                    .clicks(0L)
-                    .build()))
-                .build();
-    }
-
-    private PerformancePojo getSamplePerformancePojoForCampaignPerformanceMetrics() {
-        return PerformancePojo.builder()
-                .totalOrders(20)
-                .totalShares(0L)
-                .totalRevenue(BigDecimal.valueOf(20))
-                .totalWishlist(0L)
-                .totalClicks(0L)
-                .totalBudgetUtilised(BigDecimal.valueOf(20))
-                .totalViews(0L)
-                .build();
-    }
-
-    private PerformancePojo getSamplePerformancePojoForCampaignCatalogPerformanceMetrics() {
-        return PerformancePojo.builder()
-                .totalOrders(10)
-                .totalShares(0L)
-                .totalRevenue(BigDecimal.TEN)
-                .totalWishlist(0L)
-                .totalClicks(0L)
-                .totalBudgetUtilised(BigDecimal.TEN)
-                .totalViews(0L)
-                .build();
-    }
-
-    private PerformancePojo getSamplePerformancePojoForCampaignCatalogPerfDateWise() {
-        return PerformancePojo.builder()
-                .totalOrders(20)
-                .totalShares(0L)
-                .totalRevenue(BigDecimal.valueOf(20))
-                .totalWishlist(0L)
-                .totalClicks(0L)
-                .totalBudgetUtilised(BigDecimal.valueOf(20))
-                .totalViews(0L)
-                .build();
-    }
-
-    private CampaignCatalogDateMetrics getSampleCampaignCatalogDateMetrics(Long campaignId, Long catalogId, LocalDate date) {
+    private CampaignCatalogDateMetrics getSampleMasterPerformanceDocument(Long campaignId, Long catalogId, LocalDate date) {
         return CampaignCatalogDateMetrics.builder()
                 .campaignId(campaignId)
                 .catalogId(catalogId)
-                .date(date)
-                .revenue(BigDecimal.TEN)
-                .budgetUtilised(BigDecimal.TEN)
+                .date(date.toString())
+                .revenue(REVENUE)
+                .budgetUtilised(BUDGET_UTILISED)
                 .orders(10)
                 .build();
     }
@@ -263,27 +174,6 @@ public class CampaignPerformanceServiceTest {
                 .build();
     }
 
-    private BudgetUtilisedResponse getExpectedBudgetUtilisedResponse() {
-        List<BudgetUtilisedResponse.SupplierBudgetUtilisedDetails> supplierBudgetUtilisedDetails = new ArrayList<>();
-        supplierBudgetUtilisedDetails.add(BudgetUtilisedResponse.SupplierBudgetUtilisedDetails.builder().supplierId(1L)
-                .budgetUtilised(BigDecimal.valueOf(100)).build());
-        supplierBudgetUtilisedDetails.add(BudgetUtilisedResponse.SupplierBudgetUtilisedDetails.builder().supplierId(2L)
-                .budgetUtilised(BigDecimal.valueOf(200)).build());
-
-        return BudgetUtilisedResponse.builder().budgetUtilisedDetails(new ArrayList<>()).suppliersBudgetUtilisedDetails(supplierBudgetUtilisedDetails).build();
-    }
-
-    private List<SupplierWeekWiseMetrics> getSampleSupplierWeekWiseMetrics() {
-        List<SupplierWeekWiseMetrics> supplierWeekWiseMetrics = new ArrayList<>();
-        supplierWeekWiseMetrics.add(SupplierWeekWiseMetrics.builder()
-                .supplierId(1L).budgetUtilised(BigDecimal.valueOf(100))
-                .build());
-        supplierWeekWiseMetrics.add(SupplierWeekWiseMetrics.builder()
-                .supplierId(2L).budgetUtilised(BigDecimal.valueOf(200))
-                .build());
-
-        return supplierWeekWiseMetrics;
-    }
 
 
     private CampaignCatalogDateLevelBudgetUtilisedRequest getDateLevelBudgetUtilisedRequest() {
@@ -296,10 +186,98 @@ public class CampaignPerformanceServiceTest {
                 .campaignDetails(Collections.singletonList(campaignDetails)).build();
     }
 
+    private CampaignPerformanceResponse getExpectedCampaignPerformanceResponse() {
+        return CampaignPerformanceResponse.builder()
+                .campaigns(Arrays.asList(
+                    CampaignPerformanceResponse.CampaignDetails.builder()
+                        .campaignId(1L)
+                        .budgetUtilised(BUDGET_UTILISED)
+                        .totalViews(VIEW_COUNTS)
+                        .totalClicks(CLICK_COUNTS)
+                        .orderCount(ORDER_COUNTS)
+                        .revenue(REVENUE)
+                        .roi(REVENUE.divide(BUDGET_UTILISED, RoundingMode.HALF_UP))
+                        .conversionRate(100.0*CLICK_COUNTS/VIEW_COUNTS)
+                        .build(),
+                    CampaignPerformanceResponse.CampaignDetails.builder()
+                        .campaignId(2L)
+                        .budgetUtilised(BUDGET_UTILISED)
+                        .totalViews(VIEW_COUNTS)
+                        .totalClicks(CLICK_COUNTS)
+                        .orderCount(ORDER_COUNTS)
+                        .revenue(REVENUE)
+                        .roi(REVENUE.divide(BUDGET_UTILISED, RoundingMode.HALF_UP))
+                        .conversionRate(100.0*CLICK_COUNTS/VIEW_COUNTS)
+                        .build()))
+                .build();
+    }
+
+    private CampaignCatalogPerformanceResponse getExpectedCampaignCatalogPerformanceResponse() {
+        return CampaignCatalogPerformanceResponse.builder()
+                .catalogs(Arrays.asList(
+                    CampaignCatalogPerformanceResponse.CatalogDetails.builder()
+                        .campaignId(1L)
+                        .catalogId(1L)
+                        .budgetUtilised(BUDGET_UTILISED)
+                        .totalViews(VIEW_COUNTS)
+                        .totalClicks(CLICK_COUNTS)
+                        .orderCount(ORDER_COUNTS)
+                        .revenue(REVENUE)
+                        .roi(REVENUE.divide(BUDGET_UTILISED, RoundingMode.HALF_UP))
+                        .conversionRate(100.0*CLICK_COUNTS/VIEW_COUNTS)
+                        .build(),
+                    CampaignCatalogPerformanceResponse.CatalogDetails.builder()
+                        .campaignId(1L)
+                        .catalogId(2L)
+                        .budgetUtilised(BUDGET_UTILISED)
+                        .totalViews(VIEW_COUNTS)
+                        .totalClicks(CLICK_COUNTS)
+                        .orderCount(ORDER_COUNTS)
+                        .revenue(REVENUE)
+                        .roi(REVENUE.divide(BUDGET_UTILISED, RoundingMode.HALF_UP))
+                        .conversionRate(100.0*CLICK_COUNTS/VIEW_COUNTS)
+                        .build()))
+                .build();
+    }
+
+    private CampaignPerformanceDatewiseResponse getExpectedCampaignPerformanceDateWiseResponse() {
+        return CampaignPerformanceDatewiseResponse.builder()
+                .campaignId(1L)
+                .dateCatalogsMap(Collections.singletonMap(LocalDate.now(),
+                    CampaignPerformanceDatewiseResponse.GraphDetails.builder()
+                    .orders(ORDER_COUNTS)
+                    .views(VIEW_COUNTS)
+                    .clicks(CLICK_COUNTS)
+                    .build()))
+                .build();
+    }
+
+    private BudgetUtilisedResponse getExpectedBudgetUtilisedResponse() {
+        List<BudgetUtilisedResponse.SupplierBudgetUtilisedDetails> supplierBudgetUtilisedDetails = new ArrayList<>();
+        supplierBudgetUtilisedDetails.add(BudgetUtilisedResponse.SupplierBudgetUtilisedDetails.builder().supplierId(1L)
+                .budgetUtilised(BUDGET_UTILISED).build());
+        supplierBudgetUtilisedDetails.add(BudgetUtilisedResponse.SupplierBudgetUtilisedDetails.builder().supplierId(2L)
+                .budgetUtilised(BUDGET_UTILISED).build());
+
+        return BudgetUtilisedResponse.builder().budgetUtilisedDetails(new ArrayList<>()).suppliersBudgetUtilisedDetails(supplierBudgetUtilisedDetails).build();
+    }
+
+    private List<SupplierWeekWiseMetrics> getSampleSupplierWeekWiseMetrics() {
+        List<SupplierWeekWiseMetrics> supplierWeekWiseMetrics = new ArrayList<>();
+        supplierWeekWiseMetrics.add(SupplierWeekWiseMetrics.builder()
+                .supplierId(1L).budgetUtilised(BUDGET_UTILISED)
+                .build());
+        supplierWeekWiseMetrics.add(SupplierWeekWiseMetrics.builder()
+                .supplierId(2L).budgetUtilised(BUDGET_UTILISED)
+                .build());
+
+        return supplierWeekWiseMetrics;
+    }
+
     private CampaignCatalogDateLevelBudgetUtilisedResponse getExpectedDateLevelBudgetUtilisedResponse() {
         CampaignCatalogDateLevelBudgetUtilisedResponse.CampaignDetails.CatalogDetails catalogDetails =
                 CampaignCatalogDateLevelBudgetUtilisedResponse.CampaignDetails.CatalogDetails.builder().catalogId(1L)
-                        .budgetUtilised(BigDecimal.valueOf(1000)).build();
+                        .budgetUtilised(BUDGET_UTILISED).build();
         CampaignCatalogDateLevelBudgetUtilisedResponse.CampaignDetails campaignDetails =
                 CampaignCatalogDateLevelBudgetUtilisedResponse.CampaignDetails.builder().campaignId(1L)
                         .date(LocalDate.now()).catalogDetails(Collections.singletonList(catalogDetails)).build();
@@ -307,13 +285,43 @@ public class CampaignPerformanceServiceTest {
                 .campaignDetails(Collections.singletonList(campaignDetails)).build();
     }
 
-    private CampaignCatalogPerfDatawiseRequest getSampleCampaignCatalogPerfDatawiseRequest() {
+    private CampaignCatalogPerfDatawiseRequest getSampleCampaignCatalogPerfDateWiseRequest() {
         return CampaignCatalogPerfDatawiseRequest.builder()
-                .campaignId(9L)
-                .catalogIds(Lists.newArrayList(1L, 2L))
+                .campaignId(1L)
                 .startDate(LocalDate.now())
                 .endDate(LocalDate.now())
                 .build();
+    }
+
+    private CampaignLevelMetrics getSampleCampaignLevelMetrics(Long campaignId) {
+        CampaignLevelMetrics campaignLevelMetrics = new CampaignLevelMetrics();
+        BeanUtils.copyProperties(getSampleBasePerformanceMetrics(),campaignLevelMetrics);
+        campaignLevelMetrics.setCampaignId(campaignId);
+        return campaignLevelMetrics;
+    }
+
+    private CampaignCatalogLevelMetrics getSampleCampaignCatalogLevelMetrics(Long catalogId) {
+        CampaignCatalogLevelMetrics campaignCatalogLevelMetrics = new CampaignCatalogLevelMetrics();
+        BeanUtils.copyProperties(getSampleBasePerformanceMetrics(), campaignCatalogLevelMetrics);
+        campaignCatalogLevelMetrics.setCampaignIdCatalogId(CampaignCatalogLevelMetrics.CampaignIdCatalogId.builder().campaignId(1L).catalogId(catalogId).build());
+        return campaignCatalogLevelMetrics;
+    }
+
+    private DateLevelMetrics getSampleDateLevelMetrics(LocalDate date) {
+        DateLevelMetrics dateLevelMetrics = new DateLevelMetrics();
+        BeanUtils.copyProperties(getSampleBasePerformanceMetrics(),dateLevelMetrics);
+        dateLevelMetrics.setDate(date.toString());
+        return dateLevelMetrics;
+    }
+
+    private BasePerformanceMetrics getSampleBasePerformanceMetrics() {
+        BasePerformanceMetrics basePerformanceMetrics = new BasePerformanceMetrics();
+        basePerformanceMetrics.setClicks(CLICK_COUNTS);
+        basePerformanceMetrics.setViews(VIEW_COUNTS);
+        basePerformanceMetrics.setBudgetUtilised(BUDGET_UTILISED);
+        basePerformanceMetrics.setOrders(ORDER_COUNTS);
+        basePerformanceMetrics.setRevenue(REVENUE);
+        return basePerformanceMetrics;
     }
 
 }

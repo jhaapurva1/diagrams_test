@@ -6,7 +6,7 @@ import com.meesho.cps.config.ApplicationProperties;
 import com.meesho.cps.data.entity.kafka.AdViewEvent;
 import com.meesho.cps.data.internal.CampaignCatalogDate;
 import com.meesho.cps.data.internal.CampaignCatalogViewCount;
-import com.meesho.cps.db.hbase.repository.CampaignCatalogDateMetricsRepository;
+import com.meesho.cps.db.mongodb.dao.CampaignCatalogDateMetricsDao;
 import com.meesho.cps.db.redis.dao.UpdatedCampaignCatalogCacheDao;
 import com.meesho.cps.exception.ExternalRequestFailedException;
 import com.meesho.cps.service.external.AdService;
@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 public class CatalogViewEventService {
 
     @Autowired
-    private CampaignCatalogDateMetricsRepository campaignCatalogMetricsRepository;
+    private CampaignCatalogDateMetricsDao campaignCatalogDateMetricsDao;
 
     @Autowired
     private AdService adService;
@@ -41,6 +41,7 @@ public class CatalogViewEventService {
     @Autowired
     private UpdatedCampaignCatalogCacheDao updatedCampaignCatalogCacheDao;
 
+
     @DigestLogger(metricType = MetricType.METHOD, tagSet = "class=CatalogViewEventService")
     public Map<Long, AdViewEventMetadataResponse.CatalogCampaignMetadata> getCampaignCatalogMetadataFromAdViewEvents(List<AdViewEvent> adViewEvents) throws ExternalRequestFailedException {
 
@@ -50,7 +51,7 @@ public class CatalogViewEventService {
         List<AdViewEventMetadataResponse.CatalogCampaignMetadata> responses = adService.getCampaignMetadataFromCache(catalogIds);
 
         if (CollectionUtils.isEmpty(responses)) {
-            log.error("No active campaign found for catalogs {}", catalogIds);
+            log.warn("No active campaign found for catalogs {}", catalogIds);
             return null;
         }
 
@@ -63,20 +64,20 @@ public class CatalogViewEventService {
         List<AdViewEventMetadataResponse.CatalogCampaignMetadata> responses = adService.getCampaignMetadataFromCache(catalogIds);
 
         if (CollectionUtils.isEmpty(responses)) {
-            log.error("No active campaign found for catalogs {}", catalogIds);
+            log.warn("No active campaign found for catalogs {}", catalogIds);
             return null;
         }
 
         return responses.stream().collect(Collectors.toMap(AdViewEventMetadataResponse.CatalogCampaignMetadata::getCatalogId, Function.identity()));
     }
 
-    @DigestLogger(metricType = MetricType.METHOD, tagSet = "className=CatalogViewEventService,method=writeToHbase")
-    public void writeToHbase(List<CampaignCatalogViewCount> campaignCatalogViewCountList) {
+    @DigestLogger(metricType = MetricType.METHOD, tagSet = "className=CatalogViewEventService,method=writeToMongo")
+    public void writeToMongo(List<CampaignCatalogViewCount> campaignCatalogViewCountList) {
         List<List<CampaignCatalogViewCount>> campaignCatalogViewCountPartitionedList =
-                Lists.partition(campaignCatalogViewCountList, applicationProperties.getIncrementViewHbaseBatchSize());
+                Lists.partition(campaignCatalogViewCountList, applicationProperties.getIncrementViewMongoBatchSize());
 
         for (List<CampaignCatalogViewCount> eachPartitionedList : campaignCatalogViewCountPartitionedList) {
-            campaignCatalogMetricsRepository.bulkIncrementViewCount(eachPartitionedList);
+            campaignCatalogDateMetricsDao.bulkIncrementViewCounts(eachPartitionedList);
         }
 
         // update redis set for campaign_catalog_date

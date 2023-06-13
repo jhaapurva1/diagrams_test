@@ -3,9 +3,7 @@ package com.meesho.cps.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.meesho.ad.client.response.AdViewEventMetadataResponse;
-import com.meesho.ads.lib.constants.Constants;
 import com.meesho.ads.lib.utils.DateTimeUtils;
-import com.meesho.commons.enums.Country;
 import com.meesho.cps.config.ApplicationProperties;
 import com.meesho.cps.constants.AdInteractionInvalidReason;
 import com.meesho.cps.constants.ConsumerConstants;
@@ -16,7 +14,6 @@ import com.meesho.cps.helper.CampaignPerformanceHelper;
 import com.meesho.instrumentation.metric.statsd.StatsdMetricManager;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -96,8 +93,8 @@ public class WidgetViewEventService {
 
         if (currentTime >= startTime.get() + applicationProperties.getBatchInterval()) {
             List<CampaignCatalogViewCount> campaignCatalogViewCountList = new ArrayList<>(campaignCatalogViewCountMap.get().values());
-            log.info("writing to hbase: {}", campaignCatalogViewCountList);
-            catalogViewEventService.writeToHbase(campaignCatalogViewCountList);
+            log.info("writing to mongo: {}", campaignCatalogViewCountList);
+            catalogViewEventService.writeToMongo(campaignCatalogViewCountList);
             campaignCatalogViewCountMap.set(new HashMap<>());
             startTime.set(System.currentTimeMillis());
         }
@@ -114,7 +111,7 @@ public class WidgetViewEventService {
 
             AdViewEventMetadataResponse.CatalogCampaignMetadata catalogMetadata = catalogMetadataMap.get(catalogId);
             if(Objects.isNull(catalogMetadata) || Boolean.FALSE.equals(catalogMetadata.getIsCampaignActive())){
-                log.error("No active ad on catalogIds {} userId {} eventId {}",
+                log.warn("No active ad on catalogIds {} userId {} eventId {}",
                         adWidgetViewEvent.getProperties().getCatalogIds(), adWidgetViewEvent.getUserId(), adWidgetViewEvent.getEventId());
                 statsdMetricManager.incrementCounter(WIDGET_VIEW_EVENT_KEY, String.format(WIDGET_VIEW_EVENT_TAGS,
                         adWidgetViewEvent.getEventName(), adWidgetViewEvent.getProperties().getSourceScreens(), adWidgetViewEvent.getProperties().getScreens(), adWidgetViewEvent.getProperties().getOrigins(), INVALID,
@@ -134,7 +131,7 @@ public class WidgetViewEventService {
 
             CampaignCatalogViewCount campaignCatalogViewCount =
                     campaignCatalogViewCountMapTillNow.getOrDefault(campaignCatalogViewCountKey, CampaignCatalogViewCount.builder()
-                            .campaignId(campaignId).catalogId(catalogId).date(eventDate).count(0).build());
+                            .campaignId(campaignId).catalogId(catalogId).supplierId(catalogMetadata.getSupplierId()).date(eventDate).count(0).build());
             campaignCatalogViewCount.setCount(campaignCatalogViewCount.getCount() + 1);
             campaignCatalogViewCountMapTillNow.put(campaignCatalogViewCountKey, campaignCatalogViewCount);
         }

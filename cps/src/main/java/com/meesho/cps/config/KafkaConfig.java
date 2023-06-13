@@ -2,7 +2,6 @@ package com.meesho.cps.config;
 
 import com.meesho.ads.lib.constants.Constants;
 import com.meesho.cps.constants.ConsumerConstants;
-import com.meesho.cps.constants.ProducerConstants;
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
 import lombok.extern.slf4j.Slf4j;
@@ -39,15 +38,11 @@ public class KafkaConfig {
     @Value(ConsumerConstants.CommonKafka.BOOTSTRAP_SERVERS)
     private String commonBootstrapServers;
 
-
     @Value(ConsumerConstants.AdServiceKafka.BOOTSTRAP_SERVERS)
     private String adServiceBootstrapServers;
 
     @Value(ConsumerConstants.IngestionServiceConfluentKafka.BOOTSTRAP_SERVERS)
     private String ingestionConfluentKafkaBootstrapServers;
-
-    @Value(ProducerConstants.PayoutServiceKafka.PAYOUT_BOOTSTRAP_SERVERS)
-    private String payoutServers;
 
     @Value(ConsumerConstants.IngestionServiceConfluentKafka.AVRO_SCHEMA_REGISTRY_URL)
     private String confluentAvroSchemaRegistryUrl;
@@ -218,25 +213,6 @@ public class KafkaConfig {
     @Primary
     public KafkaTemplate<String, String> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
-    }
-
-    @Bean(ProducerConstants.PayoutServiceKafka.PRODUCER_PAYOUT_CONFIG)
-    public Map<String, Object> payoutProducerConfig() {
-        Map<String, Object> configs = new HashMap<>();
-        configs.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, payoutServers);
-        configs.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        configs.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        return configs;
-    }
-
-    @Bean(ProducerConstants.PayoutServiceKafka.PRODUCER_PAYOUT_FACTORY)
-    public DefaultKafkaProducerFactory<String, String> payoutProducerFactory() {
-        return new DefaultKafkaProducerFactory<>(payoutProducerConfig());
-    }
-
-    @Bean(ProducerConstants.PayoutServiceKafka.PAYOUT_KAFKA_TEMPLATE)
-    public KafkaTemplate<String, String> payoutKafkaTemplate() {
-        return new KafkaTemplate<>(payoutProducerFactory());
     }
 
 }

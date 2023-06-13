@@ -31,7 +31,7 @@ public class UserCatalogInteractionCacheDaoImpl implements UserCatalogInteractio
     private ApplicationProperties applicationProperties;
 
     private String appendPrefix(String userId, Long id, String origin, String screen, AdUserInteractionType type) {
-        return String.format(DBConstants.Redis.USER_CATALOG_INTERACTIONS_PREFIX, userId, id, origin, screen, type.toString());
+        return "new" + String.format(DBConstants.Redis.USER_CATALOG_INTERACTIONS_PREFIX, userId, id, origin, screen, type.toString());
     }
 
     @Override

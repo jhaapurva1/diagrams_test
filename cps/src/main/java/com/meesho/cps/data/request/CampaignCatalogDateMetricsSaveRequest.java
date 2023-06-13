@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Map;
 
 import javax.validation.constraints.NotNull;
 
@@ -20,6 +19,10 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CampaignCatalogDateMetricsSaveRequest {
+
+    @JsonProperty("supplier_id")
+    @NotNull
+    private Long supplierId;
 
     @JsonProperty("campaign_id")
     @NotNull
