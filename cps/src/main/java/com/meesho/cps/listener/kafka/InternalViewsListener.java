@@ -28,9 +28,11 @@ public class InternalViewsListener {
     @Autowired
     CatalogViewEventService catalogViewEventService;
 
+    private static final String internalViewConsumerEnabled = "${internal.view.events.consumer.enabled}";
+
 
     @KafkaListener(id = "MongoConsumer", containerFactory = ConsumerConstants.AdServiceKafka.BATCH_CONTAINER_FACTORY,
-            topics = "ad_views_internal", autoStartup = "true", concurrency = "10",
+            topics = "ad_views_internal", autoStartup = internalViewConsumerEnabled, concurrency = "12",
             properties = {ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG + "=" + ConsumerConstants.InteractionEventsConsumer.MAX_POLL_INTERVAL_MS,
                     ConsumerConfig.MAX_POLL_RECORDS_CONFIG + "=" + "10"})
     @DigestLogger(metricType = MetricType.METHOD, tagSet = "consumer=EsToMongoConsumer")

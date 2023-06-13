@@ -31,8 +31,12 @@ public class MigrationListener {
     @Autowired
     private CampaignMetricsDao campaignMetricsDao;
 
+    private static final String hbaseMigrationConsumerEnabled = "${migration.total.budget.campaign.consumer.enabled}";
+
+    private static final String eseMigrationConsumerEnabled = "${migration.es.to.mongo.consumer.enabled}";
+
     @KafkaListener(id = "EsToMongoConsumer", containerFactory = ConsumerConstants.AdServiceKafka.BATCH_CONTAINER_FACTORY,
-            topics = "es_to_mongo", autoStartup = "true", concurrency = "10",
+            topics = "es_to_mongo", autoStartup = eseMigrationConsumerEnabled, concurrency = "10",
             properties = {ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG + "=" + ConsumerConstants.InteractionEventsConsumer.MAX_POLL_INTERVAL_MS,
             ConsumerConfig.MAX_POLL_RECORDS_CONFIG + "=" + "500"})
     @DigestLogger(metricType = MetricType.METHOD, tagSet = "consumer=EsToMongoConsumer")
@@ -57,7 +61,7 @@ public class MigrationListener {
     }
 
     @KafkaListener(id = "CampaignsMongoConsumer", containerFactory = ConsumerConstants.AdServiceKafka.BATCH_CONTAINER_FACTORY,
-            topics = "hbase_campaign_to_mongo", autoStartup = "true", concurrency = "10",
+            topics = "hbase_campaign_to_mongo", autoStartup = hbaseMigrationConsumerEnabled, concurrency = "10",
             properties = {ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG + "=" + ConsumerConstants.InteractionEventsConsumer.MAX_POLL_INTERVAL_MS,
                     ConsumerConfig.MAX_POLL_RECORDS_CONFIG + "=" + "10"})
     @DigestLogger(metricType = MetricType.METHOD, tagSet = "consumer=HbaseCampaignToMongoConsumer")
