@@ -77,12 +77,12 @@ environment:
       - -XX:NumberOfGCLogFiles=5
       - -XX:GCLogFileSize=9000k
   prd:
-    as_enabled: false
-    as_min: 1
-    as_max: 1
+    as_enabled: true
+    as_min: 18
+    as_max: 18
     as_trigger_metric: cpu
     as_trigger_type: Utilization
-    as_trigger_value: 80
+    as_trigger_value: 60
     cpu_limit: 6
     cpu_request: 2
     memory_limit: 8G
