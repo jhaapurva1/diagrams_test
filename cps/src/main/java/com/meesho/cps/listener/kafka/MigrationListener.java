@@ -76,6 +76,7 @@ public class MigrationListener {
                 for (HBaseCampaignMetrics doc : documents) {
                     if (doc.getCampaignId() == null) {
                         log.error("campaignId is null -- " + consumerRecords + "\n\n" + documents);
+                        continue;
                     }
                     CampaignMetrics existingDocument = campaignMetricsDao.findByCampaignId(doc.getCampaignId());
                     mongoDocs.add(transform(doc, existingDocument));
