@@ -85,7 +85,7 @@ public class MigrationListener {
         try {
             campaignMetricsDao.saveAll(mongoDocs);
         } catch (Exception e) {
-            log.error("exception while saving es doc to mongo - ", e);
+            log.error("exception while saving es doc to mongo - " + e);
         }
     }
 
