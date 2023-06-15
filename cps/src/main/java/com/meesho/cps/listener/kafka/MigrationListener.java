@@ -74,6 +74,9 @@ public class MigrationListener {
             try {
                 List<HBaseCampaignMetrics> documents = objectMapper.readValue(record1.value(), new TypeReference<List<HBaseCampaignMetrics>>(){});
                 for (HBaseCampaignMetrics doc : documents) {
+                    if (doc.getCampaignId() == null) {
+                        log.error("campaignId is null -- " + consumerRecords + "\n\n" + documents);
+                    }
                     CampaignMetrics existingDocument = campaignMetricsDao.findByCampaignId(doc.getCampaignId());
                     mongoDocs.add(transform(doc, existingDocument));
                 }
@@ -85,7 +88,7 @@ public class MigrationListener {
         try {
             campaignMetricsDao.saveAll(mongoDocs);
         } catch (Exception e) {
-            log.error("exception while saving es doc to mongo - " + e);
+            log.error("exception while saving es doc to mongo - " + e + "---\n\n" + consumerRecords);
         }
     }
 
