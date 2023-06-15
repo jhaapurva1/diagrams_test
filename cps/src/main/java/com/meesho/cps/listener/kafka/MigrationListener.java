@@ -61,8 +61,8 @@ public class MigrationListener {
         }
     }
 
-    @KafkaListener(id = "CampaignsMongoConsumerNew", containerFactory = ConsumerConstants.AdServiceKafka.BATCH_CONTAINER_FACTORY,
-            topics = "hbase_campaign_to_mongo", autoStartup = hbaseMigrationConsumerEnabled, concurrency = "1",
+    @KafkaListener(id = "CampaignsMongoConsumer", containerFactory = ConsumerConstants.AdServiceKafka.BATCH_CONTAINER_FACTORY,
+            topics = "hbase_campaign_to_mongo", autoStartup = hbaseMigrationConsumerEnabled, concurrency = "10",
             properties = {ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG + "=" + ConsumerConstants.InteractionEventsConsumer.MAX_POLL_INTERVAL_MS,
                     ConsumerConfig.MAX_POLL_RECORDS_CONFIG + "=" + "1"})
     @DigestLogger(metricType = MetricType.METHOD, tagSet = "consumer=HbaseCampaignToMongoConsumer")
