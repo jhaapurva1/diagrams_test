@@ -12,6 +12,7 @@ import com.meesho.instrumentation.enums.MetricType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
@@ -60,17 +61,19 @@ public class MigrationListener {
         }
     }
 
-    @KafkaListener(id = "CampaignsMongoConsumer", containerFactory = ConsumerConstants.AdServiceKafka.BATCH_CONTAINER_FACTORY,
-            topics = "hbase_campaign_to_mongo", autoStartup = hbaseMigrationConsumerEnabled, concurrency = "10",
+    @KafkaListener(id = "CampaignsMongoConsumerNew", containerFactory = ConsumerConstants.AdServiceKafka.BATCH_CONTAINER_FACTORY,
+            topics = "hbase_campaign_to_mongo", autoStartup = hbaseMigrationConsumerEnabled, concurrency = "1",
             properties = {ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG + "=" + ConsumerConstants.InteractionEventsConsumer.MAX_POLL_INTERVAL_MS,
-                    ConsumerConfig.MAX_POLL_RECORDS_CONFIG + "=" + "10"})
+                    ConsumerConfig.MAX_POLL_RECORDS_CONFIG + "=" + "1"})
     @DigestLogger(metricType = MetricType.METHOD, tagSet = "consumer=HbaseCampaignToMongoConsumer")
     public void listenCampaignMetrics(List<ConsumerRecord<String, String>> consumerRecords) {
+        MDC.put("guid", UUID.randomUUID().toString());
         List<CampaignMetrics> mongoDocs = new ArrayList<>();
 
         for (ConsumerRecord<String, String> record1 : consumerRecords) {
             try {
                 List<HBaseCampaignMetrics> documents = objectMapper.readValue(record1.value(), new TypeReference<List<HBaseCampaignMetrics>>(){});
+                System.out.println("received an event -- " + documents);
                 for (HBaseCampaignMetrics doc : documents) {
                     CampaignMetrics existingDocument = campaignMetricsDao.findByCampaignId(doc.getCampaignId());
                     mongoDocs.add(transform(doc, existingDocument));
