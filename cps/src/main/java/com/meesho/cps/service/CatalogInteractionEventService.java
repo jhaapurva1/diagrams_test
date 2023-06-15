@@ -186,9 +186,9 @@ public class CatalogInteractionEventService {
         }
 
         //Update campaign catalog date metrics
-        interactionEventAttributionHelper.incrementInteractionCount(supplierId, campaignId, catalogId, eventDate, adInteractionEvent.getEventName());
+//        interactionEventAttributionHelper.incrementInteractionCount(supplierId, campaignId, catalogId, eventDate, adInteractionEvent.getEventName());
         // Update budget utilised
-        BudgetUtilisedData budgetUtilised = interactionEventAttributionHelper.modifyAndGetBudgetUtilised(cpc, supplierId, campaignId, catalogId, eventDate, campaignType);
+        BudgetUtilisedData budgetUtilised = interactionEventAttributionHelper.modifyAndGetBudgetUtilised(cpc, supplierId, campaignId, catalogId, eventDate, campaignType, adInteractionEvent.getEventName());
 
         if (budgetUtilised.getCampaignBudgetUtilised().compareTo(totalBudget) >= 0) {
             interactionEventAttributionHelper.sendBudgetExhaustedEvent(campaignId, catalogId);

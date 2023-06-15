@@ -162,10 +162,17 @@ public class CampaignCatalogDateMetricsDao {
         mongoTemplate.upsert(query, update, CampaignCatalogDateMetrics.class);
     }
 
-    public BigDecimal incrementBudgetUtilised(Long supplierId, Long campaignId, Long catalogId, String date, BigDecimal budgetUtilised) {
+    public BigDecimal incrementBudgetUtilisedAndInteractionCount(Long supplierId, Long campaignId, Long catalogId, String date, BigDecimal budgetUtilised, UserInteractionType interactionType) {
         Query query = new Query().addCriteria(Criteria.where(CAMPAIGN_ID).is(campaignId).and(CATALOG_ID).is(catalogId)
                 .and(DATE).is(date).and(SUPPLIER_ID).is(supplierId));
         Update update = new Update().inc(BUDGET_UTILISED, budgetUtilised);
+        if (interactionType == UserInteractionType.CLICK) {
+            update.inc(CLICKS, 1);
+        } else if (interactionType == UserInteractionType.WISHLIST) {
+            update.inc(WISHLISTS, 1);
+        } else if (interactionType == UserInteractionType.SHARE) {
+            update.inc(SHARES, 1);
+        }
         CampaignCatalogDateMetrics document = mongoTemplate.findAndModify(query, update, FindAndModifyOptions.options().returnNew(true).upsert(true),
                 CampaignCatalogDateMetrics.class);
         return document.getBudgetUtilised();

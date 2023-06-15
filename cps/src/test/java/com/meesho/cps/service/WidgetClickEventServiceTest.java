@@ -166,7 +166,7 @@ public class WidgetClickEventServiceTest {
         Mockito.doReturn(getSampleSupplierCampaignCatalogMetaDataResponse(1)).when(adService).getSupplierCampaignCatalogMetadata(any(), any(), any(), any());
         Mockito.doReturn(false).when(interactionEventAttributionHelper).initialiseAndCheckIsBudgetExhausted(any(), any(), any(), any(), any());
         Mockito.doReturn(BudgetUtilisedData.builder().campaignBudgetUtilised(BigDecimal.valueOf(1000)).catalogBudgetUtilised(BigDecimal.valueOf(50)).build())
-                .when(interactionEventAttributionHelper).modifyAndGetBudgetUtilised(any(), any(), any(), any(), any(), any());
+                .when(interactionEventAttributionHelper).modifyAndGetBudgetUtilised(any(), any(), any(), any(), any(), any(), any());
         Mockito.doReturn(BigDecimal.valueOf(10)).when(interactionEventAttributionHelper).modifyAndGetSupplierWeeklyBudgetUtilised(any(), any(), any());        widgetClickEventService.handle(getAdWidgetClickEvent(realEstate));
         Mockito.verify(interactionEventAttributionHelper, times(1)).sendBudgetExhaustedEvent(any(), any());
         Mockito.verify(interactionEventAttributionHelper, times(0)).sendSupplierBudgetExhaustedEvent(any(), any());
@@ -179,7 +179,7 @@ public class WidgetClickEventServiceTest {
         Mockito.doReturn(getSampleSupplierCampaignCatalogMetaDataResponse(1)).when(adService).getSupplierCampaignCatalogMetadata(any(), any(), any(), any());
         Mockito.doReturn(false).when(interactionEventAttributionHelper).initialiseAndCheckIsBudgetExhausted(any(), any(), any(), any(), any());
         Mockito.doReturn(BudgetUtilisedData.builder().campaignBudgetUtilised(BigDecimal.valueOf(1000)).catalogBudgetUtilised(BigDecimal.valueOf(50)).build())
-                .when(interactionEventAttributionHelper).modifyAndGetBudgetUtilised(any(), any(), any(), any(), any(), any());
+                .when(interactionEventAttributionHelper).modifyAndGetBudgetUtilised(any(), any(), any(), any(), any(), any(), any());
         Mockito.doReturn(BigDecimal.valueOf(100)).when(interactionEventAttributionHelper).modifyAndGetSupplierWeeklyBudgetUtilised(any(), any(), any());        widgetClickEventService.handle(getAdWidgetClickEvent(realEstate));
         Mockito.verify(interactionEventAttributionHelper, times(1)).sendSupplierBudgetExhaustedEvent(any(), any());
         Mockito.verify(interactionEventAttributionHelper, times(1)).sendBudgetExhaustedEvent(any(), any());
@@ -192,7 +192,7 @@ public class WidgetClickEventServiceTest {
         Mockito.doReturn(getSampleSupplierCampaignCatalogMetaDataResponse(1)).when(adService).getSupplierCampaignCatalogMetadata(any(), any(), any(), any());
         Mockito.doReturn(false).when(interactionEventAttributionHelper).initialiseAndCheckIsBudgetExhausted(any(), any(), any(), any(), any());
         Mockito.doReturn(BudgetUtilisedData.builder().campaignBudgetUtilised(BigDecimal.valueOf(1000)).catalogBudgetUtilised(BigDecimal.valueOf(50)).build())
-                .when(interactionEventAttributionHelper).modifyAndGetBudgetUtilised(any(), any(), any(), any(), any(), any());
+                .when(interactionEventAttributionHelper).modifyAndGetBudgetUtilised(any(), any(), any(), any(), any(), any(), any());
         Mockito.doReturn(BigDecimal.valueOf(110)).when(interactionEventAttributionHelper).modifyAndGetSupplierWeeklyBudgetUtilised(any(), any(), any());        widgetClickEventService.handle(getAdWidgetClickEvent(realEstate));
         Mockito.verify(interactionEventAttributionHelper, times(1)).sendSupplierBudgetExhaustedEvent(any(), any());
         Mockito.verify(interactionEventAttributionHelper, times(1)).sendBudgetExhaustedEvent(any(), any());
@@ -205,7 +205,7 @@ public class WidgetClickEventServiceTest {
         Mockito.doReturn(getSampleSupplierCampaignCatalogMetaDataResponse(1)).when(adService).getSupplierCampaignCatalogMetadata(any(), any(), any(), any());
         Mockito.doReturn(false).when(interactionEventAttributionHelper).initialiseAndCheckIsBudgetExhausted(any(), any(), any(), any(), any());
         Mockito.doReturn(BudgetUtilisedData.builder().campaignBudgetUtilised(BigDecimal.valueOf(100)).catalogBudgetUtilised(BigDecimal.valueOf(50)).build())
-                .when(interactionEventAttributionHelper).modifyAndGetBudgetUtilised(any(), any(), any(), any(), any(), any());
+                .when(interactionEventAttributionHelper).modifyAndGetBudgetUtilised(any(), any(), any(), any(), any(), any(), any());
         Mockito.doReturn(BigDecimal.valueOf(10)).when(interactionEventAttributionHelper).modifyAndGetSupplierWeeklyBudgetUtilised(any(), any(), any());        AdWidgetClickEvent adWidgetClickEvent = getAdWidgetClickEvent(realEstate);
         widgetClickEventService.handle(adWidgetClickEvent);
         Mockito.verify(interactionEventAttributionHelper, times(0)).sendSupplierBudgetExhaustedEvent(any(), any());
@@ -252,7 +252,7 @@ public class WidgetClickEventServiceTest {
         Mockito.doReturn(getSampleSupplierCampaignCatalogMetaDataResponse(2)).when(adService).getSupplierCampaignCatalogMetadata(any(), any(), any(), any());
         Mockito.doReturn(false).when(interactionEventAttributionHelper).initialiseAndCheckIsBudgetExhausted(any(), any(), any(), any(), any());
         Mockito.doReturn(BudgetUtilisedData.builder().campaignBudgetUtilised(BigDecimal.valueOf(1000)).catalogBudgetUtilised(BigDecimal.valueOf(100)).build())
-                .when(interactionEventAttributionHelper).modifyAndGetBudgetUtilised(any(), any(), any(), any(), any(), any());
+                .when(interactionEventAttributionHelper).modifyAndGetBudgetUtilised(any(), any(), any(), any(), any(), any(), any());
         Mockito.doReturn(BigDecimal.valueOf(100)).when(interactionEventAttributionHelper).modifyAndGetSupplierWeeklyBudgetUtilised(any(), any(), any());        Mockito.doReturn(true).when(interactionBillHandler).performWindowDeDuplication();
         Mockito.doReturn(true).when(interactionEventAttributionHelper).checkIfInteractionNeedsToBeConsidered(any(), any());
         AdWidgetClickEvent adWidgetClickEvent = getAdWidgetClickEvent(realEstate);

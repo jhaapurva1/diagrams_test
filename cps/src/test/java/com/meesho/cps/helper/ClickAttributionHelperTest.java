@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.meesho.ad.client.response.CampaignDetails;
 import com.meesho.cps.config.ApplicationProperties;
 import com.meesho.cps.constants.CampaignType;
-import com.meesho.cps.constants.Constants;
 import com.meesho.cps.data.entity.internal.BudgetUtilisedData;
 import com.meesho.cps.data.entity.kafka.AdInteractionPrismEvent;
 import com.meesho.cps.data.entity.mongodb.collection.CampaignDateWiseMetrics;
@@ -29,8 +28,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Collections;
-import java.util.HashMap;
 
 import static org.mockito.ArgumentMatchers.any;
 
@@ -74,7 +71,7 @@ public class ClickAttributionHelperTest {
 //        Mockito.doReturn(null).when(kafkaService).sendMessage("weeklyBudgetExhaustedTopic", String.valueOf(1L), "");
 //        Mockito.doReturn("").when(objectMapper).writeValueAsString(any());
         Mockito.doReturn(BigDecimal.valueOf(100)).when(campaignDateWiseMetricsDao).incrementCampaignDailyBudgetUtilised(any(), any(), any());
-        Mockito.doReturn(BigDecimal.valueOf(50)).when(campaignCatalogDateMetricsDao).incrementBudgetUtilised(any(), any(), any(), any(), any());
+        Mockito.doReturn(BigDecimal.valueOf(50)).when(campaignCatalogDateMetricsDao).incrementBudgetUtilisedAndInteractionCount(any(), any(), any(), any(), any(), any());
         Mockito.doReturn(BigDecimal.valueOf(1000)).when(campaignMetricsDao).incrementCampaignBudgetUtilised(any(), any());
         Mockito.doReturn(BigDecimal.valueOf(200)).when(supplierWeekWiseMetricsDao).incrementSupplierWeeklyBudgetUtilised(any(), any(), any());
         ReflectionTestUtils.setField(interactionEventAttributionHelper, "budgetExhaustedMqID", campaignBudgetExhaustedMqID);
@@ -152,8 +149,8 @@ public class ClickAttributionHelperTest {
 
     @Test
     public void testModifyAndGetBudgetUtilizedDailyBudget() {
-        BudgetUtilisedData budgetUtilised = interactionEventAttributionHelper.modifyAndGetBudgetUtilised(BigDecimal.ONE, 1L, 1L, 1L, LocalDate.now(), CampaignType.DAILY_BUDGET);
-        Mockito.verify(campaignCatalogDateMetricsDao, Mockito.times(1)).incrementBudgetUtilised(any(), any(), any(), any(), any());
+        BudgetUtilisedData budgetUtilised = interactionEventAttributionHelper.modifyAndGetBudgetUtilised(BigDecimal.ONE, 1L, 1L, 1L, LocalDate.now(), CampaignType.DAILY_BUDGET, "ad_click");
+        Mockito.verify(campaignCatalogDateMetricsDao, Mockito.times(1)).incrementBudgetUtilisedAndInteractionCount(any(), any(), any(), any(), any(), any());
         Mockito.verify(campaignDateWiseMetricsDao, Mockito.times(1)).incrementCampaignDailyBudgetUtilised(any(), any(), any());
         Mockito.verify(campaignMetricsDao, Mockito.times(0)).incrementCampaignBudgetUtilised(any(), any());
         Assert.assertEquals(BigDecimal.valueOf(100), budgetUtilised.getCampaignBudgetUtilised());
@@ -162,8 +159,8 @@ public class ClickAttributionHelperTest {
 
     @Test
     public void testModifyAndGetBudgetUtilizedTotalBudget() {
-        BudgetUtilisedData budgetUtilised = interactionEventAttributionHelper.modifyAndGetBudgetUtilised(BigDecimal.ONE, 1L, 1L, 1L, LocalDate.now(), CampaignType.TOTAL_BUDGET);
-        Mockito.verify(campaignCatalogDateMetricsDao, Mockito.times(1)).incrementBudgetUtilised(any(), any(), any(), any(), any());
+        BudgetUtilisedData budgetUtilised = interactionEventAttributionHelper.modifyAndGetBudgetUtilised(BigDecimal.ONE, 1L, 1L, 1L, LocalDate.now(), CampaignType.TOTAL_BUDGET, "ad_click");
+        Mockito.verify(campaignCatalogDateMetricsDao, Mockito.times(1)).incrementBudgetUtilisedAndInteractionCount(any(), any(), any(), any(), any(), any());
         Mockito.verify(campaignDateWiseMetricsDao, Mockito.times(0)).incrementCampaignDailyBudgetUtilised(any(), any(), any());
         Mockito.verify(campaignMetricsDao, Mockito.times(1)).incrementCampaignBudgetUtilised(any(), any());
         Assert.assertEquals(BigDecimal.valueOf(50), budgetUtilised.getCatalogBudgetUtilised());

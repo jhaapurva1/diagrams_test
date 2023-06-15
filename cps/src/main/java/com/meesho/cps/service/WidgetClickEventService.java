@@ -181,11 +181,11 @@ public class WidgetClickEventService {
 
         //Update campaign catalog date metrics
         log.debug("campaignId {}, catalogId {}, date{}, eventName {}", campaignId, catalogId, eventDate, "AdWidgetClickEvent");
-        interactionEventAttributionHelper.incrementInteractionCount(supplierId, campaignId, catalogId, eventDate,
-                ConsumerConstants.IngestionInteractionEvents.AD_CLICK_EVENT_NAME);
+//        interactionEventAttributionHelper.incrementInteractionCount(supplierId, campaignId, catalogId, eventDate,
+//                ConsumerConstants.IngestionInteractionEvents.AD_CLICK_EVENT_NAME);
 
         // Update budget utilised
-        BudgetUtilisedData budgetUtilised = interactionEventAttributionHelper.modifyAndGetBudgetUtilised(cpc, supplierId, campaignId, catalogId, eventDate, campaignType);
+        BudgetUtilisedData budgetUtilised = interactionEventAttributionHelper.modifyAndGetBudgetUtilised(cpc, supplierId, campaignId, catalogId, eventDate, campaignType, ConsumerConstants.IngestionInteractionEvents.AD_CLICK_EVENT_NAME);
         if (budgetUtilised.getCampaignBudgetUtilised().compareTo(totalBudget) >= 0) {
             interactionEventAttributionHelper.sendBudgetExhaustedEvent(campaignId, catalogId);
         }//If we have paused the campaign then no need to pause the catalog. hence using else-if

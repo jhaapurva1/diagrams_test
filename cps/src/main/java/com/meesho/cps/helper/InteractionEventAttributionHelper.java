@@ -171,9 +171,9 @@ public class InteractionEventAttributionHelper {
     }
 
     public BudgetUtilisedData modifyAndGetBudgetUtilised(BigDecimal cpc, Long supplierId, Long campaignId, Long catalogId, LocalDate date,
-                                                                   CampaignType campaignType) {
+                                                                   CampaignType campaignType, String eventName) {
         log.info("modifyAndGetBudgetUtilised: {} {} {} {} {} {}", cpc, campaignId, catalogId, date, campaignType);
-        BigDecimal catalogBudgetUtilised = campaignCatalogDateMetricsDao.incrementBudgetUtilised(supplierId, campaignId, catalogId, date.toString(), cpc);
+        BigDecimal catalogBudgetUtilised = campaignCatalogDateMetricsDao.incrementBudgetUtilisedAndInteractionCount(supplierId, campaignId, catalogId, date.toString(), cpc, getInteractionTypeFromEventName(eventName));
         BigDecimal campaignBudgetUtilised = null;
         if (CampaignType.DAILY_BUDGET.equals(campaignType)
                 || CampaignType.SMART_CAMPAIGN.equals(campaignType)) {
@@ -188,6 +188,21 @@ public class InteractionEventAttributionHelper {
     public BigDecimal modifyAndGetSupplierWeeklyBudgetUtilised(Long supplierId, LocalDate weekStartDate, BigDecimal cpc) {
         log.info("modifyAndGetSupplierWeeklyBudgetUtilised: {} {} {}", supplierId, weekStartDate, cpc);
         return supplierWeekWiseMetricsDao.incrementSupplierWeeklyBudgetUtilised(supplierId, weekStartDate.toString(), cpc);
+    }
+
+    private UserInteractionType getInteractionTypeFromEventName(String eventName) {
+        switch (eventName) {
+            case ConsumerConstants.IngestionInteractionEvents.ANONYMOUS_AD_SHARED_EVENT_NAME:
+            case ConsumerConstants.IngestionInteractionEvents.AD_SHARED_EVENT_NAME:
+                return UserInteractionType.SHARE;
+            case ConsumerConstants.IngestionInteractionEvents.ANONYMOUS_AD_WISHLISTED_EVENT_NAME:
+            case ConsumerConstants.IngestionInteractionEvents.AD_WISHLISTED_EVENT_NAME:
+                return UserInteractionType.WISHLIST;
+            case ConsumerConstants.IngestionInteractionEvents.ANONYMOUS_AD_CLICK_EVENT_NAME:
+            case ConsumerConstants.IngestionInteractionEvents.AD_CLICK_EVENT_NAME:
+                return UserInteractionType.CLICK;
+        }
+        return null;
     }
 
     public void incrementInteractionCount(Long supplierId, Long campaignId, Long catalogId, LocalDate date, String eventName) {
