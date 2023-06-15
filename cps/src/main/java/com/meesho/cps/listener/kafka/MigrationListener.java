@@ -73,7 +73,6 @@ public class MigrationListener {
         for (ConsumerRecord<String, String> record1 : consumerRecords) {
             try {
                 List<HBaseCampaignMetrics> documents = objectMapper.readValue(record1.value(), new TypeReference<List<HBaseCampaignMetrics>>(){});
-                System.out.println("received an event -- " + documents);
                 for (HBaseCampaignMetrics doc : documents) {
                     CampaignMetrics existingDocument = campaignMetricsDao.findByCampaignId(doc.getCampaignId());
                     mongoDocs.add(transform(doc, existingDocument));
