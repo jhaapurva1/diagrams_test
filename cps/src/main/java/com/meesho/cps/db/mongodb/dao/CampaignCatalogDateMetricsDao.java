@@ -190,7 +190,7 @@ public class CampaignCatalogDateMetricsDao {
             }
             validDocs.add(campaignCatalogViewCount);
             Query query = new Query().addCriteria(Criteria.where(CAMPAIGN_ID).is(campaignCatalogViewCount.getCampaignId()).and(CATALOG_ID).is(campaignCatalogViewCount.getCatalogId())
-                    .and(DATE).is(campaignCatalogViewCount.getDate()).and(SUPPLIER_ID).is(campaignCatalogViewCount.getSupplierId()));
+                    .and(DATE).is(campaignCatalogViewCount.getDate().toString()).and(SUPPLIER_ID).is(campaignCatalogViewCount.getSupplierId()));
             Update update = new Update().inc(VIEWS, campaignCatalogViewCount.getCount());
             bulkOperations.upsert(query, update);
         }
