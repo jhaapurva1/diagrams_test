@@ -27,7 +27,6 @@ import static org.springframework.data.mongodb.core.mapping.FieldType.DECIMAL128
 @Document(collection = DBConstants.MongoCollections.CAMPAIGN_CATALOG_DATE_METRICS_COLLECTION)
 @CompoundIndex(name = "campaign_catalog_date", unique = true, def = "{'" + CAMPAIGN_ID + "': 1, '" + CATALOG_ID + "': 1, '" + DATE + "': 1}")
 @CompoundIndex(name = "supplier_date", def = "{'" + SUPPLIER_ID + "': 1, '" + DATE + "':1}")
-@CompoundIndex(name = "campaign_date", def = "{'" + CAMPAIGN_ID + "': 1, '" + DATE + "':1}")
 public class CampaignCatalogDateMetrics {
 
     @Id
