@@ -37,7 +37,6 @@ import java.util.*;
 
 import static com.meesho.cps.constants.MongoFields.*;
 import static com.meesho.cps.constants.TelegrafConstants.VIEW_INCREMENTS;
-import static com.meesho.cps.utils.DateTimeHelper.MONGO_DATE_FORMAT;
 
 @Repository
 @Slf4j
@@ -62,7 +61,9 @@ public class CampaignCatalogDateMetricsDao {
     }
 
     public CampaignCatalogDateMetrics find(Long campaignId, Long catalogId, String date) {
-        return campaignCatalogDateMetricsRepository.findByCampaignIdAndCatalogIdAndDate(campaignId, catalogId, date);
+        Query query = new Query().addCriteria(Criteria.where(CAMPAIGN_ID).is(campaignId).and(CATALOG_ID).is(catalogId)
+                .and(DATE).is(date));
+        return mongoTemplate.findOne(query, CampaignCatalogDateMetrics.class);
     }
 
     public List<CampaignCatalogDateMetrics> findAllByCampaignId(Long campaignId) {
