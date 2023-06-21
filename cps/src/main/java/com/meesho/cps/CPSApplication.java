@@ -30,7 +30,7 @@ public class CPSApplication {
             System.out.println("Inspect beans:");
             String[] beanNames = applicationContext.getBeanDefinitionNames();
             Arrays.sort(beanNames);
-//            Arrays.stream(beanNames).forEach(System.out::println);
+            Arrays.stream(beanNames).forEach(System.out::println);
         };
     }
 
