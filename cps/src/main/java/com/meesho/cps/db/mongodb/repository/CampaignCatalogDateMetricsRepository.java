@@ -11,9 +11,7 @@ import java.util.List;
 @Repository
 public interface CampaignCatalogDateMetricsRepository extends MongoRepository<CampaignCatalogDateMetrics, String> {
 
-    CampaignCatalogDateMetrics findByCampaignIdAndCatalogIdAndDate(Long campaignId, Long catalogId, String date);
-
-    List<CampaignCatalogDateMetrics> findByBudgetUtilisedNotNullAndDateAndIdGreaterThanOrderByIdAsc(String date, ObjectId id, Pageable pageable);
+    List<CampaignCatalogDateMetrics> findByDateAndIdGreaterThanAndBudgetUtilisedExistsOrderByIdAsc(String date, ObjectId id, Boolean exists, Pageable pageable);
 
     List<CampaignCatalogDateMetrics> findAllByCampaignId(Long campaignId);
 
