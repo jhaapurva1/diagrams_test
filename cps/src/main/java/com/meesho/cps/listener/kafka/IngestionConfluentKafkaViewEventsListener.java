@@ -106,7 +106,7 @@ public class IngestionConfluentKafkaViewEventsListener implements ApplicationLis
             }
 
             if (Objects.isNull(adViewEvent) || !ValidationHelper.isValidAdViewEvent(adViewEvent)) {
-                log.error("Invalid event {}", adViewEvent);
+                log.warn("Invalid event {}", adViewEvent);
                 statsdMetricManager.incrementCounter(VIEW_EVENT_KEY, String.format(VIEW_EVENT_TAGS, NAN, NAN, NAN, INVALID,
                         NAN));
                 kafkaService.sendMessage(ingestionViewEventsDeadQueueTopic,

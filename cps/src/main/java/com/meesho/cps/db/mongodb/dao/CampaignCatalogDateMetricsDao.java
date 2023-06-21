@@ -78,7 +78,7 @@ public class CampaignCatalogDateMetricsDao {
         else {
             id = new ObjectId(lastProcessedId);
         }
-        return campaignCatalogDateMetricsRepository.findByDateAndIdGreaterThanOrderByIdAsc(date, id, PageRequest.of(0, limit));
+        return campaignCatalogDateMetricsRepository.findByBudgetUtilisedNotNullAndDateAndIdGreaterThanOrderByIdAsc(date, id, PageRequest.of(0, limit));
     }
 
     public List<DateLevelMetrics> getDateLevelMetrics(Long campaignId, String startDate, String endDate) {

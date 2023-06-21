@@ -60,7 +60,7 @@ public class AdInteractionEventListener extends BaseKafkaListener<AdInteractionE
     @DigestLogger(metricType = MetricType.METHOD, tagSet = "consumer=AdInteractionEventListener")
     public void consume(AdInteractionEvent adInteractionEvent) throws DataValidationException {
         if (!ValidationHelper.isValidAdInteractionEvent(adInteractionEvent)) {
-            log.error("Invalid event {}", adInteractionEvent);
+            log.warn("Invalid event {}", adInteractionEvent);
             telegrafMetricsHelper.increment(INTERACTION_EVENT_KEY, INTERACTION_EVENT_TAGS, adInteractionEvent.getEventName(), NAN,NAN,
                     AdInteractionStatus.INVALID.name(), NAN);
             throw new DataValidationException("Invalid event");

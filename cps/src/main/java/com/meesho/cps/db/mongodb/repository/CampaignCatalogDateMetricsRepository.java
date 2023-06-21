@@ -13,7 +13,7 @@ public interface CampaignCatalogDateMetricsRepository extends MongoRepository<Ca
 
     CampaignCatalogDateMetrics findByCampaignIdAndCatalogIdAndDate(Long campaignId, Long catalogId, String date);
 
-    List<CampaignCatalogDateMetrics> findByDateAndIdGreaterThanOrderByIdAsc(String date, ObjectId id, Pageable pageable);
+    List<CampaignCatalogDateMetrics> findByBudgetUtilisedNotNullAndDateAndIdGreaterThanOrderByIdAsc(String date, ObjectId id, Pageable pageable);
 
     List<CampaignCatalogDateMetrics> findAllByCampaignId(Long campaignId);
 
