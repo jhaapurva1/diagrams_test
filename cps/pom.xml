@@ -5,11 +5,11 @@
     <parent>
         <groupId>com.meesho</groupId>
         <artifactId>campaign-performance-service</artifactId>
-        <version>0.0.1425-RELEASE</version>
+        <version>0.0.1426-RELEASE</version>
     </parent>
     <groupId>com.meesho</groupId>
     <artifactId>cps</artifactId>
-    <version>0.0.1425-RELEASE</version>
+    <version>0.0.1426-RELEASE</version>
     <name>cps</name>
     <description>Campaign Performance Service</description>
     <properties>
@@ -37,11 +37,23 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-mongodb</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-logging</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.meesho</groupId>
+            <artifactId>logging-utils</artifactId>
+            <version>1.0.0-SNAPSHOTv3</version>
         </dependency>
 
         <!-- Mysql -->
