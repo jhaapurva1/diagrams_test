@@ -227,10 +227,15 @@ public class InteractionEventAttributionHelper {
     public BigDecimal getChargeableCpc(BigDecimal servingTimeCpc, CampaignDetails campaignDetails, Long catalogId) {
         BigDecimal chargeableCPC = Objects.isNull(servingTimeCpc) ? campaignDetails.getCpc() : servingTimeCpc;
         CatalogCPCDiscount catalogCPCDiscount = catalogCPCDiscountDao.get(catalogId);
-        if (Objects.nonNull(catalogCPCDiscount) && Objects.nonNull(chargeableCPC)
-                && catalogCPCDiscount.getDiscount().compareTo(BigDecimal.ZERO) >= 0 && catalogCPCDiscount.getDiscount().compareTo(BigDecimal.ONE) <= 0) {
-            chargeableCPC = chargeableCPC.multiply(BigDecimal.ONE.subtract(catalogCPCDiscount.getDiscount()));
+        try {
+            if (Objects.nonNull(catalogCPCDiscount) && Objects.nonNull(chargeableCPC)
+                    && catalogCPCDiscount.getDiscount().compareTo(BigDecimal.ZERO) >= 0 && catalogCPCDiscount.getDiscount().compareTo(BigDecimal.ONE) <= 0) {
+                chargeableCPC = chargeableCPC.multiply(BigDecimal.ONE.subtract(catalogCPCDiscount.getDiscount()));
+            }
+        } catch (Exception e) {
+            log.error("Error while computing chargeable cpc. CampaignDetails - {}, catalogId - {}, servingTimeCpc - {}, catalogCPCDiscount - {}, {}", campaignDetails, catalogId, servingTimeCpc, catalogCPCDiscount, e.getStackTrace());
         }
+
         return chargeableCPC;
     }
 
