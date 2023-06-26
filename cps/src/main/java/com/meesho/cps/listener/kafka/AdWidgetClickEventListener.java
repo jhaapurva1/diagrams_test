@@ -68,7 +68,7 @@ public class AdWidgetClickEventListener extends BaseManualAcknowledgeKafkaListen
         try {
             widgetClickEventService.handle(adWidgetClickEvent);
         } catch (Exception e){
-            log.error("Exception in handling interaction event",e);
+            log.error("Exception in handling interaction event {}",e);
             throw new RuntimeException(e.getMessage());
         }
     }
