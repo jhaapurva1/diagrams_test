@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.meesho</groupId>
         <artifactId>campaign-performance-service</artifactId>
-        <version>0.0.1429-RELEASE</version>
+        <version>0.0.1430-RELEASE</version>
     </parent>
 
     <groupId>com.meesho</groupId>

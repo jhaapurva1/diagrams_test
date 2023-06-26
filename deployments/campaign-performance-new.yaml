@@ -84,7 +84,7 @@ environment:
     as_trigger_type: Utilization
     as_trigger_value: 60
     cpu_limit: 6
-    cpu_request: 2
+    cpu_request: 800m
     memory_limit: 8G
     memory_request: 8G
     deploymentStrategy: rollingUpdate
