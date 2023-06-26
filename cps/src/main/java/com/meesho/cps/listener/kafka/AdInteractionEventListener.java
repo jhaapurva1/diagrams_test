@@ -71,7 +71,7 @@ public class AdInteractionEventListener extends BaseKafkaListener<AdInteractionE
         try {
             catalogInteractionEventService.handle(adInteractionEvent);
         } catch (Exception e){
-            log.error("Exception in handling interaction event {}",e);
+            log.error("Exception in handling interaction event",e);
             throw new RuntimeException(e.getMessage());
         }
 

@@ -2,15 +2,27 @@
 <Configuration status="info">
     <Properties>
         <Property name="LOG_PATTERN">
-            ${env:APPLICATION_NAME} ${hostName} %d{dd-MM-yyyy HH:mm:ss.SSS} [%t] %-5level %logger{36}:%M - %X{guid} country:%X{country_code} %msg%n
+            ${env:APPLICATION_NAME} ${hostName} %d{dd-MM-yyyy HH:mm:ss.SSS} [%t] %-5level %logger{36}:%M %X{guid} %X{remoteAddr} %X{xForwardedFor} [%X{X-B3-TraceId}] [%X{X-COUNTRY-CODE}] %msg%n
+        </Property>
+
+        <Property name="ERROR_LOG_PATTERN">
+            ${env:APPLICATION_NAME} ${hostName} %d{dd-MM-yyyy HH:mm:ss.SSS} [%t] %-5level %logger{36}:%M %X{guid} %X{remoteAddr} %X{xForwardedFor} [%X{X-B3-TraceId}] [%X{X-COUNTRY-CODE}] %msg%n
+        </Property>
+
+        <Property name="ERROR_LOG_PATH">
+            ${env:APPLICATION_LOG_DIRECTORY}
         </Property>
     </Properties>
-
     <Appenders>
         <Console name="CONSOLE" target="SYSTEM_OUT">
-            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <PatternLayout pattern="%highlight{[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %X{remoteAddr} %X{xForwardedFor} [%X{X-B3-TraceId}] [%X{X-COUNTRY-CODE}] %c{1} - %msg%n}"/>
         </Console>
-
+        <Async name="ASYNC">
+            <AppenderRef ref="CONSOLE"/>
+        </Async>
+        <File name="ErrorFile" fileName="${ERROR_LOG_PATH}" immediateFlush="false" append="true">
+            <PatternLayout pattern="${ERROR_LOG_PATTERN}" />
+        </File>
         <ScriptAppenderSelector name="GraylogOrNull">
             <Script language="groovy"><![CDATA[
                 if (System.getenv("GRAYLOG_APPENDER_ENABLED").equalsIgnoreCase('true')) {
@@ -26,17 +38,16 @@
                     <Property name="max.block.ms">0</Property>
                     <Property name="batch.size">16384</Property>
                     <Property name="linger.ms">100</Property>
-                    <Property name="retries">2</Property>
                 </Kafka>
                 <Null name="Null"/>
             </AppenderSet>
         </ScriptAppenderSelector>
     </Appenders>
-
     <Loggers>
-        <Root level="${env:LOG_LEVEL:-INFO}" additivity="false">
-            <AppenderRef ref="CONSOLE"/>
+        <Root level="info">
+            <AppenderRef ref="ASYNC"/>
             <AppenderRef ref="GraylogOrNull"/>
+            <AppenderRef ref="ErrorFile" level="error" />
         </Root>
     </Loggers>
 </Configuration>
