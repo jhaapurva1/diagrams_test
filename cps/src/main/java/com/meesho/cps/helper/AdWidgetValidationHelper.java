@@ -37,7 +37,6 @@ public class AdWidgetValidationHelper {
                 Objects.nonNull(adWidgetClickEvent.getEventId()) &&
                 Objects.nonNull(adWidgetClickEvent.getEventTimestamp()) &&
                 Objects.nonNull(adWidgetClickEvent.getUserId()) &&
-                Objects.nonNull(adWidgetClickEvent.getProperties().getCampaignId()) &&
                 Objects.nonNull(adWidgetClickEvent.getProperties().getCatalogId()) &&
                 Objects.nonNull(adWidgetClickEvent.getProperties().getAppVersionCode()) &&
                 Objects.nonNull(adWidgetClickEvent.getProperties().getIsAdWidget()) &&
