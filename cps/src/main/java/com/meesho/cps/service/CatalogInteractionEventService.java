@@ -185,8 +185,6 @@ public class CatalogInteractionEventService {
             userCatalogInteractionCacheDao.set(userId, id, origin, screen, interactionTime, type);
         }
 
-        //Update campaign catalog date metrics
-//        interactionEventAttributionHelper.incrementInteractionCount(supplierId, campaignId, catalogId, eventDate, adInteractionEvent.getEventName());
         // Update budget utilised
         BudgetUtilisedData budgetUtilised = interactionEventAttributionHelper.modifyAndGetBudgetUtilised(cpc, supplierId, campaignId, catalogId, eventDate, campaignType, adInteractionEvent.getEventName());
 

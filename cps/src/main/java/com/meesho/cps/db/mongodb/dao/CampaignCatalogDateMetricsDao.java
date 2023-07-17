@@ -149,20 +149,6 @@ public class CampaignCatalogDateMetricsDao {
 
     }
 
-    public void incrementInteractionCount(Long supplierId, Long campaignId, Long catalogId, String date, UserInteractionType interactionType) {
-        Query query = new Query().addCriteria(Criteria.where(CAMPAIGN_ID).is(campaignId).and(CATALOG_ID).is(catalogId)
-                .and(DATE).is(date).and(SUPPLIER_ID).is(supplierId));
-        Update update = new Update();
-        if (interactionType == UserInteractionType.CLICK) {
-            update.inc(CLICKS, 1);
-        } else if (interactionType == UserInteractionType.WISHLIST) {
-            update.inc(WISHLISTS, 1);
-        } else if (interactionType == UserInteractionType.SHARE) {
-            update.inc(SHARES, 1);
-        }
-        mongoTemplate.upsert(query, update, CampaignCatalogDateMetrics.class);
-    }
-
     public BigDecimal incrementBudgetUtilisedAndInteractionCount(Long supplierId, Long campaignId, Long catalogId, String date, BigDecimal budgetUtilised, UserInteractionType interactionType) {
         Query query = new Query().addCriteria(Criteria.where(CAMPAIGN_ID).is(campaignId).and(CATALOG_ID).is(catalogId)
                 .and(DATE).is(date).and(SUPPLIER_ID).is(supplierId));
@@ -182,6 +168,25 @@ public class CampaignCatalogDateMetricsDao {
     public void bulkIncrementViewCounts(List<CampaignCatalogViewCount> campaignCatalogViewCountList) {
         BulkOperations bulkOperations = mongoTemplate.bulkOps(BulkOperations.BulkMode.UNORDERED, CampaignCatalogDateMetrics.class);
 
+        List<CampaignCatalogViewCount> validDocs = filterValidDocsAndGenerateBulkOperation(campaignCatalogViewCountList, bulkOperations);
+
+        if (!CollectionUtils.isEmpty(validDocs)) {
+            try {
+                bulkOperations.execute();
+                telegrafMetricsHelper.increment(VIEW_INCREMENTS, validDocs.size());
+            } catch (BulkOperationException e) {
+                List<CampaignCatalogViewCount> unwrittenDocuments = new ArrayList<>();
+                for (BulkWriteError bulkWriteError : e.getErrors()) {
+                    int index = bulkWriteError.getIndex();
+                    unwrittenDocuments.add(validDocs.get(index));
+                }
+                log.error("Error in bulk incrementing views for documents - {}", unwrittenDocuments, e);
+                throw e;
+            }
+        }
+    }
+
+    private List<CampaignCatalogViewCount> filterValidDocsAndGenerateBulkOperation(List<CampaignCatalogViewCount> campaignCatalogViewCountList, BulkOperations bulkOperations) {
         List<CampaignCatalogViewCount> invalidDocs = new ArrayList<>();
         List<CampaignCatalogViewCount> validDocs = new ArrayList<>();
         for (CampaignCatalogViewCount campaignCatalogViewCount : campaignCatalogViewCountList) {
@@ -198,20 +203,7 @@ public class CampaignCatalogDateMetricsDao {
         if (!CollectionUtils.isEmpty(invalidDocs)) {
             log.error("Couldn't increment view count for {} docs. Invalid data - {}", invalidDocs.size(), invalidDocs);
         }
-        if (!CollectionUtils.isEmpty(validDocs)) {
-            try {
-                bulkOperations.execute();
-                telegrafMetricsHelper.increment(VIEW_INCREMENTS, campaignCatalogViewCountList.size() - invalidDocs.size());
-            } catch (BulkOperationException e) {
-                List<CampaignCatalogViewCount> unwrittenDocuments = new ArrayList<>();
-                for (BulkWriteError bulkWriteError : e.getErrors()) {
-                    int index = bulkWriteError.getIndex();
-                    unwrittenDocuments.add(validDocs.get(index));
-                }
-                log.error("Error in bulk incrementing views for documents - {}", unwrittenDocuments, e);
-                throw e;
-            }
-        }
+        return validDocs;
     }
 
     public void bulkWriteOrderAndRevenue(List<CampaignCatalogDateMetrics> documentList) {

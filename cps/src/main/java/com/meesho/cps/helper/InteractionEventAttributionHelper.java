@@ -205,24 +205,6 @@ public class InteractionEventAttributionHelper {
         return null;
     }
 
-    public void incrementInteractionCount(Long supplierId, Long campaignId, Long catalogId, LocalDate date, String eventName) {
-        log.info("supplierId {}, campaignId {}, catalogId {}, date{}, eventName {}", supplierId, campaignId, catalogId, date, eventName);
-        // CAUTION: Please do not change the order of cases here since action is the combination of multiple cases
-        switch (eventName) {
-            case ConsumerConstants.IngestionInteractionEvents.ANONYMOUS_AD_SHARED_EVENT_NAME:
-            case ConsumerConstants.IngestionInteractionEvents.AD_SHARED_EVENT_NAME:
-                campaignCatalogDateMetricsDao.incrementInteractionCount(supplierId, campaignId, catalogId, date.toString(), UserInteractionType.SHARE);
-                break;
-            case ConsumerConstants.IngestionInteractionEvents.ANONYMOUS_AD_WISHLISTED_EVENT_NAME:
-            case ConsumerConstants.IngestionInteractionEvents.AD_WISHLISTED_EVENT_NAME:
-                campaignCatalogDateMetricsDao.incrementInteractionCount(supplierId, campaignId, catalogId, date.toString(), UserInteractionType.WISHLIST);
-                break;
-            case ConsumerConstants.IngestionInteractionEvents.ANONYMOUS_AD_CLICK_EVENT_NAME:
-            case ConsumerConstants.IngestionInteractionEvents.AD_CLICK_EVENT_NAME:
-                campaignCatalogDateMetricsDao.incrementInteractionCount(supplierId, campaignId, catalogId, date.toString(), UserInteractionType.CLICK);
-                break;
-        }
-    }
     //This returns the cpc to be considered for charging.
     public BigDecimal getChargeableCpc(BigDecimal servingTimeCpc, CampaignDetails campaignDetails, Long catalogId) {
         BigDecimal chargeableCPC = Objects.isNull(servingTimeCpc) ? campaignDetails.getCpc() : servingTimeCpc;
