@@ -126,6 +126,9 @@ public class ApplicationProperties {
     @Value("${cron.app.termination.delay.milliseconds}")
     private Long cronAppTerminationDelayMilliseconds;
 
+    @Value("${spring.data.mongodb.uri}")
+    private String mongoDBUri;
+
     @PostConstruct
     public void init() {
         SchedulerProperty.SchedulerPropertyBuilder schedulerPropertyBuilder = SchedulerProperty.builder();

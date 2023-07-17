@@ -1,6 +1,7 @@
 package com.meesho.cps.data.entity.mongodb.collection;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.meesho.ad.client.constants.FeedType;
 import com.meesho.cps.constants.DBConstants;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,6 +15,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
+import java.util.Map;
 
 import static com.meesho.cps.constants.MongoFields.*;
 import static org.springframework.data.mongodb.core.mapping.FieldType.DECIMAL128;
@@ -40,5 +42,7 @@ public class CampaignDateWiseMetrics {
 
     @Field(value = BUDGET_UTILISED, targetType = DECIMAL128)
     private BigDecimal budgetUtilised;
+
+    private Map<FeedType, BigDecimal> realEstateBudgetUtilisedMap;
 
 }

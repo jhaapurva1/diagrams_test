@@ -1,5 +1,6 @@
 package com.meesho.cps.transformer;
 
+import com.meesho.ad.client.constants.FeedType;
 import com.meesho.cps.data.entity.mongodb.collection.CampaignDateWiseMetrics;
 import com.meesho.cps.data.entity.mongodb.collection.CampaignMetrics;
 import com.meesho.cps.data.entity.mongodb.collection.CampaignCatalogDateMetrics;
@@ -44,6 +45,8 @@ public class CampaignPerformanceTransformer {
             budgetUtilisedDetails.add(com.meesho.cpsclient.response.BudgetUtilisedResponse.BudgetUtilisedDetails.builder()
                     .campaignId(campaignMetric.getCampaignId())
                     .budgetUtilised(campaignMetric.getBudgetUtilised().setScale(2, RoundingMode.HALF_UP))
+                    .realEstateBudgetUtilisedList(getRealEstateBudgetUtilisedListWithRoundedValues(
+                            campaignMetric.getRealEstateBudgetUtilisedMap(), 2, RoundingMode.HALF_UP))
                     .build());
         }
 
@@ -51,6 +54,8 @@ public class CampaignPerformanceTransformer {
             budgetUtilisedDetails.add(com.meesho.cpsclient.response.BudgetUtilisedResponse.BudgetUtilisedDetails.builder()
                     .campaignId(campaignDateWiseMetric.getCampaignId())
                     .budgetUtilised(campaignDateWiseMetric.getBudgetUtilised().setScale(2, RoundingMode.HALF_UP))
+                    .realEstateBudgetUtilisedList(getRealEstateBudgetUtilisedListWithRoundedValues(
+                            campaignDateWiseMetric.getRealEstateBudgetUtilisedMap(), 2, RoundingMode.HALF_UP))
                     .build());
         }
 
@@ -66,6 +71,21 @@ public class CampaignPerformanceTransformer {
 
         return BudgetUtilisedResponse.builder().budgetUtilisedDetails(budgetUtilisedDetails)
                 .suppliersBudgetUtilisedDetails(supplierBudgetUtilisedDetails).build();
+    }
+
+    private BigDecimal roundValue(BigDecimal value, int scale, RoundingMode roundingMode) {
+        return Objects.nonNull(value) ? value.setScale(scale, roundingMode) : BigDecimal.ZERO;
+    }
+
+    private List<BudgetUtilisedResponse.BudgetUtilisedDetails.RealEstateBudgetUtilised> getRealEstateBudgetUtilisedListWithRoundedValues(
+            Map<FeedType, BigDecimal> realEstateBudgetUtilised, int scale, RoundingMode roundingMode) {
+        return realEstateBudgetUtilised.entrySet().stream()
+                .map(entry -> BudgetUtilisedResponse.BudgetUtilisedDetails.RealEstateBudgetUtilised.builder()
+                        .realEstate(entry.getKey())
+                        .budgetUtilised(roundValue(entry.getValue(), scale, roundingMode))
+                        .build()
+                )
+                .collect(Collectors.toList());
     }
 
     public static CampaignCatalogDateMetrics transform(CampaignPerformancePrestoData campaignPerformancePrestoData, Long supplierId) {

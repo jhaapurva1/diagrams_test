@@ -58,7 +58,8 @@ public class AdService {
         this.adViewCampaignCatalogCache = (Cache<Long, AdViewEventMetadataResponse.CatalogCampaignMetadata>)
                 adViewCampaignCatalogCacheManager.getCache("adViewCampaignCatalogCache").getNativeCache();
         this.applicationProperties = applicationProperties;
-        this.adsCatalogService = new AdsCatalogService(adServiceClientConfig.getRestConfig(), restTemplate, null);
+        this.adsCatalogService = new AdsCatalogService(adServiceClientConfig.getRestConfig(), restTemplate, null,
+                null, null);
     }
 
     private void putAllCampaignCatalogMetadata(

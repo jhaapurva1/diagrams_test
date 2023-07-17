@@ -27,6 +27,7 @@ public class Constants {
         public static class DEBUG_API {
             public static final String BASE_PATH = "/api/v1/debug";
             public static final String GET_CAMPAIGN_METRICS = "/campaign_metrics/get";
+            public static final String INCREMENT_BUDGET_UTILISED = "/campaign_metrics/increment_budget_utilised";
             public static final String SAVE_CAMPAIGN_METRICS = "/campaign_metrics/save";
             public static final String SAVE_CAMPAIGN_CATALOG_METRICS = "/campaign_catalog_metrics/save";
             public static final String SAVE_CAMPAIGN_DATEWISE_METRICS = "/campaign_datewise_metrics/save";
@@ -109,6 +110,8 @@ public class Constants {
         public static final String SUPPLIER_WEEKLY_BUDGET_EXHAUSTED_TOPIC = "${kafka.supplier.weekly.budget.exhausted.topic}";
 
         public static final String CATALOG_BUDGET_EXHAUSTED_TOPIC = "${kafka.catalog_budget_exhausted.topic}";
+
+        public static final String CAMPAIGN_REAL_ESTATE_BUDGET_EXHAUSTED_TOPIC = "${kafka.campaign_real_estate_budget_exhausted.topic}";
     }
 
     public static class FetchCampaignCatalog {

@@ -5,10 +5,14 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
+import com.meesho.ad.client.constants.FeedType;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * @author shubham.aggarwal
@@ -26,5 +30,22 @@ public class CampaignMetricsSaveRequest {
     @NotNull
     @JsonProperty("budget_utilised")
     private BigDecimal budgetUtilised;
+
+    @JsonProperty("real_estate_budget_utilised_list")
+    private List<RealEstateBudgetUtilised> realEstateBudgetUtilisedList;
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public static class RealEstateBudgetUtilised {
+
+        @JsonProperty("real_estate")
+        private FeedType realEstate;
+
+        @JsonProperty("budget_utilised")
+        private BigDecimal budgetUtilised;
+    }
 
 }

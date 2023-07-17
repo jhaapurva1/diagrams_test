@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.meesho.ad.client.constants.FeedType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -54,6 +55,24 @@ public class BudgetUtilisedResponse {
 
         @JsonProperty("budget_utilised")
         private BigDecimal budgetUtilised;
+
+        @JsonProperty("real_estate_budget_utilised_list")
+        private List<RealEstateBudgetUtilised> realEstateBudgetUtilisedList;
+
+        @Data
+        @Builder
+        @NoArgsConstructor
+        @AllArgsConstructor
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        public static class RealEstateBudgetUtilised {
+
+            @JsonProperty("real_estate")
+            private FeedType realEstate;
+
+            @JsonProperty("budget_utilised")
+            private BigDecimal budgetUtilised;;
+        }
 
     }
 

@@ -1,5 +1,6 @@
 package com.meesho.cps.transformer;
 
+import com.meesho.ad.client.constants.FeedType;
 import com.meesho.ads.lib.utils.DateTimeUtils;
 import com.meesho.cps.data.entity.mongodb.collection.CampaignDateWiseMetrics;
 import com.meesho.cps.data.entity.mongodb.collection.CampaignMetrics;
@@ -13,6 +14,8 @@ import com.meesho.cps.data.request.CampaignCatalogDateMetricsSaveRequest;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -96,17 +99,29 @@ public class DebugTransformer {
     }
 
     public static CampaignMetrics transform(CampaignMetricsSaveRequest request) {
+        Map<FeedType, BigDecimal> realEstateBudgetUtilisedMap = new HashMap<>();
+        for(CampaignMetricsSaveRequest.RealEstateBudgetUtilised realEstateBudgetUtilised :
+                request.getRealEstateBudgetUtilisedList()){
+            realEstateBudgetUtilisedMap.put(realEstateBudgetUtilised.getRealEstate(), realEstateBudgetUtilised.getBudgetUtilised());
+        }
         return CampaignMetrics.builder()
                 .campaignId(request.getCampaignId())
                 .budgetUtilised(request.getBudgetUtilised())
+                .realEstateBudgetUtilisedMap(realEstateBudgetUtilisedMap)
                 .build();
     }
 
     public static CampaignDateWiseMetrics transform(CampaignDateWiseMetricsSaveRequest request) {
+        Map<FeedType, BigDecimal> realEstateBudgetUtilisedMap = new HashMap<>();
+        for(CampaignDateWiseMetricsSaveRequest.RealEstateBudgetUtilised realEstateBudgetUtilised :
+                request.getRealEstateBudgetUtilisedList()){
+            realEstateBudgetUtilisedMap.put(realEstateBudgetUtilised.getRealEstate(), realEstateBudgetUtilised.getBudgetUtilised());
+        }
         return CampaignDateWiseMetrics.builder()
                 .campaignId(request.getCampaignId())
                 .budgetUtilised(request.getBudgetUtilised())
                 .date(DateTimeUtils.getCurrentLocalDateTimeInIST().toLocalDate().toString())
+                .realEstateBudgetUtilisedMap(realEstateBudgetUtilisedMap)
                 .build();
     }
 

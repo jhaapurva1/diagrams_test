@@ -1,5 +1,6 @@
 package com.meesho.cps.service;
 
+import com.meesho.ad.client.constants.FeedType;
 import com.meesho.ad.client.response.SupplierCampaignCatalogMetaDataResponse;
 import com.meesho.ad.client.data.AdsMetadata;
 import com.meesho.ad.client.response.CampaignDetails;
@@ -25,6 +26,7 @@ import com.meesho.cps.transformer.PrismEventTransformer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -119,8 +121,12 @@ public class WidgetClickEventService {
             return;
         }
 
+        FeedType nonNativeFeedType = widgetEventHelper.getNonNativeFeedType();
+
         CampaignDetails campaignDetails = catalogMetadata.getCampaignDetails();
         BigDecimal catalogBudgetUtilisationLimit = catalogMetadata.getCatalogBudget();
+        Set<FeedType> alreadyInactiveRealEstates = Objects.nonNull(campaignDetails.getInactiveRealEstates()) ?
+                campaignDetails.getInactiveRealEstates() : Collections.emptySet();
 
         BigDecimal totalBudget = campaignDetails.getBudget();
         Integer billVersion = campaignDetails.getBillVersion();
@@ -153,7 +159,8 @@ public class WidgetClickEventService {
         adInteractionPrismEvent.setClickMultiplier(multipliedCpcData.get(CpcData.MULTIPLIER));
         BillHandler billHandler = adBillFactory.getBillHandlerForBillVersion(billVersion);
 
-        if (interactionEventAttributionHelper.initialiseAndCheckIsBudgetExhausted(campaignDetails, weekStartDate, eventDate, weeklyBudgetUtilisationLimit, catalogId)) {
+        if (interactionEventAttributionHelper.initialiseAndCheckIsBudgetExhausted(campaignDetails, weekStartDate, eventDate,
+                weeklyBudgetUtilisationLimit, catalogId, nonNativeFeedType)) {
             log.error("Budget exhausted for catalogId {}", catalogId);
             adInteractionPrismEvent.setStatus(AdInteractionStatus.INVALID);
             adInteractionPrismEvent.setReason(AdInteractionInvalidReason.BUDGET_EXHAUSTED);
@@ -185,14 +192,26 @@ public class WidgetClickEventService {
 //                ConsumerConstants.IngestionInteractionEvents.AD_CLICK_EVENT_NAME);
 
         // Update budget utilised
-        BudgetUtilisedData budgetUtilised = interactionEventAttributionHelper.modifyAndGetBudgetUtilised(cpc, supplierId, campaignId, catalogId, eventDate, campaignType, ConsumerConstants.IngestionInteractionEvents.AD_CLICK_EVENT_NAME);
+        BudgetUtilisedData budgetUtilised = interactionEventAttributionHelper.modifyAndGetBudgetUtilised(cpc, supplierId,
+                campaignId, catalogId, eventDate, campaignType, nonNativeFeedType, ConsumerConstants.IngestionInteractionEvents.AD_CLICK_EVENT_NAME);
         if (budgetUtilised.getCampaignBudgetUtilised().compareTo(totalBudget) >= 0) {
             interactionEventAttributionHelper.sendBudgetExhaustedEvent(campaignId, catalogId);
         }//If we have paused the campaign then no need to pause the catalog. hence using else-if
-        else if (Objects.nonNull(catalogBudgetUtilisationLimit)
-                && catalogBudgetUtilisationLimit.compareTo(BigDecimal.ZERO) > 0
-                && budgetUtilised.getCatalogBudgetUtilised().compareTo(catalogBudgetUtilisationLimit) >= 0) {
-            interactionEventAttributionHelper.sendCatalogBudgetExhaustEvent(campaignId, catalogId);
+        else {
+            if (Objects.nonNull(catalogBudgetUtilisationLimit)
+                    && catalogBudgetUtilisationLimit.compareTo(BigDecimal.ZERO) > 0
+                    && budgetUtilised.getCatalogBudgetUtilised().compareTo(catalogBudgetUtilisationLimit) >= 0) {
+                interactionEventAttributionHelper.sendCatalogBudgetExhaustEvent(campaignId, catalogId);
+            }
+            List<FeedType> inactiveRealEstates = interactionEventAttributionHelper.findInactiveRealEstates(campaignDetails,
+                    eventDate);
+            List<FeedType> newInactiveRealEstates = interactionEventAttributionHelper.getNewInactiveRealEstates(inactiveRealEstates,
+                    alreadyInactiveRealEstates);
+            newInactiveRealEstates.remove(FeedType.UNKNOWN);
+            if (!CollectionUtils.isEmpty(newInactiveRealEstates)) {
+                interactionEventAttributionHelper.sendCampaignRealEstateBudgetExhaustedEvent(campaignId,
+                        newInactiveRealEstates);
+            }
         }
 
         //update supplier weekly budget utilised

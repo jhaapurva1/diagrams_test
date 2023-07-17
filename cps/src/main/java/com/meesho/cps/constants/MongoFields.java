@@ -16,4 +16,5 @@ public class MongoFields {
     public static final String BUDGET_UTILISED = "budgetUtilised";
     public static final String DISCOUNT = "discount";
     public static final String WEEK_START_DATE = "week_start_date";
+    public static final String REAL_ESTATE_BUDGET_UTILISED_SUFFIX = "budget_utilised";
 }

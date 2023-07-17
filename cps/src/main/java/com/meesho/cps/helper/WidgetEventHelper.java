@@ -33,6 +33,9 @@ public class WidgetEventHelper {
     @Getter
     private String feedType;
 
+    @Getter
+    private com.meesho.ad.client.constants.FeedType nonNativeFeedType;
+
     public WidgetEventHelper() {
         initMembersWithDefaults();
     }
@@ -57,6 +60,7 @@ public class WidgetEventHelper {
     private void initMembersForTos(AdWidgetClickEvent adWidgetClickEvent) {
         feedType = FeedType.TEXT_SEARCH.getValue();
         origin = Constants.AdWidgets.ORIGIN_SEARCH;
+        nonNativeFeedType = com.meesho.ad.client.constants.FeedType.TOP_OF_SEARCH;
         cpcMultiplier = topOfSearchCpcMultiplier;
         if (Objects.nonNull(adWidgetClickEvent.getProperties().getWidgetGroupPosition())
                 && adWidgetClickEvent.getProperties().getWidgetGroupPosition() > 1) {
@@ -69,6 +73,7 @@ public class WidgetEventHelper {
 
     private void initMembersForPdp(AdWidgetClickEvent adWidgetClickEvent) {
         feedType = FeedType.PRODUCT_RECO.getValue();
+        nonNativeFeedType = com.meesho.ad.client.constants.FeedType.ADS_ON_PDP;
         origin = AdWidgets.ORIGIN_PDP;
         cpcMultiplier = pdpCpcMultiplier;
         screen = String.format(AdWidgets.SCREEN_PDP, adWidgetClickEvent.getProperties().getWidgetGroupPosition());
@@ -79,6 +84,7 @@ public class WidgetEventHelper {
         origin = null;
         cpcMultiplier = BigDecimal.ONE;
         screen = null;
+        nonNativeFeedType = com.meesho.ad.client.constants.FeedType.UNKNOWN;
     }
 
     public static Boolean isTopOfSearchRealEstate(String realEstate) {

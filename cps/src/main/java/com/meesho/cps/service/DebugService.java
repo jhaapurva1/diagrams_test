@@ -3,10 +3,12 @@ package com.meesho.cps.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
+import com.meesho.ad.client.constants.FeedType;
 import com.meesho.ads.lib.utils.DateTimeUtils;
 import com.meesho.cps.config.ApplicationProperties;
 import com.meesho.cps.constants.Constants;
 import com.meesho.cps.constants.ConsumerConstants;
+import com.meesho.cps.data.entity.internal.CampaignBudgetUtilisedData;
 import com.meesho.cps.data.entity.mongodb.collection.*;
 import com.meesho.cps.data.entity.kafka.AdInteractionEvent;
 import com.meesho.cps.data.entity.kafka.DayWisePerformancePrismEvent;
@@ -34,6 +36,7 @@ import org.springframework.stereotype.Service;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -183,4 +186,8 @@ public class DebugService {
                 objectMapper.writeValueAsString(adInteractionEvent));
     }
 
+    public CampaignBudgetUtilisedData incrementBudgetUtilised(Long campaignId, Double value, FeedType realEstate) {
+        return campaignMetricsDao.incrementCampaignAndRealEstateBudgetUtilised(campaignId, BigDecimal.valueOf(value),
+                realEstate);
+    }
 }

@@ -24,6 +24,26 @@
             <artifactId>base-client</artifactId>
             <version>2.0.0-RELEASE</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.meesho</groupId>
+            <artifactId>ad-client</artifactId>
+            <version>4.0.6-RELEASE</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.cloud</groupId>
+                    <artifactId>spring-cloud-starter-zookeeper-config</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.grpc</groupId>
+                    <artifactId>grpc-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>net.devh</groupId>
+                    <artifactId>grpc-client-spring-boot-autoconfigure</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
     </dependencies>
 
 </project>
