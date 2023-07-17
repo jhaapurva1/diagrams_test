@@ -2,6 +2,7 @@ package com.meesho.cps.service;
 
 import com.meesho.ads.lib.constants.Constants;
 import com.meesho.commons.enums.CommonConstants;
+import com.meesho.mq.client.config.cache.CacheInitialise;
 import com.meesho.mq.client.models.PayloadType;
 import com.meesho.mq.client.models.RequestPayload;
 import com.meesho.mq.client.service.MqService;
@@ -15,6 +16,7 @@ import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
 import org.springframework.util.concurrent.ListenableFuture;
 
+import javax.annotation.PostConstruct;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -33,6 +35,14 @@ public class KafkaService {
 
     @Autowired
     private MqService mqService;
+
+    @Autowired
+    CacheInitialise cacheInitialise;
+
+    @PostConstruct
+    public void init(){
+    cacheInitialise.initialiseOnStartUp();
+    }
 
     public ListenableFuture<SendResult<String, String>> sendMessage(String topic, String key, String msg) {
         return sendMessage(topic,key,msg,0);

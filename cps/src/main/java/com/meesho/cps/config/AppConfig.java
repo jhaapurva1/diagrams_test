@@ -32,6 +32,8 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.Executor;
 
+import static com.meesho.cps.constants.SchedulerType.IN_MEMORY_SCHEDULERS;
+
 /**
  * @author shubham.aggarwal
  * 03/08/21
@@ -91,7 +93,7 @@ public class AppConfig {
 
     public ThreadPoolTaskScheduler getThreadPoolTaskScheduler() {
         ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadPoolTaskScheduler();
-        threadPoolTaskScheduler.setPoolSize(SchedulerType.values().length * Country.values().length);
+        threadPoolTaskScheduler.setPoolSize(IN_MEMORY_SCHEDULERS.size() * Country.values().length);
         threadPoolTaskScheduler.setThreadNamePrefix("async-scheduler-");
         threadPoolTaskScheduler.initialize();
         return threadPoolTaskScheduler;
@@ -102,7 +104,7 @@ public class AppConfig {
         MDC.put(Constants.GUID, UUID.randomUUID().toString());
         TaskScheduler taskScheduler = getThreadPoolTaskScheduler();
 
-        for (SchedulerType schedulerType : SchedulerType.values()) {
+        for (SchedulerType schedulerType : IN_MEMORY_SCHEDULERS) {
             log.info("Initializing scheduler {}", schedulerType);
             AbstractScheduler scheduler = SchedulerFactory.getByType(schedulerType.name());
             if (Objects.nonNull(scheduler)) {

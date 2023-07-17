@@ -3,7 +3,7 @@ package com.meesho.cps.listener.kafka;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.meesho.ads.lib.exception.DataValidationException;
 import com.meesho.ads.lib.helper.TelegrafMetricsHelper;
-import com.meesho.ads.lib.listener.kafka.BaseKafkaListener;
+import com.meesho.ads.lib.listener.kafka.BaseKafkaListenerForMq;
 import com.meesho.cps.constants.AdInteractionStatus;
 import com.meesho.cps.constants.ConsumerConstants;
 import com.meesho.cps.data.entity.kafka.AdInteractionEvent;
@@ -12,13 +12,11 @@ import com.meesho.cps.service.CatalogInteractionEventService;
 import com.meesho.instrumentation.annotation.DigestLogger;
 import com.meesho.instrumentation.enums.MetricType;
 import com.meesho.mq.client.annotation.MqListener;
+import com.meesho.mq.client.service.MqService;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
 import static com.meesho.cps.constants.TelegrafConstants.*;
@@ -29,10 +27,10 @@ import static com.meesho.cps.constants.TelegrafConstants.*;
  */
 @Slf4j
 @Component
-public class AdInteractionEventListener extends BaseKafkaListener<AdInteractionEvent> {
+public class AdInteractionEventListener extends BaseKafkaListenerForMq<AdInteractionEvent> {
 
     @Autowired
-    private KafkaTemplate<String, String> kafkaTemplate;
+    private MqService mqService;
 
     @Autowired
     private TelegrafMetricsHelper telegrafMetricsHelper;
@@ -40,11 +38,11 @@ public class AdInteractionEventListener extends BaseKafkaListener<AdInteractionE
     @Autowired
     private CatalogInteractionEventService catalogInteractionEventService;
 
-    @Value(ConsumerConstants.InteractionEventsConsumer.DEAD_QUEUE_TOPIC)
-    String interactionEventsConsumerDeadQueueTopic;
+    @Value(ConsumerConstants.InteractionEventsConsumer.DEAD_QUEUE_MQ_ID)
+    private Long deadQueueMqId;
 
-    @Value(ConsumerConstants.DelayedRetryConsumer.TOPIC)
-    String delayedRetryConsumerTopic;
+    @Value(ConsumerConstants.DelayedRetryConsumer.MQ_ID)
+    private Long delayedRetryMqId;
 
     @MqListener(mqId = ConsumerConstants.InteractionEventsConsumer.MQ_ID, type = String.class)
     public void listen(ConsumerRecord<String, String> consumerRecord) {
@@ -78,9 +76,10 @@ public class AdInteractionEventListener extends BaseKafkaListener<AdInteractionE
     }
 
     @Override
-    public KafkaTemplate<String, String> getKafkaTemplate() {
-        return kafkaTemplate;
+    public MqService getMqService() {
+        return mqService;
     }
+
 
     @Override
     public int getMaxImmediateRetries() {
@@ -93,18 +92,18 @@ public class AdInteractionEventListener extends BaseKafkaListener<AdInteractionE
     }
 
     @Override
-    public String getDeadTopic() {
-        return interactionEventsConsumerDeadQueueTopic;
+    public Long getDeadQueueMqId() {
+        return deadQueueMqId;
     }
 
     @Override
-    public String getRetryTopic() {
+    public Long getRetryMqId() {
         return null;
     }
 
     @Override
-    public String getDelayedRetryTopic() {
-        return delayedRetryConsumerTopic;
+    public Long getDelayedRetryMqId() {
+        return delayedRetryMqId;
     }
 
     @Override

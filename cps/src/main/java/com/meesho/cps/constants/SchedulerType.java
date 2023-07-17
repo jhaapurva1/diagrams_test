@@ -1,5 +1,8 @@
 package com.meesho.cps.constants;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * @author shubham.aggarwal
  * 09/08/21
@@ -17,4 +20,7 @@ public enum SchedulerType {
         }
         return SchedulerType.UNKNOWN;
     }
+
+    public static final Set<SchedulerType> IN_MEMORY_SCHEDULERS = new HashSet<>();
+
 }

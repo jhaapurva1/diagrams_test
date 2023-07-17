@@ -16,11 +16,15 @@ public class TelegrafConstants {
 
     public static final String WIDGET_CLICK_EVENT_KEY = SERVICE_NAME + "WidgetClickEvent";
 
+    public static final String INTERACTION_REAL_ESATE_KEY = SERVICE_NAME + "InteractionRealEstate";
+
     // tags placeholder
     public static final String INTERACTION_EVENT_TAGS = "eventName=%s,screen=%s,origin=%s,status=%s,reason=%s";
     public static final String VIEW_EVENT_TAGS = "eventName=%s,screen=%s,origin=%s,status=%s,reason=%s";
     public static final String WIDGET_VIEW_EVENT_TAGS = "eventName=%s,sourceScreen=%s,screen=%s,origin=%s,status=%s,reason=%s";
     public static final String INTERACTION_EVENT_CPC_TAGS = "eventName=%s,screen=%s,origin=%s";
+
+    public static final String INTERACTION_REAL_ESATE_TAGS = "eventName=%s,screen=%s,origin=%s,source=%s,realEstate=%s";
 
     // tag values
     public static final String NAN = "NAN";

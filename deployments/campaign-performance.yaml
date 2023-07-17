@@ -83,8 +83,8 @@ environment:
     as_trigger_metric: cpu
     as_trigger_type: Utilization
     as_trigger_value: 80
-    cpu_limit: 6
-    cpu_request: 2
+    cpu_limit: 8
+    cpu_request: 6
     memory_limit: 8G
     memory_request: 8G
     deploymentStrategy: rollingUpdate

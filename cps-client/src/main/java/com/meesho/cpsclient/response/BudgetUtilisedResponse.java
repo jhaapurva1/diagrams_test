@@ -73,7 +73,6 @@ public class BudgetUtilisedResponse {
             @JsonProperty("budget_utilised")
             private BigDecimal budgetUtilised;;
         }
-
     }
 
     @Data

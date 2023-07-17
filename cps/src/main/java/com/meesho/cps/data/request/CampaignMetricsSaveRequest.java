@@ -47,5 +47,4 @@ public class CampaignMetricsSaveRequest {
         @JsonProperty("budget_utilised")
         private BigDecimal budgetUtilised;
     }
-
 }

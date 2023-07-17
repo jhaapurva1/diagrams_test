@@ -10,8 +10,10 @@ import com.meesho.cps.constants.Constants;
 import com.meesho.cps.constants.ConsumerConstants;
 import com.meesho.cps.data.entity.internal.CampaignBudgetUtilisedData;
 import com.meesho.cps.data.entity.mongodb.collection.*;
+import com.meesho.cps.data.entity.kafka.CatalogBudgetExhaustEvent;
 import com.meesho.cps.data.entity.kafka.AdInteractionEvent;
 import com.meesho.cps.data.entity.kafka.DayWisePerformancePrismEvent;
+import com.meesho.cps.data.entity.kafka.SupplierWeeklyBudgetExhaustedEvent;
 import com.meesho.cps.data.internal.CampaignCatalogDate;
 import com.meesho.cps.data.request.BudgetExhaustedEventRequest;
 import com.meesho.cps.data.request.CampaignCatalogDateMetricsSaveRequest;
@@ -178,6 +180,14 @@ public class DebugService {
 
     public void sendBudgetExhaustedEvent(BudgetExhaustedEventRequest request) {
         interactionEventAttributionHelper.sendBudgetExhaustedEvent(request.getCampaignId(), request.getCatalogId());
+    }
+
+    public void sendCatalogBudgetExhaustEvent(CatalogBudgetExhaustEvent request) {
+        interactionEventAttributionHelper.sendCatalogBudgetExhaustEvent(request.getCampaignId(), request.getCatalogId());
+    }
+
+    public void sendSupplierBudgetExhaustedEvent(SupplierWeeklyBudgetExhaustedEvent request) {
+        interactionEventAttributionHelper.sendSupplierBudgetExhaustedEvent(request.getSupplierId(), request.getCatalogId());
     }
 
     public void publishKafkaInteractionEvent(AdInteractionEvent adInteractionEvent) throws JsonProcessingException {

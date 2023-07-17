@@ -123,6 +123,10 @@ public class WidgetClickEventService {
 
         FeedType nonNativeFeedType = widgetEventHelper.getNonNativeFeedType();
 
+        telegrafMetricsHelper.increment(INTERACTION_REAL_ESATE_KEY, INTERACTION_REAL_ESATE_TAGS,
+                adWidgetClickEvent.getEventName(), adWidgetClickEvent.getProperties().getScreen(),
+                adWidgetClickEvent.getProperties().getOrigin(), "WidgetClickEventService", nonNativeFeedType.getValue());
+
         CampaignDetails campaignDetails = catalogMetadata.getCampaignDetails();
         BigDecimal catalogBudgetUtilisationLimit = catalogMetadata.getCatalogBudget();
         Set<FeedType> alreadyInactiveRealEstates = Objects.nonNull(campaignDetails.getInactiveRealEstates()) ?
@@ -186,11 +190,6 @@ public class WidgetClickEventService {
             return;
         }
 
-        //Update campaign catalog date metrics
-        log.debug("campaignId {}, catalogId {}, date{}, eventName {}", campaignId, catalogId, eventDate, "AdWidgetClickEvent");
-//        interactionEventAttributionHelper.incrementInteractionCount(supplierId, campaignId, catalogId, eventDate,
-//                ConsumerConstants.IngestionInteractionEvents.AD_CLICK_EVENT_NAME);
-
         // Update budget utilised
         BudgetUtilisedData budgetUtilised = interactionEventAttributionHelper.modifyAndGetBudgetUtilised(cpc, supplierId,
                 campaignId, catalogId, eventDate, campaignType, nonNativeFeedType, ConsumerConstants.IngestionInteractionEvents.AD_CLICK_EVENT_NAME);
@@ -205,10 +204,9 @@ public class WidgetClickEventService {
             }
             List<FeedType> inactiveRealEstates = interactionEventAttributionHelper.findInactiveRealEstates(campaignDetails,
                     eventDate);
-            List<FeedType> newInactiveRealEstates = interactionEventAttributionHelper.getNewInactiveRealEstates(inactiveRealEstates,
-                    alreadyInactiveRealEstates);
+            List<FeedType> newInactiveRealEstates = interactionEventAttributionHelper.getNewInactiveRealEstates(inactiveRealEstates, alreadyInactiveRealEstates);
             newInactiveRealEstates.remove(FeedType.UNKNOWN);
-            if (!CollectionUtils.isEmpty(newInactiveRealEstates)) {
+            if(!CollectionUtils.isEmpty(newInactiveRealEstates)) {
                 interactionEventAttributionHelper.sendCampaignRealEstateBudgetExhaustedEvent(campaignId,
                         newInactiveRealEstates);
             }

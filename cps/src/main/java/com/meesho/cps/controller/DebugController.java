@@ -3,6 +3,8 @@ package com.meesho.cps.controller;
 import com.meesho.ad.client.constants.FeedType;
 import com.meesho.cps.constants.Constants;
 import com.meesho.cps.data.entity.internal.CampaignBudgetUtilisedData;
+import com.meesho.cps.data.entity.kafka.CatalogBudgetExhaustEvent;
+import com.meesho.cps.data.entity.kafka.SupplierWeeklyBudgetExhaustedEvent;
 import com.meesho.cps.data.entity.mongodb.collection.CampaignCatalogDateMetrics;
 import com.meesho.cps.data.entity.mongodb.collection.CampaignDateWiseMetrics;
 import com.meesho.cps.data.entity.mongodb.collection.CampaignMetrics;
@@ -122,6 +124,24 @@ public class DebugController {
             method = RequestMethod.POST)
     public void sendBudgetExhaustedEvent(@Valid @RequestBody BudgetExhaustedEventRequest request) {
         debugService.sendBudgetExhaustedEvent(request);
+    }
+
+    @ApiOperation(value =  Constants.API.DEBUG_API.SEND_CATALOG_BUDGET_EXHAUSTED_EVENT,
+            notes = "Sends catalog budget exhausted event",
+            consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(path = Constants.API.DEBUG_API.SEND_CATALOG_BUDGET_EXHAUSTED_EVENT,
+            method = RequestMethod.POST)
+    public void sendCatalogBudgetExhaustedEvent(@Valid @RequestBody CatalogBudgetExhaustEvent request) {
+        debugService.sendCatalogBudgetExhaustEvent(request);
+    }
+
+    @ApiOperation(value =  Constants.API.DEBUG_API.SEND_SUPPLIER_BUDGET_EXHAUSTED_EVENT,
+            notes = "Sends supplier budget exhausted event",
+            consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(path = Constants.API.DEBUG_API.SEND_SUPPLIER_BUDGET_EXHAUSTED_EVENT,
+            method = RequestMethod.POST)
+    public void sendSupplierBudgetExhaustedEvent(@Valid @RequestBody SupplierWeeklyBudgetExhaustedEvent request) {
+        debugService.sendSupplierBudgetExhaustedEvent(request);
     }
 
     @ApiOperation(value = Constants.API.DEBUG_API.PRODUCE_KAFKA, notes = "debug api to kafka",

@@ -1,5 +1,6 @@
 package com.meesho.cps.constants;
 
+
 /**
  * @author shubham.aggarwal
  * 03/08/21
@@ -38,7 +39,8 @@ public class Constants {
             public static final String SAVE_CATALOG_CPC_DISCOUNT = "/catalog_cpc_discount/save";
             public static final String GET_CATALOG_CPC_DISCOUNT = "/catalog_cpc_discount/get";
             public static final String SEND_BUDGET_EXHAUSTED_EVENT = "/budget_exhausted_event/send";
-
+            public static final String SEND_CATALOG_BUDGET_EXHAUSTED_EVENT = "/catalog_budget_exhausted_event/send";
+            public static final String SEND_SUPPLIER_BUDGET_EXHAUSTED_EVENT = "/supplier_budget_exhausted_event/send";
             public static final String PRODUCE_KAFKA = "/produce_kafka_interaction_event";
         }
 
@@ -105,13 +107,23 @@ public class Constants {
 
         public static final String INTERACTION_EVENT_MQ_ID= "${kafka.adserver.interaction.event.consumer.mq.id}";
 
+        public static final String PRESTO_SCHEDULER_EVENT_MQ_ID = "${kafka.presto.scheduler.event.consumer.mq.id}";
+
+        public static final String PRESTO_SCHEDULER_EVENT_RETRY_MQ_ID = "${kafka.presto.scheduler.event.retry.consumer.mq.id}";
+
         public static final String ADS_COST_DEDUCTION_TOPIC = "${kafka.ads.cost.deduction.topic}";
 
-        public static final String SUPPLIER_WEEKLY_BUDGET_EXHAUSTED_TOPIC = "${kafka.supplier.weekly.budget.exhausted.topic}";
-
-        public static final String CATALOG_BUDGET_EXHAUSTED_TOPIC = "${kafka.catalog_budget_exhausted.topic}";
+        public static final String SUPPLIER_WEEKLY_BUDGET_EXHAUSTED_MQ_ID = "${kafka.supplier.weekly.budget.exhausted.mq.id}";
 
         public static final String CAMPAIGN_REAL_ESTATE_BUDGET_EXHAUSTED_TOPIC = "${kafka.campaign_real_estate_budget_exhausted.topic}";
+
+        public static final String CATALOG_BUDGET_EXHAUSTED_MQ_ID = "${kafka.catalog_budget_exhausted.mq.id}";
+
+        public static final String DELAYED_RETRY_EVENT_MQ_ID="${kafka.delayed_retry.event.consumer.mq.id}";
+
+        public static final String AD_VIEW_CAMPAIGN_CATALOG_CACHE_UPDATE_EVENT_MQ_ID="${kafka.ad_view_campaign_catalog_cache_update.event.consumer.mq.id}";
+        public static final String DAY_PERF_EVENT_MQ_ID="${kafka.dayWisePerf.event.consumer.mq.id}";
+        public static final String DAY_PERF_EVENT_RETRY_MQ_ID="${kafka.dayWisePerf.event.consumer.retry.mq.id}";
     }
 
     public static class FetchCampaignCatalog {

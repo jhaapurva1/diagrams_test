@@ -92,7 +92,7 @@ public class CronStartupHandler implements CommandLineRunner,ApplicationContextA
                                 .get(schedulerType.name())
                                 .get(country.getCountryCode());
 
-                if (Objects.nonNull(schedulerProperty)) {
+                if (Objects.nonNull(schedulerProperty)&&schedulerProperty.getEnableCron()) {
                                 try {
                                     scheduler.run(
                                             country.getCountryCode(),

@@ -2,6 +2,7 @@ package com.meesho.cps.scheduler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.meesho.ads.lib.scheduler.AbstractScheduler;
+import com.meesho.cps.constants.Constants;
 import com.meesho.cps.constants.ConsumerConstants;
 import com.meesho.cps.constants.SchedulerType;
 import com.meesho.cps.data.internal.CampaignCatalogDate;
@@ -36,6 +37,9 @@ public class DayWisePerformanceEventsScheduler extends AbstractScheduler {
     @Value(ConsumerConstants.DayWisePerformanceEventsConsumer.TOPIC)
     String dayWisePerformanceEventsConsumerTopic;
 
+    @Value(Constants.Kafka.DAY_PERF_EVENT_MQ_ID)
+     Long dayWisePerfMqId;
+
     @Value(ConsumerConstants.DayWisePerformanceEventsConsumer.CAMPAIGN_CATALOG_DATE_BATCH_SIZE)
     private Integer CAMPAIGN_CATALOG_DATE_BATCH_SIZE;
 
@@ -61,14 +65,14 @@ public class DayWisePerformanceEventsScheduler extends AbstractScheduler {
             if (campaignCatalogDateIds.size() < CAMPAIGN_CATALOG_DATE_BATCH_SIZE) {
                 campaignCatalogDateIds.addAll(campaignCatalogDateIdsOfAMonth);
             } else {
-                kafkaService.sendMessage(dayWisePerformanceEventsConsumerTopic, null,
+                kafkaService.sendMessageToMq(dayWisePerfMqId, null,
                         objectMapper.writeValueAsString(campaignCatalogDateIds));
                 campaignCatalogDateIds = campaignCatalogDateIdsOfAMonth;
             }
         }
 
         if(campaignCatalogDateIds.size()> 0)
-            kafkaService.sendMessage(dayWisePerformanceEventsConsumerTopic, null,
+            kafkaService.sendMessageToMq(dayWisePerfMqId, null,
                     objectMapper.writeValueAsString(campaignCatalogDateIds));
 
         return (long) campaignCatalogDates.size();

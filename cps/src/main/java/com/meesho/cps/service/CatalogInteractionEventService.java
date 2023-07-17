@@ -85,7 +85,7 @@ public class CatalogInteractionEventService {
 
 
         String feedType = null;
-        if(Objects.nonNull(adInteractionEvent.getProperties())){
+        if (Objects.nonNull(adInteractionEvent.getProperties())) {
             String origin = adInteractionEvent.getProperties().getOrigin();
             String screen = adInteractionEvent.getProperties().getScreen();
             feedType = OriginScreenREMapper.getFeedType(origin, screen);
@@ -109,6 +109,9 @@ public class CatalogInteractionEventService {
         FeedType realEstate = FeedType.fromValue(feedType);
         realEstate = Objects.isNull(realEstate) ? FeedType.UNKNOWN : realEstate;
 
+        telegrafMetricsHelper.increment(INTERACTION_REAL_ESATE_KEY, INTERACTION_REAL_ESATE_TAGS,
+                adInteractionEvent.getEventName(), adInteractionEvent.getProperties().getScreen(),
+                adInteractionEvent.getProperties().getOrigin(), "CatalogInteractionEventService", realEstate.getValue());
         CampaignDetails campaignDetails = catalogMetadata.getCampaignDetails();
         BigDecimal catalogBudgetUtilisationLimit = catalogMetadata.getCatalogBudget();
         Set<FeedType> alreadyInactiveRealEstates = Objects.nonNull(campaignDetails.getInactiveRealEstates()) ?

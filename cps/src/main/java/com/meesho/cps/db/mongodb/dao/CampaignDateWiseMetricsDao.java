@@ -46,14 +46,6 @@ public class CampaignDateWiseMetricsDao {
         return campaignDateWiseMetricsRepository.findAllByCampaignIdInAndDate(campaignIds, date);
     }
 
-    public BigDecimal incrementCampaignDailyBudgetUtilised(Long campaignId, String date, BigDecimal budgetUtilised) {
-        Query query = new Query().addCriteria(Criteria.where(CAMPAIGN_ID).is(campaignId).and(DATE).is(date));
-        Update update = new Update().inc(BUDGET_UTILISED, budgetUtilised);
-        CampaignDateWiseMetrics document = mongoTemplate.findAndModify(query, update, FindAndModifyOptions.options().returnNew(true).upsert(true),
-                CampaignDateWiseMetrics.class);
-        return document.getBudgetUtilised();
-    }
-
     public CampaignBudgetUtilisedData incrementCampaignAndRealEstateBudgetUtilised(Long campaignId, String date, BigDecimal budgetUtilised,
                                                                                    FeedType realEstate) {
         Query query = new Query().addCriteria(Criteria.where(CAMPAIGN_ID).is(campaignId).and(DATE).is(date));

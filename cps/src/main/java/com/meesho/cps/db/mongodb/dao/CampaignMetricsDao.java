@@ -46,14 +46,6 @@ public class CampaignMetricsDao {
         return campaignMetricsRepository.findAllByCampaignIdIn(campaignIds);
     }
 
-    public BigDecimal incrementCampaignBudgetUtilised(Long campaignId, BigDecimal budgetUtilised) {
-        Query query = new Query().addCriteria(Criteria.where(CAMPAIGN_ID).is(campaignId));
-        Update update = new Update().inc(BUDGET_UTILISED, budgetUtilised);
-        CampaignMetrics document = mongoTemplate.findAndModify(query, update, FindAndModifyOptions.options().returnNew(true).upsert(true),
-                CampaignMetrics.class);
-        return document.getBudgetUtilised();
-    }
-
     public CampaignBudgetUtilisedData incrementCampaignAndRealEstateBudgetUtilised(Long campaignId, BigDecimal budgetUtilised,
                                                                                    FeedType realEstate) {
         Query query = new Query().addCriteria(Criteria.where(CAMPAIGN_ID).is(campaignId));

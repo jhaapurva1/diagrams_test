@@ -2,10 +2,12 @@ package com.meesho.cps.helper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.meesho.ad.client.constants.FeedType;
 import com.meesho.ad.client.response.CampaignDetails;
 import com.meesho.cps.config.ApplicationProperties;
 import com.meesho.cps.constants.CampaignType;
 import com.meesho.cps.data.entity.internal.BudgetUtilisedData;
+import com.meesho.cps.data.entity.internal.CampaignBudgetUtilisedData;
 import com.meesho.cps.data.entity.kafka.AdInteractionPrismEvent;
 import com.meesho.cps.data.entity.mongodb.collection.CampaignDateWiseMetrics;
 import com.meesho.cps.data.entity.mongodb.collection.CampaignMetrics;
@@ -28,6 +30,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Collections;
 
 import static org.mockito.ArgumentMatchers.any;
 
@@ -61,6 +64,7 @@ public class ClickAttributionHelperTest {
     private InteractionEventAttributionHelper interactionEventAttributionHelper;
 
     private Long campaignBudgetExhaustedMqID;
+    private Long weeklyBudgetExhaustedMqID;
 
     //ToDo : Make sure to un-comment the changes after mongo migration. @amit.poonia
 
@@ -70,12 +74,12 @@ public class ClickAttributionHelperTest {
 //        Mockito.doNothing().when(prismService).publishEvent(any(), any());
 //        Mockito.doReturn(null).when(kafkaService).sendMessage("weeklyBudgetExhaustedTopic", String.valueOf(1L), "");
 //        Mockito.doReturn("").when(objectMapper).writeValueAsString(any());
-        Mockito.doReturn(BigDecimal.valueOf(100)).when(campaignDateWiseMetricsDao).incrementCampaignDailyBudgetUtilised(any(), any(), any());
+        Mockito.doReturn(CampaignBudgetUtilisedData.builder().totalBudgetUtilised(BigDecimal.valueOf(100)).realEstateBudgetUtilisedMap(Collections.emptyMap()).build()).when(campaignDateWiseMetricsDao).incrementCampaignAndRealEstateBudgetUtilised(any(), any(), any(), any());
         Mockito.doReturn(BigDecimal.valueOf(50)).when(campaignCatalogDateMetricsDao).incrementBudgetUtilisedAndInteractionCount(any(), any(), any(), any(), any(), any());
-        Mockito.doReturn(BigDecimal.valueOf(1000)).when(campaignMetricsDao).incrementCampaignBudgetUtilised(any(), any());
+        Mockito.doReturn(CampaignBudgetUtilisedData.builder().totalBudgetUtilised(BigDecimal.valueOf(1000)).realEstateBudgetUtilisedMap(Collections.emptyMap()).build()).when(campaignMetricsDao).incrementCampaignAndRealEstateBudgetUtilised(any(), any(), any());
         Mockito.doReturn(BigDecimal.valueOf(200)).when(supplierWeekWiseMetricsDao).incrementSupplierWeeklyBudgetUtilised(any(), any(), any());
         ReflectionTestUtils.setField(interactionEventAttributionHelper, "budgetExhaustedMqID", campaignBudgetExhaustedMqID);
-        ReflectionTestUtils.setField(interactionEventAttributionHelper, "suppliersWeeklyBudgetExhaustedTopic", "weeklyBudgetExhaustedTopic");
+        ReflectionTestUtils.setField(interactionEventAttributionHelper, "suppliersWeeklyBudgetExhaustedMqID", weeklyBudgetExhaustedMqID);
     }
 
     public AdInteractionPrismEvent getSampleAdInteractionPrismEvent() {
@@ -144,25 +148,25 @@ public class ClickAttributionHelperTest {
     public void testSendSupplierBudgetExhaustedEventException() {
         Mockito.doThrow(Exception.class).when(kafkaService).sendMessage(any(), any(), any());
         interactionEventAttributionHelper.sendSupplierBudgetExhaustedEvent(1L, 1L);
-        Mockito.verify(kafkaService, Mockito.times(1)).sendMessage("weeklyBudgetExhaustedTopic", String.valueOf(1L), "");
+        Mockito.verify(kafkaService, Mockito.times(1)).sendMessageToMq(weeklyBudgetExhaustedMqID, String.valueOf(1L), "");
     }
 
     @Test
     public void testModifyAndGetBudgetUtilizedDailyBudget() {
-        BudgetUtilisedData budgetUtilised = interactionEventAttributionHelper.modifyAndGetBudgetUtilised(BigDecimal.ONE, 1L, 1L, 1L, LocalDate.now(), CampaignType.DAILY_BUDGET, "ad_click");
+        BudgetUtilisedData budgetUtilised = interactionEventAttributionHelper.modifyAndGetBudgetUtilised(BigDecimal.ONE, 1L, 1L, 1L, LocalDate.now(), CampaignType.DAILY_BUDGET, FeedType.FY, "ad_click");
         Mockito.verify(campaignCatalogDateMetricsDao, Mockito.times(1)).incrementBudgetUtilisedAndInteractionCount(any(), any(), any(), any(), any(), any());
-        Mockito.verify(campaignDateWiseMetricsDao, Mockito.times(1)).incrementCampaignDailyBudgetUtilised(any(), any(), any());
-        Mockito.verify(campaignMetricsDao, Mockito.times(0)).incrementCampaignBudgetUtilised(any(), any());
+        Mockito.verify(campaignDateWiseMetricsDao, Mockito.times(1)).incrementCampaignAndRealEstateBudgetUtilised(any(), any(), any(), any());
+        Mockito.verify(campaignMetricsDao, Mockito.times(0)).incrementCampaignAndRealEstateBudgetUtilised(any(), any(), any());
         Assert.assertEquals(BigDecimal.valueOf(100), budgetUtilised.getCampaignBudgetUtilised());
         Assert.assertEquals(BigDecimal.valueOf(50), budgetUtilised.getCatalogBudgetUtilised());
     }
 
     @Test
     public void testModifyAndGetBudgetUtilizedTotalBudget() {
-        BudgetUtilisedData budgetUtilised = interactionEventAttributionHelper.modifyAndGetBudgetUtilised(BigDecimal.ONE, 1L, 1L, 1L, LocalDate.now(), CampaignType.TOTAL_BUDGET, "ad_click");
+        BudgetUtilisedData budgetUtilised = interactionEventAttributionHelper.modifyAndGetBudgetUtilised(BigDecimal.ONE, 1L, 1L, 1L, LocalDate.now(), CampaignType.TOTAL_BUDGET, FeedType.FY, "ad_click");
         Mockito.verify(campaignCatalogDateMetricsDao, Mockito.times(1)).incrementBudgetUtilisedAndInteractionCount(any(), any(), any(), any(), any(), any());
-        Mockito.verify(campaignDateWiseMetricsDao, Mockito.times(0)).incrementCampaignDailyBudgetUtilised(any(), any(), any());
-        Mockito.verify(campaignMetricsDao, Mockito.times(1)).incrementCampaignBudgetUtilised(any(), any());
+        Mockito.verify(campaignDateWiseMetricsDao, Mockito.times(0)).incrementCampaignAndRealEstateBudgetUtilised(any(), any(), any(), any());
+        Mockito.verify(campaignMetricsDao, Mockito.times(1)).incrementCampaignAndRealEstateBudgetUtilised(any(), any(), any());
         Assert.assertEquals(BigDecimal.valueOf(50), budgetUtilised.getCatalogBudgetUtilised());
     }
 
@@ -176,7 +180,7 @@ public class ClickAttributionHelperTest {
     @Test
     public void testInitialiseAndCheckIsBudgetExhaustedSupplierWeeklyBudgetSupplierNotInRepo() {
         Mockito.doReturn(null).when(supplierWeekWiseMetricsDao).findBySupplierIdAndWeekStartDate(1L, LocalDate.now().toString());
-        Boolean isBudgetExhausted = interactionEventAttributionHelper.initialiseAndCheckIsBudgetExhausted(CampaignDetails.builder().supplierId(1L).build(), LocalDate.now(), LocalDate.now(), BigDecimal.ZERO, 1L);
+        Boolean isBudgetExhausted = interactionEventAttributionHelper.initialiseAndCheckIsBudgetExhausted(CampaignDetails.builder().supplierId(1L).build(), LocalDate.now(), LocalDate.now(), BigDecimal.ZERO, 1L, FeedType.FY);
 //        Mockito.verify(kafkaService, Mockito.times(1)).sendMessage("weeklyBudgetExhaustedTopic", String.valueOf(1L), "");
         Assert.assertTrue(isBudgetExhausted);
     }
@@ -184,7 +188,7 @@ public class ClickAttributionHelperTest {
     @Test
     public void testInitialiseAndCheckIsBudgetExhaustedSupplierWeeklyBudget() {
         Mockito.doReturn(SupplierWeekWiseMetrics.builder().budgetUtilised(BigDecimal.valueOf(11)).build()).when(supplierWeekWiseMetricsDao).findBySupplierIdAndWeekStartDate(1L, LocalDate.now().toString());
-        Boolean isBudgetExhausted = interactionEventAttributionHelper.initialiseAndCheckIsBudgetExhausted(CampaignDetails.builder().supplierId(1L).build(), LocalDate.now(), LocalDate.now(), BigDecimal.TEN, 1L);
+        Boolean isBudgetExhausted = interactionEventAttributionHelper.initialiseAndCheckIsBudgetExhausted(CampaignDetails.builder().supplierId(1L).build(), LocalDate.now(), LocalDate.now(), BigDecimal.TEN, 1L, FeedType.FY);
 //        Mockito.verify(kafkaService, Mockito.times(1)).sendMessage("weeklyBudgetExhaustedTopic", String.valueOf(1L), "");
         Assert.assertTrue(isBudgetExhausted);
     }
@@ -192,10 +196,11 @@ public class ClickAttributionHelperTest {
     @Test
     public void testInitialiseAndCheckIsBudgetExhaustedCampaignDailyBudget() {
         CampaignDetails campaignDetails = CampaignDetails.builder().supplierId(1L).campaignId(1L).campaignType("DAILY_BUDGET").budget(BigDecimal.TEN).build();
-        CampaignDateWiseMetrics campaignDatewiseMetrics = CampaignDateWiseMetrics.builder().budgetUtilised(BigDecimal.TEN).build();
+        CampaignDateWiseMetrics campaignDatewiseMetrics = CampaignDateWiseMetrics.builder().budgetUtilised(BigDecimal.TEN)
+                .realEstateBudgetUtilisedMap(Collections.emptyMap()).build();
         Mockito.doReturn(SupplierWeekWiseMetrics.builder().budgetUtilised(BigDecimal.ONE).build()).when(supplierWeekWiseMetricsDao).findBySupplierIdAndWeekStartDate(1L, LocalDate.now().toString());
         Mockito.doReturn(campaignDatewiseMetrics).when(campaignDateWiseMetricsDao).findByCampaignIdAndDate(1L, LocalDate.now().toString());
-        Boolean isBudgetExhausted = interactionEventAttributionHelper.initialiseAndCheckIsBudgetExhausted(campaignDetails, LocalDate.now(), LocalDate.now(), BigDecimal.TEN, 1L);
+        Boolean isBudgetExhausted = interactionEventAttributionHelper.initialiseAndCheckIsBudgetExhausted(campaignDetails, LocalDate.now(), LocalDate.now(), BigDecimal.TEN, 1L, FeedType.FY);
 //        Mockito.verify(kafkaService, Mockito.times(1)).sendMessageToMq(campaignBudgetExhaustedMqID, String.valueOf(1L), "");
         Assert.assertTrue(isBudgetExhausted);
     }
@@ -203,10 +208,11 @@ public class ClickAttributionHelperTest {
     @Test
     public void testInitialiseAndCheckIsBudgetExhaustedCampaignTotalBudget() {
         CampaignDetails campaignDetails = CampaignDetails.builder().supplierId(1L).campaignId(1L).campaignType("TOTAL_BUDGET").budget(BigDecimal.TEN).build();
-        CampaignMetrics campaignMetrics = CampaignMetrics.builder().budgetUtilised(BigDecimal.TEN).build();
+        CampaignMetrics campaignMetrics = CampaignMetrics.builder().budgetUtilised(BigDecimal.TEN)
+                .realEstateBudgetUtilisedMap(Collections.emptyMap()).build();
         Mockito.doReturn(SupplierWeekWiseMetrics.builder().budgetUtilised(BigDecimal.ONE).build()).when(supplierWeekWiseMetricsDao).findBySupplierIdAndWeekStartDate(1L, LocalDate.now().toString());
         Mockito.doReturn(campaignMetrics).when(campaignMetricsDao).findByCampaignId(1L);
-        Boolean isBudgetExhausted = interactionEventAttributionHelper.initialiseAndCheckIsBudgetExhausted(campaignDetails, LocalDate.now(), LocalDate.now(), BigDecimal.TEN, 1L);
+        Boolean isBudgetExhausted = interactionEventAttributionHelper.initialiseAndCheckIsBudgetExhausted(campaignDetails, LocalDate.now(), LocalDate.now(), BigDecimal.TEN, 1L, FeedType.FY);
 //        Mockito.verify(kafkaService, Mockito.times(1)).sendMessageToMq(campaignBudgetExhaustedMqID, String.valueOf(1L), "");
         Assert.assertTrue(isBudgetExhausted);
     }

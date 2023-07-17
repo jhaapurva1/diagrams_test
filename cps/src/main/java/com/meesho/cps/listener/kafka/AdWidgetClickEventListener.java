@@ -1,9 +1,11 @@
 package com.meesho.cps.listener.kafka;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.meesho.ads.lib.constants.Constants;
 import com.meesho.ads.lib.exception.DataValidationException;
 import com.meesho.ads.lib.helper.TelegrafMetricsHelper;
 import com.meesho.ads.lib.listener.kafka.BaseManualAcknowledgeKafkaListener;
+import com.meesho.commons.enums.Country;
 import com.meesho.cps.constants.AdInteractionStatus;
 import com.meesho.cps.constants.ConsumerConstants;
 import com.meesho.cps.data.entity.kafka.AdWidgetClickEvent;
@@ -16,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
@@ -55,6 +58,8 @@ public class AdWidgetClickEventListener extends BaseManualAcknowledgeKafkaListen
 
     @Override
     public void consume(AdWidgetClickEvent adWidgetClickEvent) throws DataValidationException {
+        String countryCode = "IN";
+        MDC.put(Constants.COUNTRY_CODE, Country.getValueDefaultCountryFromEnv(countryCode).getCountryCode());
         log.info("Consuming ad widget click event: {}", adWidgetClickEvent);
         if (!AdWidgetValidationHelper.isValidAdWidgetClickEvent(adWidgetClickEvent)) {
             log.warn("Invalid event {}", adWidgetClickEvent);

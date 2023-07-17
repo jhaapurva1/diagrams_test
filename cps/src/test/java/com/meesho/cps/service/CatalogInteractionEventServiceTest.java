@@ -289,7 +289,7 @@ public class CatalogInteractionEventServiceTest {
     public void testCatalogBudgetExhaust() throws ExternalRequestFailedException {
         Mockito.doReturn(BudgetUtilisedData.builder().campaignBudgetUtilised(BigDecimal.valueOf(800))
                 .catalogBudgetUtilised(BigDecimal.valueOf(100)).build()).when(interactionEventAttributionHelper)
-                .modifyAndGetBudgetUtilised(any(), any(), any(), any(), any(), any(), any());
+                .modifyAndGetBudgetUtilised(any(), any(), any(), any(), any(), any(), any(), any());
         Mockito.doReturn(getSampleSupplierCampaignCatalogMetaDataResponseForNewRequests(2)).when(adService).getSupplierCampaignCatalogMetadata(any(), any(), any(), any());
         Mockito.doReturn(clickBillHandler).when(adBillFactory).getBillHandlerForBillVersion(any());
         Mockito.doNothing().when(interactionEventAttributionHelper).sendCatalogBudgetExhaustEvent(any(), any());

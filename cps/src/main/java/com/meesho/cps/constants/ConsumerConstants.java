@@ -68,6 +68,8 @@ public class ConsumerConstants {
         public static final String MAX_POLL_INTERVAL_MS = "${kafka.adserver.interaction.event.consumer.max.poll.interval.ms}";
         public static final String BATCH_SIZE = "${kafka.adserver.interaction.event.consumer.batch.size}";
         public static final String MQ_ID = "${kafka.adserver.interaction.event.consumer.mq.id}";
+
+        public static final String DEAD_QUEUE_MQ_ID="${kafka.adserver.interaction.event.consumer.dead.queue.mq.id}";
     }
 
     public static class DayWisePerformanceEventsConsumer {
@@ -82,6 +84,10 @@ public class ConsumerConstants {
         public static final String BATCH_SIZE = "${kafka.dayWisePerf.event.consumer.batch.size}";
 
         public static final String CAMPAIGN_CATALOG_DATE_BATCH_SIZE = "${kafka.dayWisePerf.campaign.catalog.date.batch.size}";
+
+        public static final String MQ_ID = "${kafka.dayWisePerf.event.consumer.mq.id}";
+        public static final String RETRY_MQ_ID = "${kafka.dayWisePerf.event.consumer.retry.mq.id}";
+        public static final String DEAD_QUEUE_MQ_ID = "${kafka.dayWisePerf.event.consumer.dead.queue.mq.id}";
     }
 
     public static class IngestionViewEventsConsumer {
@@ -104,6 +110,10 @@ public class ConsumerConstants {
         public static final String MAX_IMMEDIATE_RETRIES = "${kafka.presto.scheduler.event.consumer.max.immediate.retries}";
         public static final String MAX_POLL_INTERVAL_MS = "${kafka.presto.scheduler.event.consumer.max.poll.interval.ms}";
         public static final String BATCH_SIZE = "${kafka.presto.scheduler.event.consumer.batch.size}";
+        public static final String MQ_ID = "${kafka.presto.scheduler.event.consumer.mq.id}";
+        public static final String RETRY_MQ_ID = "${kafka.presto.scheduler.event.retry.consumer.mq.id}";
+        public static final String DEAD_QUEUE_MQ_ID = "${kafka.presto.scheduler.event.consumer.dead.queue.mq.id}";
+
     }
 
     public static class DelayedRetryConsumer {
@@ -113,6 +123,7 @@ public class ConsumerConstants {
         public static final String CONCURRENCY = "${kafka.delayed_retry.event.consumer.concurrency}";
         public static final String MAX_POLL_INTERVAL_MS = "${kafka.delayed_retry.event.consumer.max.poll.interval.ms}";
         public static final String BATCH_SIZE = "${kafka.delayed_retry.event.consumer.batch.size}";
+        public static final String MQ_ID = "${kafka.delayed_retry.event.consumer.mq.id}";
     }
 
     public static class AdWidgetViewEventConsumer {
@@ -153,6 +164,8 @@ public class ConsumerConstants {
         public static final String CONCURRENCY = "${kafka.ad_view_campaign_catalog_cache_update.event.consumer.concurrency}";
         public static final String MAX_POLL_INTERVAL_MS = "${kafka.ad_view_campaign_catalog_cache_update.event.consumer.max.poll.interval.ms}";
         public static final String BATCH_SIZE = "${kafka.ad_view_campaign_catalog_cache_update.event.consumer.batch.size}";
+        public static final String MQ_ID = "${kafka.ad_view_campaign_catalog_cache_update.event.consumer.mq.id}";
+        public static final String DEAD_QUEUE_MQ_ID= "${kafka.ad_view_campaign_catalog_cache_update.event.consumer.dead.queue.mq.id}";
     }
 
     public static class GenericRedisNotificationsConsumer {

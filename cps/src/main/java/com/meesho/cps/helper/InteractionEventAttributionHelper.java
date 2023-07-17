@@ -65,11 +65,11 @@ public class InteractionEventAttributionHelper {
     @Value(Constants.Kafka.BUDGET_EXHAUSTED_MQ_ID)
     Long budgetExhaustedMqID;
 
-    @Value(Constants.Kafka.SUPPLIER_WEEKLY_BUDGET_EXHAUSTED_TOPIC)
-    private String suppliersWeeklyBudgetExhaustedTopic;
+    @Value(Constants.Kafka.SUPPLIER_WEEKLY_BUDGET_EXHAUSTED_MQ_ID)
+    private Long suppliersWeeklyBudgetExhaustedMqID;
 
-    @Value(Constants.Kafka.CATALOG_BUDGET_EXHAUSTED_TOPIC)
-    private String catalogBudgetExhaustedTopic;
+    @Value(Constants.Kafka.CATALOG_BUDGET_EXHAUSTED_MQ_ID)
+    private Long catalogBudgetExhaustedMqID;
 
     @Value(Constants.Kafka.CAMPAIGN_REAL_ESTATE_BUDGET_EXHAUSTED_TOPIC)
     private String campaignRealEstateBudgetExhaustedTopic;
@@ -121,8 +121,8 @@ public class InteractionEventAttributionHelper {
     }
 
     public CampaignBudgetUtilisedData getAndInitialiseCampaignBudgetUtilised(CampaignDetails campaignDetails,
-                                                                             LocalDate eventDate,
-                                                                             FeedType feedType) {
+                                                                              LocalDate eventDate,
+                                                                              FeedType feedType) {
         log.info("get and initialize campaign budget: {} {} {}", campaignDetails, eventDate, feedType);
         CampaignType campaignType = CampaignType.fromValue(campaignDetails.getCampaignType());
         BigDecimal budgetUtilised = BigDecimal.ZERO;
@@ -176,18 +176,6 @@ public class InteractionEventAttributionHelper {
                 .collect(Collectors.toMap(realEstate -> realEstate, realEstate -> BigDecimal.ZERO));
     }
 
-    public void sendCampaignRealEstateBudgetExhaustedEvent(Long campaignId, List<FeedType> inactiveRealEstates) {
-        CampaignRealEstateBudgetExhaustedEvent campaignRealEstateBudgetExhaustedEvent = CampaignRealEstateBudgetExhaustedEvent.builder()
-                .campaignId(campaignId)
-                .realEstates(inactiveRealEstates).build();
-        try {
-//            kafkaService.sendMessage(campaignRealEstateBudgetExhaustedTopic, String.valueOf(campaignId),
-//                    objectMapper.writeValueAsString(campaignRealEstateBudgetExhaustedEvent));
-        } catch (Exception e) {
-            log.error("Exception while sending campaignRealEstateBudgetExhausted event {}", campaignRealEstateBudgetExhaustedEvent, e);
-        }
-    }
-
     private BigDecimal getAndInitialiseSupplierWeeklyUtilisedBudget(Long supplierId, LocalDate weekStartDate) {
         log.info("get and initialize supplier weekly budget utilized: {} {}", supplierId, weekStartDate);
         BigDecimal budgetUtilised = BigDecimal.ZERO;
@@ -201,20 +189,22 @@ public class InteractionEventAttributionHelper {
         return budgetUtilised;
     }
 
-    public void sendBudgetExhaustedEvent(Long campaignId, Long catalogId) {
-        BudgetExhaustedEvent budgetExhaustedEvent = BudgetExhaustedEvent.builder().catalogId(catalogId).campaignId(campaignId).build();
+    public void sendCampaignRealEstateBudgetExhaustedEvent(Long campaignId, List<FeedType> inactiveRealEstates) {
+        CampaignRealEstateBudgetExhaustedEvent campaignRealEstateBudgetExhaustedEvent = CampaignRealEstateBudgetExhaustedEvent.builder()
+                .campaignId(campaignId)
+                .realEstates(inactiveRealEstates).build();
         try {
-//            kafkaService.sendMessageToMq(budgetExhaustedMqID, String.valueOf(campaignId),
-//                    objectMapper.writeValueAsString(budgetExhaustedEvent));
+//            kafkaService.sendMessage(campaignRealEstateBudgetExhaustedTopic, String.valueOf(campaignId),
+//                    objectMapper.writeValueAsString(campaignRealEstateBudgetExhaustedEvent));
         } catch (Exception e) {
-            log.error("Exception while sending budgetExhausted event {}", budgetExhaustedEvent, e);
+            log.error("Exception while sending campaignRealEstateBudgetExhausted event {}", campaignRealEstateBudgetExhaustedEvent, e);
         }
     }
 
     public void sendCatalogBudgetExhaustEvent(Long campaignId, Long catalogId) {
         CatalogBudgetExhaustEvent catalogBudgetExhaustEvent = CatalogBudgetExhaustEvent.builder().campaignId(campaignId).catalogId(catalogId).build();
         try {
-//            kafkaService.sendMessage(catalogBudgetExhaustedTopic, String.valueOf(catalogId),
+//            kafkaService.sendMessageToMq(catalogBudgetExhaustedMqID, String.valueOf(catalogId),
 //                    objectMapper.writeValueAsString(catalogBudgetExhaustEvent));
         } catch (Exception e) {
             log.error("Exception while sending catalogBudgetExhausted event {}", catalogBudgetExhaustEvent, e);
@@ -225,10 +215,20 @@ public class InteractionEventAttributionHelper {
         SupplierWeeklyBudgetExhaustedEvent supplierWeeklyBudgetExhaustedEvent =
                 SupplierWeeklyBudgetExhaustedEvent.builder().supplierId(supplierId).catalogId(catalogId).build();
         try {
-//            kafkaService.sendMessage(suppliersWeeklyBudgetExhaustedTopic, String.valueOf(supplierId),
+//            kafkaService.sendMessageToMq(suppliersWeeklyBudgetExhaustedMqID, String.valueOf(supplierId),
 //                    objectMapper.writeValueAsString(supplierWeeklyBudgetExhaustedEvent));
         } catch (Exception e) {
             log.error("Exception while sending supplierWeeklyBudgetExhausted event {}", supplierWeeklyBudgetExhaustedEvent, e);
+        }
+    }
+
+    public void sendBudgetExhaustedEvent(Long campaignId, Long catalogId) {
+        BudgetExhaustedEvent budgetExhaustedEvent = BudgetExhaustedEvent.builder().catalogId(catalogId).campaignId(campaignId).build();
+        try {
+//            kafkaService.sendMessageToMq(budgetExhaustedMqID, String.valueOf(campaignId),
+//                    objectMapper.writeValueAsString(budgetExhaustedEvent));
+        } catch (Exception e) {
+            log.error("Exception while sending budgetExhausted event {}", budgetExhaustedEvent, e);
         }
     }
 
@@ -338,8 +338,7 @@ public class InteractionEventAttributionHelper {
         return Collections.emptyList();
     }
 
-    private Map<FeedType, CampaignDetails.CampaignRealEstateBudgetPool> getRealEstateToPoolMap(
-            List<CampaignDetails.CampaignRealEstateBudgetPool> pools) {
+    private Map<FeedType, CampaignDetails.CampaignRealEstateBudgetPool> getRealEstateToPoolMap(List<CampaignDetails.CampaignRealEstateBudgetPool> pools) {
         Map<FeedType, CampaignDetails.CampaignRealEstateBudgetPool> realEstateToPoolMap = new HashMap<>();
         for(CampaignDetails.CampaignRealEstateBudgetPool pool : pools) {
             for(FeedType candidate : pool.getCandidates()) {
@@ -350,8 +349,8 @@ public class InteractionEventAttributionHelper {
     }
 
     public Boolean isDefaultPoolBudgetRemaining(CampaignBudgetUtilisedData campaignBudgetUtilisedData,
-                                                CampaignDetails campaignDetails,
-                                                List<CampaignDetails.CampaignRealEstateBudgetPool> nonDefaultPools) {
+                                                   CampaignDetails campaignDetails,
+                                                   List<CampaignDetails.CampaignRealEstateBudgetPool> nonDefaultPools) {
         BigDecimal totalBudget = campaignDetails.getBudget();
         BigDecimal totalBudgetUtilised = campaignBudgetUtilisedData.getTotalBudgetUtilised();
         if(totalBudgetUtilised.compareTo(totalBudget) >= 0) {
@@ -375,8 +374,7 @@ public class InteractionEventAttributionHelper {
         return remainingDefaultPoolBudget.compareTo(BigDecimal.ZERO) > 0;
     }
 
-    public List<FeedType> getDefaultPoolRealEstates(List<CampaignDetails.CampaignRealEstateBudgetPool> nonDefaultPools,
-                                                    List<FeedType> realEstates) {
+    public List<FeedType> getDefaultPoolRealEstates(List<CampaignDetails.CampaignRealEstateBudgetPool> nonDefaultPools, List<FeedType> realEstates) {
         Set<FeedType> nonDefaultPoolsCandidates = nonDefaultPools.stream()
                 .map(CampaignDetails.CampaignRealEstateBudgetPool::getCandidates)
                 .flatMap(List::stream)

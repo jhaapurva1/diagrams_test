@@ -3,12 +3,15 @@ package com.meesho.cps.listener.kafka;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.meesho.ads.lib.exception.RetryableException;
 import com.meesho.ads.lib.listener.kafka.BaseKafkaListener;
+import com.meesho.ads.lib.listener.kafka.BaseKafkaListenerForMq;
 import com.meesho.cps.constants.ConsumerConstants;
 import com.meesho.cps.data.internal.CampaignCatalogDate;
 import com.meesho.cps.db.redis.dao.UpdatedCampaignCatalogCacheDao;
 import com.meesho.cps.service.DayWisePerformanceMetricsService;
 import com.meesho.instrumentation.annotation.DigestLogger;
 import com.meesho.instrumentation.enums.MetricType;
+import com.meesho.mq.client.annotation.MqListener;
+import com.meesho.mq.client.service.MqService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -22,10 +25,10 @@ import java.util.List;
 
 @Slf4j
 @Component
-public class DayWisePerformanceMetricsListener extends BaseKafkaListener<List<CampaignCatalogDate>> {
+public class DayWisePerformanceMetricsListener extends BaseKafkaListenerForMq<List<CampaignCatalogDate>> {
 
     @Autowired
-    private KafkaTemplate<String, String> kafkaTemplate;
+    private MqService mqService;
 
     @Autowired
     private DayWisePerformanceMetricsService dayWisePerformanceMetricsService;
@@ -33,26 +36,27 @@ public class DayWisePerformanceMetricsListener extends BaseKafkaListener<List<Ca
     @Autowired
     private UpdatedCampaignCatalogCacheDao updatedCampaignCatalogCacheDao;
 
-    @Value(ConsumerConstants.DayWisePerformanceEventsConsumer.DEAD_QUEUE_TOPIC)
-    String dayWisePerformanceEventsConsumerDeadQueueTopic;
+    @Value(ConsumerConstants.DayWisePerformanceEventsConsumer.DEAD_QUEUE_MQ_ID)
+    Long dayWisePerformanceEventsConsumerDeadQueueMqId;
 
-    @Value(ConsumerConstants.DayWisePerformanceEventsConsumer.RETRY_TOPIC)
-    String dayWisePerformanceEventsConsumerRetryTopic;
+    @Value(ConsumerConstants.DayWisePerformanceEventsConsumer.RETRY_MQ_ID)
+    Long dayWisePerformanceEventsConsumerRetryMqId;
 
-    @Value(ConsumerConstants.DelayedRetryConsumer.TOPIC)
-    String delayedRetryConsumerTopic;
+    @Value(ConsumerConstants.DelayedRetryConsumer.MQ_ID)
+    Long delayedRetryConsumerMqId;
 
-    @KafkaListener(id = ConsumerConstants.DayWisePerformanceEventsConsumer.ID, containerFactory =
-            ConsumerConstants.AdServiceKafka.CONTAINER_FACTORY, topics =
-            {ConsumerConstants.DayWisePerformanceEventsConsumer.TOPIC,
-                    ConsumerConstants.DayWisePerformanceEventsConsumer.RETRY_TOPIC}, autoStartup =
-            ConsumerConstants.DayWisePerformanceEventsConsumer.AUTO_START, concurrency =
-            ConsumerConstants.DayWisePerformanceEventsConsumer.CONCURRENCY, properties = {
-            ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG + "=" +
-                    ConsumerConstants.DayWisePerformanceEventsConsumer.MAX_POLL_INTERVAL_MS,
-            ConsumerConfig.MAX_POLL_RECORDS_CONFIG + "=" + ConsumerConstants.DayWisePerformanceEventsConsumer.BATCH_SIZE})
-    @DigestLogger(metricType = MetricType.METHOD, tagSet = "consumer=DayWisePerformanceEventListener")
+    @MqListener(mqId = ConsumerConstants.DayWisePerformanceEventsConsumer.MQ_ID, type = String.class)
     public void listen(ConsumerRecord<String, String> consumerRecord) {
+        digestLoggerProxy(consumerRecord);
+    }
+
+    @MqListener(mqId = ConsumerConstants.DayWisePerformanceEventsConsumer.RETRY_MQ_ID, type = String.class)
+    public void listenRetry(ConsumerRecord<String, String> consumerRecord) {
+        digestLoggerProxy(consumerRecord);
+    }
+
+    @DigestLogger(metricType = MetricType.METHOD, tagSet = "consumer=DayWisePerformanceEventListener")
+    public void digestLoggerProxy(ConsumerRecord<String, String> consumerRecord){
         super.listen(consumerRecord);
     }
 
@@ -67,8 +71,8 @@ public class DayWisePerformanceMetricsListener extends BaseKafkaListener<List<Ca
     }
 
     @Override
-    public KafkaTemplate<String, String> getKafkaTemplate() {
-        return kafkaTemplate;
+    public MqService getMqService() {
+        return mqService;
     }
 
     @Override
@@ -82,17 +86,20 @@ public class DayWisePerformanceMetricsListener extends BaseKafkaListener<List<Ca
     }
 
     @Override
-    public String getDeadTopic() {
-        return dayWisePerformanceEventsConsumerDeadQueueTopic;
+    public Long getDeadQueueMqId() {
+        return dayWisePerformanceEventsConsumerDeadQueueMqId;
     }
 
     @Override
-    public String getRetryTopic() {
-        return dayWisePerformanceEventsConsumerRetryTopic;
+    public Long getRetryMqId() {
+        return dayWisePerformanceEventsConsumerRetryMqId;
     }
 
     @Override
-    public String getDelayedRetryTopic() {return delayedRetryConsumerTopic; }
+    public Long getDelayedRetryMqId() {
+        return delayedRetryConsumerMqId;
+    }
+
 
     @Override
     public TypeReference<List<CampaignCatalogDate>> getTypeReference() {
