@@ -93,7 +93,7 @@ public class AppConfig {
 
     public ThreadPoolTaskScheduler getThreadPoolTaskScheduler() {
         ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadPoolTaskScheduler();
-        threadPoolTaskScheduler.setPoolSize(IN_MEMORY_SCHEDULERS.size() * Country.values().length);
+        threadPoolTaskScheduler.setPoolSize((!IN_MEMORY_SCHEDULERS.isEmpty() ? IN_MEMORY_SCHEDULERS.size() : 1) * Country.values().length);
         threadPoolTaskScheduler.setThreadNamePrefix("async-scheduler-");
         threadPoolTaskScheduler.initialize();
         return threadPoolTaskScheduler;
