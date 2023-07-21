@@ -44,7 +44,7 @@ public class RestResponseExceptionHandler extends ResponseEntityExceptionHandler
         if (HttpStatus.INTERNAL_SERVER_ERROR.equals(status)) {
             request.setAttribute("javax.servlet.error.exception", ex, 0);
         }
-        log.error(ex.getMessage(), ex);
+        log.error("Request = {}, Exception message - {}", request, ex.getMessage(), ex);
         return new ResponseEntity<>(
                 new ServiceResponse<>(null, Collections.singletonList(ex.getMessage()), null), headers,
                 status);

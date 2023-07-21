@@ -77,7 +77,11 @@ public class CampaignPerformanceService {
 
         List<SupplierLevelMetrics> supplierLevelMetrics = campaignCatalogDateMetricsDao.getSupplierLevelMetrics(request.getSupplierId(), startDate, endDate);
 
-        return campaignPerformanceTransformer.getSupplierPerformanceResponse(supplierLevelMetrics.get(0));
+        if (!supplierLevelMetrics.isEmpty()) {
+            return campaignPerformanceTransformer.getSupplierPerformanceResponse(supplierLevelMetrics.get(0));
+        } else {
+            return null;
+        }
     }
 
     public CampaignPerformanceResponse getCampaignPerformanceMetrics(CampaignPerformanceRequest request) {
