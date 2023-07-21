@@ -80,6 +80,7 @@ public class CampaignPerformanceService {
         if (!supplierLevelMetrics.isEmpty()) {
             return campaignPerformanceTransformer.getSupplierPerformanceResponse(supplierLevelMetrics.get(0));
         } else {
+            log.error("Could not find performance data for request - {}", request);
             return null;
         }
     }
