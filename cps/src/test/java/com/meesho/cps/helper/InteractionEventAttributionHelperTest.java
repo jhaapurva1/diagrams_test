@@ -5,7 +5,7 @@ import com.meesho.ad.client.response.CampaignDetails;
 import com.meesho.cps.constants.CampaignType;
 import com.meesho.cps.constants.Constants.CpcData;
 import com.meesho.cps.constants.ConsumerConstants;
-import com.meesho.cps.data.entity.internal.CampaignBudgetUtilisedData;
+import com.meesho.cps.data.entity.internal.BudgetUtilisedData;
 import com.meesho.cps.data.entity.kafka.AdWidgetClickEvent;
 import com.meesho.cps.data.entity.kafka.AdWidgetClickEvent.Properties;
 import com.meesho.cps.data.entity.mongodb.collection.CampaignDateWiseMetrics;
@@ -83,11 +83,11 @@ public class InteractionEventAttributionHelperTest {
         Mockito.when(campaignDateWiseMetricsDao.findByCampaignIdAndDate(any(), any())).thenReturn(null);
         Map<FeedType, BigDecimal> realEstateBudgetUtilisedMap = FeedType.ACTIVE_REAL_ESTATE_TYPES.stream()
                 .collect(Collectors.toMap(feedType -> feedType, feedType -> BigDecimal.ZERO));
-        CampaignBudgetUtilisedData expectedResult = CampaignBudgetUtilisedData.builder()
-                .totalBudgetUtilised(BigDecimal.ZERO)
+        BudgetUtilisedData expectedResult = BudgetUtilisedData.builder()
+                .campaignBudgetUtilised(BigDecimal.ZERO)
                 .realEstateBudgetUtilisedMap(realEstateBudgetUtilisedMap)
                 .build();
-        CampaignBudgetUtilisedData actualResult = interactionEventAttributionHelper
+        BudgetUtilisedData actualResult = interactionEventAttributionHelper
                 .getAndInitialiseCampaignBudgetUtilised(campaignDetails, LocalDate.now(), FeedType.ADS_ON_PDP);
         Assert.assertEquals(expectedResult, actualResult);
     }
@@ -115,11 +115,11 @@ public class InteractionEventAttributionHelperTest {
                 .collect(Collectors.toMap(feedType -> feedType, feedType -> BigDecimal.ZERO));
         expectedRealEstateBudgetUtilisedMap.put(FeedType.PRODUCT_RECO, new BigDecimal("100"));
 
-        CampaignBudgetUtilisedData expectedResult = CampaignBudgetUtilisedData.builder()
-                .totalBudgetUtilised(new BigDecimal("1000"))
+        BudgetUtilisedData expectedResult = BudgetUtilisedData.builder()
+                .campaignBudgetUtilised(new BigDecimal("1000"))
                 .realEstateBudgetUtilisedMap(expectedRealEstateBudgetUtilisedMap)
                 .build();
-        CampaignBudgetUtilisedData actualResult = interactionEventAttributionHelper
+        BudgetUtilisedData actualResult = interactionEventAttributionHelper
                 .getAndInitialiseCampaignBudgetUtilised(campaignDetails, LocalDate.now(), FeedType.ADS_ON_PDP);
 //        Mockito.verify(campaignDateWiseMetricsDao, Mockito.times(1)).save(any());
         Assert.assertEquals(expectedResult, actualResult);
@@ -133,11 +133,11 @@ public class InteractionEventAttributionHelperTest {
         Mockito.when(campaignMetricsDao.findByCampaignId(any())).thenReturn(null);
         Map<FeedType, BigDecimal> realEstateBudgetUtilisedMap = FeedType.ACTIVE_REAL_ESTATE_TYPES.stream()
                 .collect(Collectors.toMap(feedType -> feedType, feedType -> BigDecimal.ZERO));
-        CampaignBudgetUtilisedData expectedResult = CampaignBudgetUtilisedData.builder()
-                .totalBudgetUtilised(BigDecimal.ZERO)
+        BudgetUtilisedData expectedResult = BudgetUtilisedData.builder()
+                .campaignBudgetUtilised(BigDecimal.ZERO)
                 .realEstateBudgetUtilisedMap(realEstateBudgetUtilisedMap)
                 .build();
-        CampaignBudgetUtilisedData actualResult = interactionEventAttributionHelper
+        BudgetUtilisedData actualResult = interactionEventAttributionHelper
                 .getAndInitialiseCampaignBudgetUtilised(campaignDetails, LocalDate.now(), FeedType.ADS_ON_PDP);
         Assert.assertEquals(expectedResult, actualResult);
     }
@@ -165,11 +165,11 @@ public class InteractionEventAttributionHelperTest {
                 .collect(Collectors.toMap(feedType -> feedType, feedType -> BigDecimal.ZERO));
         expectedRealEstateBudgetUtilisedMap.put(FeedType.PRODUCT_RECO, new BigDecimal("100"));
 
-        CampaignBudgetUtilisedData expectedResult = CampaignBudgetUtilisedData.builder()
-                .totalBudgetUtilised(new BigDecimal("1000"))
+        BudgetUtilisedData expectedResult = BudgetUtilisedData.builder()
+                .campaignBudgetUtilised(new BigDecimal("1000"))
                 .realEstateBudgetUtilisedMap(expectedRealEstateBudgetUtilisedMap)
                 .build();
-        CampaignBudgetUtilisedData actualResult = interactionEventAttributionHelper
+        BudgetUtilisedData actualResult = interactionEventAttributionHelper
                 .getAndInitialiseCampaignBudgetUtilised(campaignDetails, LocalDate.now(), FeedType.ADS_ON_PDP);
 //        Mockito.verify(campaignMetricsDao, Mockito.times(1)).save(any());
         Assert.assertEquals(expectedResult, actualResult);
@@ -237,12 +237,12 @@ public class InteractionEventAttributionHelperTest {
         realEstateBudgetUtilisedMap.put(FeedType.CLP, new BigDecimal("5"));
         realEstateBudgetUtilisedMap.put(FeedType.COLLECTION, new BigDecimal("40"));
 
-        CampaignBudgetUtilisedData campaignBudgetUtilisedData = CampaignBudgetUtilisedData.builder()
-                .totalBudgetUtilised(new BigDecimal("90"))
+        BudgetUtilisedData budgetUtilisedData = BudgetUtilisedData.builder()
+                .campaignBudgetUtilised(new BigDecimal("90"))
                 .realEstateBudgetUtilisedMap(realEstateBudgetUtilisedMap)
                 .build();
 
-        List<FeedType> actualInactiveRealEstates = interactionEventAttributionHelper.findInactiveRealEstates(campaignBudgetUtilisedData,
+        List<FeedType> actualInactiveRealEstates = interactionEventAttributionHelper.findInactiveRealEstates(budgetUtilisedData,
                 campaignDetails, FeedType.PRODUCT_RECO);
         List<FeedType> expectedInactiveRealEstates = Arrays.asList(FeedType.PRODUCT_RECO, FeedType.TEXT_SEARCH);
 
@@ -274,12 +274,12 @@ public class InteractionEventAttributionHelperTest {
         realEstateBudgetUtilisedMap.put(FeedType.CLP, new BigDecimal("5"));
         realEstateBudgetUtilisedMap.put(FeedType.COLLECTION, new BigDecimal("40"));
 
-        CampaignBudgetUtilisedData campaignBudgetUtilisedData = CampaignBudgetUtilisedData.builder()
-                .totalBudgetUtilised(new BigDecimal("90"))
+        BudgetUtilisedData budgetUtilisedData = BudgetUtilisedData.builder()
+                .campaignBudgetUtilised(new BigDecimal("90"))
                 .realEstateBudgetUtilisedMap(realEstateBudgetUtilisedMap)
                 .build();
 
-        List<FeedType> actualInactiveRealEstates = interactionEventAttributionHelper.findInactiveRealEstates(campaignBudgetUtilisedData,
+        List<FeedType> actualInactiveRealEstates = interactionEventAttributionHelper.findInactiveRealEstates(budgetUtilisedData,
                 campaignDetails, FeedType.FY);
         List<FeedType> expectedInactiveRealEstates = Collections.emptyList();
 
@@ -311,12 +311,12 @@ public class InteractionEventAttributionHelperTest {
         realEstateBudgetUtilisedMap.put(FeedType.CLP, new BigDecimal("5"));
         realEstateBudgetUtilisedMap.put(FeedType.COLLECTION, new BigDecimal("40"));
 
-        CampaignBudgetUtilisedData campaignBudgetUtilisedData = CampaignBudgetUtilisedData.builder()
-                .totalBudgetUtilised(new BigDecimal("90"))
+        BudgetUtilisedData budgetUtilisedData = BudgetUtilisedData.builder()
+                .campaignBudgetUtilised(new BigDecimal("90"))
                 .realEstateBudgetUtilisedMap(realEstateBudgetUtilisedMap)
                 .build();
 
-        List<FeedType> actualInactiveRealEstates = interactionEventAttributionHelper.findInactiveRealEstates(campaignBudgetUtilisedData,
+        List<FeedType> actualInactiveRealEstates = interactionEventAttributionHelper.findInactiveRealEstates(budgetUtilisedData,
                 campaignDetails, FeedType.ADS_ON_PDP);
         List<FeedType> expectedInactiveRealEstates = FeedType.ACTIVE_REAL_ESTATE_TYPES.stream()
                 .filter(feedType -> !Arrays.asList(FeedType.PRODUCT_RECO, FeedType.FY,
@@ -343,7 +343,7 @@ public class InteractionEventAttributionHelperTest {
 
         Map<FeedType, BigDecimal> realEstateBudgetUtilisedMap = new HashMap<>();
         for(FeedType feedType : FeedType.ACTIVE_REAL_ESTATE_TYPES) {
-            realEstateBudgetUtilisedMap.put(feedType, null);
+            realEstateBudgetUtilisedMap.put(feedType, BigDecimal.ZERO);
         }
         realEstateBudgetUtilisedMap.put(FeedType.PRODUCT_RECO, new BigDecimal("10"));
         realEstateBudgetUtilisedMap.put(FeedType.TEXT_SEARCH, new BigDecimal("30"));
@@ -351,54 +351,11 @@ public class InteractionEventAttributionHelperTest {
         realEstateBudgetUtilisedMap.put(FeedType.CLP, new BigDecimal("5"));
         realEstateBudgetUtilisedMap.put(FeedType.COLLECTION, new BigDecimal("40"));
 
-        CampaignDateWiseMetrics campaignDatewiseMetrics = CampaignDateWiseMetrics.builder().campaignId(123L)
-                .budgetUtilised(new BigDecimal("90"))
-                .realEstateBudgetUtilisedMap(realEstateBudgetUtilisedMap)
-                .build();
-        Mockito.when(campaignDateWiseMetricsDao.findByCampaignIdAndDate(any(), any())).thenReturn(campaignDatewiseMetrics);
-
+        BudgetUtilisedData budgetUtilisedData = BudgetUtilisedData.builder()
+                .campaignBudgetUtilised(new BigDecimal("90"))
+                .realEstateBudgetUtilisedMap(realEstateBudgetUtilisedMap).build();
         List<FeedType> actualInactiveRealEstates = interactionEventAttributionHelper.findInactiveRealEstates(
-                campaignDetails, LocalDate.now());
-        List<FeedType> expectedInactiveRealEstates = FeedType.ACTIVE_REAL_ESTATE_TYPES.stream()
-                .filter(feedType -> !Arrays.asList(FeedType.FY, FeedType.CLP).contains(feedType))
-                .collect(Collectors.toList());
-
-        Assert.assertTrue(expectedInactiveRealEstates.size() == actualInactiveRealEstates.size() &&
-                expectedInactiveRealEstates.containsAll(actualInactiveRealEstates));
-    }
-
-    @Test
-    public void testFindInactiveRealEstatesForAllPoolsTotalBudget() {
-        List<CampaignDetails.CampaignRealEstateBudgetPool> campaignRealEstateBudgetPools = Arrays.asList(
-                CampaignDetails.CampaignRealEstateBudgetPool.builder().budgetLimit(new BigDecimal("20"))
-                        .candidates(Arrays.asList(FeedType.PRODUCT_RECO, FeedType.TEXT_SEARCH)).build(),
-                CampaignDetails.CampaignRealEstateBudgetPool.builder().budgetLimit(new BigDecimal("20"))
-                        .candidates(Arrays.asList(FeedType.FY, FeedType.CLP)).build()
-        );
-        CampaignDetails campaignDetails = CampaignDetails.builder()
-                    .campaignType(CampaignType.TOTAL_BUDGET.getValue())
-                .campaignId(123L)
-                .budget(new BigDecimal("100"))
-                .campaignRealEstateBudgetPools(campaignRealEstateBudgetPools).build();
-
-        Map<FeedType, BigDecimal> realEstateBudgetUtilisedMap = new HashMap<>();
-        for(FeedType feedType : FeedType.ACTIVE_REAL_ESTATE_TYPES) {
-            realEstateBudgetUtilisedMap.put(feedType, null);
-        }
-        realEstateBudgetUtilisedMap.put(FeedType.PRODUCT_RECO, new BigDecimal("10"));
-        realEstateBudgetUtilisedMap.put(FeedType.TEXT_SEARCH, new BigDecimal("30"));
-        realEstateBudgetUtilisedMap.put(FeedType.FY, new BigDecimal("5"));
-        realEstateBudgetUtilisedMap.put(FeedType.CLP, new BigDecimal("5"));
-        realEstateBudgetUtilisedMap.put(FeedType.COLLECTION, new BigDecimal("40"));
-
-        CampaignMetrics campaignMetrics = CampaignMetrics.builder().campaignId(123L)
-                .budgetUtilised(new BigDecimal("90"))
-                .realEstateBudgetUtilisedMap(realEstateBudgetUtilisedMap)
-                .build();
-        Mockito.when(campaignMetricsDao.findByCampaignId(any())).thenReturn(campaignMetrics);
-
-        List<FeedType> actualInactiveRealEstates = interactionEventAttributionHelper.findInactiveRealEstates(
-                campaignDetails, LocalDate.now());
+                budgetUtilisedData, campaignDetails);
         List<FeedType> expectedInactiveRealEstates = FeedType.ACTIVE_REAL_ESTATE_TYPES.stream()
                 .filter(feedType -> !Arrays.asList(FeedType.FY, FeedType.CLP).contains(feedType))
                 .collect(Collectors.toList());
@@ -437,12 +394,12 @@ public class InteractionEventAttributionHelperTest {
         realEstateBudgetUtilisedMap.put(FeedType.CLP, new BigDecimal("5"));
         realEstateBudgetUtilisedMap.put(FeedType.COLLECTION, new BigDecimal("40"));
 
-        CampaignBudgetUtilisedData campaignBudgetUtilisedData = CampaignBudgetUtilisedData.builder()
-                .totalBudgetUtilised(new BigDecimal("90"))
+        BudgetUtilisedData budgetUtilisedData = BudgetUtilisedData.builder()
+                .campaignBudgetUtilised(new BigDecimal("90"))
                 .realEstateBudgetUtilisedMap(realEstateBudgetUtilisedMap)
                 .build();
         Boolean isDefaultPoolBudgetRemaining = interactionEventAttributionHelper.isDefaultPoolBudgetRemaining(
-                campaignBudgetUtilisedData, campaignDetails, campaignRealEstateBudgetPoolsWithEnumFeedType);
+                budgetUtilisedData, campaignDetails, campaignRealEstateBudgetPoolsWithEnumFeedType);
         Assert.assertTrue(isDefaultPoolBudgetRemaining);
     }
 }

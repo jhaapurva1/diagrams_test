@@ -209,8 +209,8 @@ public class CatalogInteractionEventService {
                     && budgetUtilised.getCatalogBudgetUtilised().compareTo(catalogBudgetUtilisationLimit) >= 0) {
                 interactionEventAttributionHelper.sendCatalogBudgetExhaustEvent(campaignId, catalogId);
             }
-            List<FeedType> inactiveRealEstates = interactionEventAttributionHelper.findInactiveRealEstates(campaignDetails,
-                    eventDate);
+            List<FeedType> inactiveRealEstates = interactionEventAttributionHelper.findInactiveRealEstates(
+                    budgetUtilised, campaignDetails);
             List<FeedType> newInactiveRealEstates = interactionEventAttributionHelper.getNewInactiveRealEstates(inactiveRealEstates,
                     alreadyInactiveRealEstates);
             newInactiveRealEstates.remove(FeedType.UNKNOWN);

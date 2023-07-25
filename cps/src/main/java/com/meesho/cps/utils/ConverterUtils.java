@@ -41,7 +41,7 @@ public class ConverterUtils {
     }
 
     public static BigDecimal getBigDecimalFromDecimal128(Decimal128 decimal128) {
-        return Objects.nonNull(decimal128) ? decimal128.bigDecimalValue() : null;
+        return Objects.nonNull(decimal128) ? decimal128.bigDecimalValue() : BigDecimal.ZERO;
     }
 
 }

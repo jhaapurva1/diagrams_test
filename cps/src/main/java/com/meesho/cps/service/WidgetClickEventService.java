@@ -202,9 +202,10 @@ public class WidgetClickEventService {
                     && budgetUtilised.getCatalogBudgetUtilised().compareTo(catalogBudgetUtilisationLimit) >= 0) {
                 interactionEventAttributionHelper.sendCatalogBudgetExhaustEvent(campaignId, catalogId);
             }
-            List<FeedType> inactiveRealEstates = interactionEventAttributionHelper.findInactiveRealEstates(campaignDetails,
-                    eventDate);
-            List<FeedType> newInactiveRealEstates = interactionEventAttributionHelper.getNewInactiveRealEstates(inactiveRealEstates, alreadyInactiveRealEstates);
+            List<FeedType> inactiveRealEstates = interactionEventAttributionHelper.findInactiveRealEstates(
+                    budgetUtilised, campaignDetails);
+            List<FeedType> newInactiveRealEstates = interactionEventAttributionHelper.getNewInactiveRealEstates(inactiveRealEstates,
+                    alreadyInactiveRealEstates);
             newInactiveRealEstates.remove(FeedType.UNKNOWN);
             if(!CollectionUtils.isEmpty(newInactiveRealEstates)) {
                 interactionEventAttributionHelper.sendCampaignRealEstateBudgetExhaustedEvent(campaignId,

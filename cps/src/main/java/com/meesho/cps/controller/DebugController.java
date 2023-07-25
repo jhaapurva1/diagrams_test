@@ -2,7 +2,7 @@ package com.meesho.cps.controller;
 
 import com.meesho.ad.client.constants.FeedType;
 import com.meesho.cps.constants.Constants;
-import com.meesho.cps.data.entity.internal.CampaignBudgetUtilisedData;
+import com.meesho.cps.data.entity.internal.BudgetUtilisedData;
 import com.meesho.cps.data.entity.kafka.CatalogBudgetExhaustEvent;
 import com.meesho.cps.data.entity.kafka.SupplierWeeklyBudgetExhaustedEvent;
 import com.meesho.cps.data.entity.mongodb.collection.CampaignCatalogDateMetrics;
@@ -157,9 +157,9 @@ public class DebugController {
             MediaType.APPLICATION_JSON_VALUE)
     @RequestMapping(value = Constants.API.DEBUG_API.INCREMENT_BUDGET_UTILISED, method = RequestMethod.POST, produces =
             MediaType.APPLICATION_JSON_VALUE)
-    public CampaignBudgetUtilisedData incrementBudgetUtilised(@RequestParam("campaignId") Long campaignId,
-                                                              @RequestParam("realEstate") FeedType realEstate,
-                                                              @RequestParam("budget") Double budget) throws Exception {
+    public BudgetUtilisedData incrementBudgetUtilised(@RequestParam("campaignId") Long campaignId,
+                                                      @RequestParam("realEstate") FeedType realEstate,
+                                                      @RequestParam("budget") Double budget) throws Exception {
         return debugService.incrementBudgetUtilised(campaignId, budget, realEstate);
     }
 }

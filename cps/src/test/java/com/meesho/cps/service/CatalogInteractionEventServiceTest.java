@@ -29,6 +29,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.HashMap;
 
 import static org.mockito.ArgumentMatchers.*;
@@ -287,8 +288,11 @@ public class CatalogInteractionEventServiceTest {
 
     @Test
     public void testCatalogBudgetExhaust() throws ExternalRequestFailedException {
-        Mockito.doReturn(BudgetUtilisedData.builder().campaignBudgetUtilised(BigDecimal.valueOf(800))
-                .catalogBudgetUtilised(BigDecimal.valueOf(100)).build()).when(interactionEventAttributionHelper)
+        Mockito.doReturn(BudgetUtilisedData.builder()
+                        .campaignBudgetUtilised(BigDecimal.valueOf(800))
+                        .realEstateBudgetUtilisedMap(Collections.emptyMap())
+                        .catalogBudgetUtilised(BigDecimal.valueOf(100)).build())
+                .when(interactionEventAttributionHelper)
                 .modifyAndGetBudgetUtilised(any(), any(), any(), any(), any(), any(), any(), any());
         Mockito.doReturn(getSampleSupplierCampaignCatalogMetaDataResponseForNewRequests(2)).when(adService).getSupplierCampaignCatalogMetadata(any(), any(), any(), any());
         Mockito.doReturn(clickBillHandler).when(adBillFactory).getBillHandlerForBillVersion(any());

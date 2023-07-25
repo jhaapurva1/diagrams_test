@@ -8,7 +8,7 @@ import com.meesho.ads.lib.utils.DateTimeUtils;
 import com.meesho.cps.config.ApplicationProperties;
 import com.meesho.cps.constants.Constants;
 import com.meesho.cps.constants.ConsumerConstants;
-import com.meesho.cps.data.entity.internal.CampaignBudgetUtilisedData;
+import com.meesho.cps.data.entity.internal.BudgetUtilisedData;
 import com.meesho.cps.data.entity.mongodb.collection.*;
 import com.meesho.cps.data.entity.kafka.CatalogBudgetExhaustEvent;
 import com.meesho.cps.data.entity.kafka.AdInteractionEvent;
@@ -196,7 +196,7 @@ public class DebugService {
                 objectMapper.writeValueAsString(adInteractionEvent));
     }
 
-    public CampaignBudgetUtilisedData incrementBudgetUtilised(Long campaignId, Double value, FeedType realEstate) {
+    public BudgetUtilisedData incrementBudgetUtilised(Long campaignId, Double value, FeedType realEstate) {
         return campaignMetricsDao.incrementCampaignAndRealEstateBudgetUtilised(campaignId, BigDecimal.valueOf(value),
                 realEstate);
     }

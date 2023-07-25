@@ -10,7 +10,6 @@ import com.meesho.cps.constants.Constants.CpcData;
 import com.meesho.cps.constants.ConsumerConstants;
 import com.meesho.cps.constants.UserInteractionType;
 import com.meesho.cps.data.entity.internal.BudgetUtilisedData;
-import com.meesho.cps.data.entity.internal.CampaignBudgetUtilisedData;
 import com.meesho.cps.data.entity.kafka.*;
 import com.meesho.cps.data.entity.mongodb.collection.CampaignDateWiseMetrics;
 import com.meesho.cps.data.entity.mongodb.collection.CampaignMetrics;
@@ -100,16 +99,16 @@ public class InteractionEventAttributionHelper {
             sendSupplierBudgetExhaustedEvent(campaignDetails.getSupplierId(), catalogId);
             return true;
         }
-        CampaignBudgetUtilisedData campaignBudgetUtilisedData = this.getAndInitialiseCampaignBudgetUtilised(campaignDetails,
+        BudgetUtilisedData budgetUtilisedData = this.getAndInitialiseCampaignBudgetUtilised(campaignDetails,
                 eventDate, feedType);
-        if (campaignBudgetUtilisedData.getTotalBudgetUtilised().compareTo(campaignDetails.getBudget()) >= 0) {
+        if (budgetUtilisedData.getCampaignBudgetUtilised().compareTo(campaignDetails.getBudget()) >= 0) {
             sendBudgetExhaustedEvent(campaignDetails.getCampaignId(), catalogId);
             return true;
         }
         if(!FeedType.UNKNOWN.equals(feedType)) {
             Set<FeedType> alreadyInactiveRealEstates = Objects.nonNull(campaignDetails.getInactiveRealEstates()) ?
                     campaignDetails.getInactiveRealEstates() : Collections.emptySet();
-            List<FeedType> inactiveRealEstates = findInactiveRealEstates(campaignBudgetUtilisedData, campaignDetails, feedType);
+            List<FeedType> inactiveRealEstates = findInactiveRealEstates(budgetUtilisedData, campaignDetails, feedType);
             List<FeedType> newInactiveRealEstates = getNewInactiveRealEstates(inactiveRealEstates, alreadyInactiveRealEstates);
             newInactiveRealEstates.remove(FeedType.UNKNOWN);
             if (!CollectionUtils.isEmpty(newInactiveRealEstates)) {
@@ -120,7 +119,7 @@ public class InteractionEventAttributionHelper {
         return false;
     }
 
-    public CampaignBudgetUtilisedData getAndInitialiseCampaignBudgetUtilised(CampaignDetails campaignDetails,
+    public BudgetUtilisedData getAndInitialiseCampaignBudgetUtilised(CampaignDetails campaignDetails,
                                                                               LocalDate eventDate,
                                                                               FeedType feedType) {
         log.info("get and initialize campaign budget: {} {} {}", campaignDetails, eventDate, feedType);
@@ -157,8 +156,8 @@ public class InteractionEventAttributionHelper {
                         campaignMetrics.getRealEstateBudgetUtilisedMap());
             }
         }
-        return CampaignBudgetUtilisedData.builder()
-                .totalBudgetUtilised(budgetUtilised)
+        return BudgetUtilisedData.builder()
+                .campaignBudgetUtilised(budgetUtilised)
                 .realEstateBudgetUtilisedMap(realEstateBudgetUtilisedMap)
                 .build();
     }
@@ -237,18 +236,25 @@ public class InteractionEventAttributionHelper {
         log.info("modifyAndGetBudgetUtilised: {} {} {} {} {} {}", cpc, campaignId, catalogId, date, campaignType, feedType);
         BigDecimal catalogBudgetUtilised = campaignCatalogDateMetricsDao.incrementBudgetUtilisedAndInteractionCount(supplierId, campaignId, catalogId, date.toString(), cpc, getInteractionTypeFromEventName(eventName));
         BigDecimal campaignBudgetUtilised = null;
+        Map<FeedType, BigDecimal> realEstateBudgetUtilisedMap = null;
         if (CampaignType.DAILY_BUDGET.equals(campaignType)
                 || CampaignType.SMART_CAMPAIGN.equals(campaignType)) {
-            CampaignBudgetUtilisedData campaignBudgetUtilisedData = campaignDateWiseMetricsDao.
+            BudgetUtilisedData budgetUtilisedData = campaignDateWiseMetricsDao.
                     incrementCampaignAndRealEstateBudgetUtilised(campaignId, date.toString(), cpc, feedType);
-            campaignBudgetUtilised = campaignBudgetUtilisedData.getTotalBudgetUtilised();
+            campaignBudgetUtilised = budgetUtilisedData.getCampaignBudgetUtilised();
+            realEstateBudgetUtilisedMap = budgetUtilisedData.getRealEstateBudgetUtilisedMap();
         }
         else {
-            CampaignBudgetUtilisedData campaignBudgetUtilisedData = campaignMetricsDao
+            BudgetUtilisedData budgetUtilisedData = campaignMetricsDao
                     .incrementCampaignAndRealEstateBudgetUtilised(campaignId, cpc, feedType);
-            campaignBudgetUtilised = campaignBudgetUtilisedData.getTotalBudgetUtilised();
+            campaignBudgetUtilised = budgetUtilisedData.getCampaignBudgetUtilised();
+            realEstateBudgetUtilisedMap = budgetUtilisedData.getRealEstateBudgetUtilisedMap();
         }
-        return BudgetUtilisedData.builder().catalogBudgetUtilised(catalogBudgetUtilised).campaignBudgetUtilised(campaignBudgetUtilised).build();
+        return BudgetUtilisedData.builder()
+                .catalogBudgetUtilised(catalogBudgetUtilised)
+                .campaignBudgetUtilised(campaignBudgetUtilised)
+                .realEstateBudgetUtilisedMap(realEstateBudgetUtilisedMap)
+                .build();
     }
 
     public BigDecimal modifyAndGetSupplierWeeklyBudgetUtilised(Long supplierId, LocalDate weekStartDate, BigDecimal cpc) {
@@ -306,11 +312,11 @@ public class InteractionEventAttributionHelper {
         return multipliedCpcData;
     }
 
-    public List<FeedType> findInactiveRealEstates(CampaignBudgetUtilisedData campaignBudgetUtilisedData,
+    public List<FeedType> findInactiveRealEstates(BudgetUtilisedData budgetUtilisedData,
                                                   CampaignDetails campaignDetails,
                                                   FeedType realEstate) {
         BigDecimal totalBudget = campaignDetails.getBudget();
-        BigDecimal totalBudgetUtilised = campaignBudgetUtilisedData.getTotalBudgetUtilised();
+        BigDecimal totalBudgetUtilised = budgetUtilisedData.getCampaignBudgetUtilised();
         List<CampaignDetails.CampaignRealEstateBudgetPool> nonDefaultpools = Objects.nonNull(campaignDetails.getCampaignRealEstateBudgetPools()) ?
                 campaignDetails.getCampaignRealEstateBudgetPools() : Collections.emptyList();
         List<FeedType> defaultPoolCandidates = getDefaultPoolRealEstates(nonDefaultpools, new ArrayList<>(FeedType.ACTIVE_REAL_ESTATE_TYPES));
@@ -321,7 +327,7 @@ public class InteractionEventAttributionHelper {
                     realEstateToPoolMap.get(realEstate).getCandidates();
         }
 
-        if(isDefaultPoolBudgetRemaining(campaignBudgetUtilisedData, campaignDetails, nonDefaultpools)) {
+        if(isDefaultPoolBudgetRemaining(budgetUtilisedData, campaignDetails, nonDefaultpools)) {
             return Collections.emptyList();
         }
 
@@ -329,7 +335,7 @@ public class InteractionEventAttributionHelper {
             return defaultPoolCandidates;
         }
 
-        Map<FeedType, BigDecimal> realEstateBudgetUtilisedMap = campaignBudgetUtilisedData.getRealEstateBudgetUtilisedMap();
+        Map<FeedType, BigDecimal> realEstateBudgetUtilisedMap = budgetUtilisedData.getRealEstateBudgetUtilisedMap();
         CampaignDetails.CampaignRealEstateBudgetPool currentPool = realEstateToPoolMap.get(realEstate);
         BigDecimal currentPoolBudgetUtilised = getPoolBudgetUtilised(currentPool.getCandidates(), realEstateBudgetUtilisedMap);
         if(currentPool.getBudgetLimit().compareTo(currentPoolBudgetUtilised) <= 0) {
@@ -348,18 +354,18 @@ public class InteractionEventAttributionHelper {
         return realEstateToPoolMap;
     }
 
-    public Boolean isDefaultPoolBudgetRemaining(CampaignBudgetUtilisedData campaignBudgetUtilisedData,
+    public Boolean isDefaultPoolBudgetRemaining(BudgetUtilisedData budgetUtilisedData,
                                                    CampaignDetails campaignDetails,
                                                    List<CampaignDetails.CampaignRealEstateBudgetPool> nonDefaultPools) {
         BigDecimal totalBudget = campaignDetails.getBudget();
-        BigDecimal totalBudgetUtilised = campaignBudgetUtilisedData.getTotalBudgetUtilised();
+        BigDecimal totalBudgetUtilised = budgetUtilisedData.getCampaignBudgetUtilised();
         if(totalBudgetUtilised.compareTo(totalBudget) >= 0) {
             return false;
         }
         if(CollectionUtils.isEmpty(nonDefaultPools)){
             return true;
         }
-        Map<FeedType, BigDecimal> realEstateBudgetUtilisedMap = campaignBudgetUtilisedData.getRealEstateBudgetUtilisedMap();
+        Map<FeedType, BigDecimal> realEstateBudgetUtilisedMap = budgetUtilisedData.getRealEstateBudgetUtilisedMap();
         BigDecimal remainingDefaultPoolBudget = totalBudget;
         for(CampaignDetails.CampaignRealEstateBudgetPool nonDefaultPool : nonDefaultPools) {
             BigDecimal poolBudgetLimit = nonDefaultPool.getBudgetLimit();
@@ -392,34 +398,18 @@ public class InteractionEventAttributionHelper {
         return budgetUtilised;
     }
 
-    public List<FeedType> findInactiveRealEstates(CampaignDetails campaignDetails, LocalDate eventDate) {
+    public List<FeedType> findInactiveRealEstates(BudgetUtilisedData budgetUtilisedData, CampaignDetails campaignDetails) {
         BigDecimal totalBudget = campaignDetails.getBudget();
         List<CampaignDetails.CampaignRealEstateBudgetPool> nonDefaultpools = Objects.nonNull(campaignDetails.getCampaignRealEstateBudgetPools()) ?
                 campaignDetails.getCampaignRealEstateBudgetPools() : Collections.emptyList();
-        BigDecimal totalBudgetUtilised = null;
-        Map<FeedType, BigDecimal> realEstateBudgetUtilisedMap = null;
-
-        if(CampaignType.DAILY_BUDGET.equals(CampaignType.fromValue(campaignDetails.getCampaignType())) ||
-                CampaignType.SMART_CAMPAIGN.equals(CampaignType.fromValue(campaignDetails.getCampaignType()))) {
-            CampaignDateWiseMetrics campaignDatewiseMetrics = campaignDateWiseMetricsDao.findByCampaignIdAndDate(
-                    campaignDetails.getCampaignId(), eventDate.toString());
-            totalBudgetUtilised = campaignDatewiseMetrics.getBudgetUtilised();
-            realEstateBudgetUtilisedMap = campaignDatewiseMetrics.getRealEstateBudgetUtilisedMap();
-        }
-        else {
-            CampaignMetrics campaignMetrics = campaignMetricsDao.findByCampaignId(campaignDetails.getCampaignId());
-            totalBudgetUtilised = campaignMetrics.getBudgetUtilised();
-            realEstateBudgetUtilisedMap = campaignMetrics.getRealEstateBudgetUtilisedMap();
-        }
+        BigDecimal totalBudgetUtilised = budgetUtilisedData.getCampaignBudgetUtilised();
+        Map<FeedType, BigDecimal> realEstateBudgetUtilisedMap = budgetUtilisedData.getRealEstateBudgetUtilisedMap();
 
         if(totalBudgetUtilised.compareTo(totalBudget) >= 0) {
             return Arrays.asList(FeedType.values());
         }
 
-        CampaignBudgetUtilisedData campaignBudgetUtilisedData = getCampaignBudgetUtilisedData(totalBudgetUtilised,
-                realEstateBudgetUtilisedMap);
-
-        if(isDefaultPoolBudgetRemaining(campaignBudgetUtilisedData, campaignDetails, nonDefaultpools)) {
+        if(isDefaultPoolBudgetRemaining(budgetUtilisedData, campaignDetails, nonDefaultpools)) {
             return Collections.emptyList();
         }
 
@@ -433,18 +423,6 @@ public class InteractionEventAttributionHelper {
             }
         }
         return new ArrayList<>(inactiveRealEstates);
-    }
-
-    private CampaignBudgetUtilisedData getCampaignBudgetUtilisedData(BigDecimal totalBudgetUtilised,
-                                                                     Map<FeedType, BigDecimal> realEstateBudgetUtilisedMap) {
-        return CampaignBudgetUtilisedData.builder()
-                .totalBudgetUtilised(totalBudgetUtilised)
-                .realEstateBudgetUtilisedMap(realEstateBudgetUtilisedMap.entrySet().stream()
-                        .collect(Collectors.toMap(Map.Entry::getKey,
-                                entry -> Objects.nonNull(entry.getValue()) ? entry.getValue() : BigDecimal.ZERO)
-                        )
-                )
-                .build();
     }
 
     public List<FeedType> getNewInactiveRealEstates(List<FeedType> inactiveRealEstates, Set<FeedType> alreadyInactiveRealEstates) {
