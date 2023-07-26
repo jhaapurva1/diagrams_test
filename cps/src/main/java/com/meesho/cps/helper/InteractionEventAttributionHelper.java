@@ -70,8 +70,8 @@ public class InteractionEventAttributionHelper {
     @Value(Constants.Kafka.CATALOG_BUDGET_EXHAUSTED_MQ_ID)
     private Long catalogBudgetExhaustedMqID;
 
-    @Value(Constants.Kafka.CAMPAIGN_REAL_ESTATE_BUDGET_EXHAUSTED_TOPIC)
-    private String campaignRealEstateBudgetExhaustedTopic;
+    @Value(Constants.Kafka.CAMPAIGN_REAL_ESTATE_BUDGET_EXHAUSTED_MQ_ID)
+    private Long campaignRealEstateBudgetExhaustedMqID;
 
     public void publishPrismEvent(AdInteractionPrismEvent adInteractionPrismEvent) {
         log.info("publishPrismEvent: {}", adInteractionPrismEvent);
@@ -193,7 +193,7 @@ public class InteractionEventAttributionHelper {
                 .campaignId(campaignId)
                 .realEstates(inactiveRealEstates).build();
         try {
-//            kafkaService.sendMessage(campaignRealEstateBudgetExhaustedTopic, String.valueOf(campaignId),
+//            kafkaService.sendMessageToMq(campaignRealEstateBudgetExhaustedMqID, String.valueOf(campaignId),
 //                    objectMapper.writeValueAsString(campaignRealEstateBudgetExhaustedEvent));
         } catch (Exception e) {
             log.error("Exception while sending campaignRealEstateBudgetExhausted event {}", campaignRealEstateBudgetExhaustedEvent, e);

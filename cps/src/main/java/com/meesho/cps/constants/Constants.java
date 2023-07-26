@@ -115,7 +115,7 @@ public class Constants {
 
         public static final String SUPPLIER_WEEKLY_BUDGET_EXHAUSTED_MQ_ID = "${kafka.supplier.weekly.budget.exhausted.mq.id}";
 
-        public static final String CAMPAIGN_REAL_ESTATE_BUDGET_EXHAUSTED_TOPIC = "${kafka.campaign_real_estate_budget_exhausted.topic}";
+        public static final String CAMPAIGN_REAL_ESTATE_BUDGET_EXHAUSTED_MQ_ID = "${kafka.campaign_real_estate_budget_exhausted.mq.id}";
 
         public static final String CATALOG_BUDGET_EXHAUSTED_MQ_ID = "${kafka.catalog_budget_exhausted.mq.id}";
 
