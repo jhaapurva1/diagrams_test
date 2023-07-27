@@ -193,8 +193,8 @@ public class InteractionEventAttributionHelper {
                 .campaignId(campaignId)
                 .realEstates(inactiveRealEstates).build();
         try {
-//            kafkaService.sendMessageToMq(campaignRealEstateBudgetExhaustedMqID, String.valueOf(campaignId),
-//                    objectMapper.writeValueAsString(campaignRealEstateBudgetExhaustedEvent));
+            kafkaService.sendMessageToMq(campaignRealEstateBudgetExhaustedMqID, String.valueOf(campaignId),
+                    objectMapper.writeValueAsString(campaignRealEstateBudgetExhaustedEvent));
         } catch (Exception e) {
             log.error("Exception while sending campaignRealEstateBudgetExhausted event {}", campaignRealEstateBudgetExhaustedEvent, e);
         }
@@ -203,8 +203,8 @@ public class InteractionEventAttributionHelper {
     public void sendCatalogBudgetExhaustEvent(Long campaignId, Long catalogId) {
         CatalogBudgetExhaustEvent catalogBudgetExhaustEvent = CatalogBudgetExhaustEvent.builder().campaignId(campaignId).catalogId(catalogId).build();
         try {
-//            kafkaService.sendMessageToMq(catalogBudgetExhaustedMqID, String.valueOf(catalogId),
-//                    objectMapper.writeValueAsString(catalogBudgetExhaustEvent));
+            kafkaService.sendMessageToMq(catalogBudgetExhaustedMqID, String.valueOf(catalogId),
+                    objectMapper.writeValueAsString(catalogBudgetExhaustEvent));
         } catch (Exception e) {
             log.error("Exception while sending catalogBudgetExhausted event {}", catalogBudgetExhaustEvent, e);
         }
@@ -214,8 +214,8 @@ public class InteractionEventAttributionHelper {
         SupplierWeeklyBudgetExhaustedEvent supplierWeeklyBudgetExhaustedEvent =
                 SupplierWeeklyBudgetExhaustedEvent.builder().supplierId(supplierId).catalogId(catalogId).build();
         try {
-//            kafkaService.sendMessageToMq(suppliersWeeklyBudgetExhaustedMqID, String.valueOf(supplierId),
-//                    objectMapper.writeValueAsString(supplierWeeklyBudgetExhaustedEvent));
+            kafkaService.sendMessageToMq(suppliersWeeklyBudgetExhaustedMqID, String.valueOf(supplierId),
+                    objectMapper.writeValueAsString(supplierWeeklyBudgetExhaustedEvent));
         } catch (Exception e) {
             log.error("Exception while sending supplierWeeklyBudgetExhausted event {}", supplierWeeklyBudgetExhaustedEvent, e);
         }
@@ -224,8 +224,8 @@ public class InteractionEventAttributionHelper {
     public void sendBudgetExhaustedEvent(Long campaignId, Long catalogId) {
         BudgetExhaustedEvent budgetExhaustedEvent = BudgetExhaustedEvent.builder().catalogId(catalogId).campaignId(campaignId).build();
         try {
-//            kafkaService.sendMessageToMq(budgetExhaustedMqID, String.valueOf(campaignId),
-//                    objectMapper.writeValueAsString(budgetExhaustedEvent));
+            kafkaService.sendMessageToMq(budgetExhaustedMqID, String.valueOf(campaignId),
+                    objectMapper.writeValueAsString(budgetExhaustedEvent));
         } catch (Exception e) {
             log.error("Exception while sending budgetExhausted event {}", budgetExhaustedEvent, e);
         }
