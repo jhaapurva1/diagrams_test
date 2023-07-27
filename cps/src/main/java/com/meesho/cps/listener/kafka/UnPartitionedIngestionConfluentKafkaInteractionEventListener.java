@@ -47,6 +47,9 @@ public class UnPartitionedIngestionConfluentKafkaInteractionEventListener {
     @Value(com.meesho.cps.constants.Constants.Kafka.INTERACTION_EVENT_MQ_ID)
     Long interactionEventMqID;
 
+    @Value(ConsumerConstants.IngestionInteractionEventsConsumer.DEAD_QUEUE_MQ_ID)
+    private Long ingestionInteractionEventsDeadQueueMqId;
+
     @KafkaListener(id = ConsumerConstants.IngestionInteractionEventsConsumer.CONFLUENT_CONSUMER_ID, containerFactory =
             ConsumerConstants.IngestionServiceConfluentKafka.CONTAINER_FACTORY, topics = {
             "#{'${kafka.ingestion.interaction.event.consumer.topics}'.split(',')}"}, autoStartup =
@@ -78,7 +81,7 @@ public class UnPartitionedIngestionConfluentKafkaInteractionEventListener {
 
         } catch (Exception e) {
             log.error("Exception while processing ingestion interaction event {}", consumerRecord, e);
-            kafkaService.sendMessage(ingestionInteractionEventsDeadQueueTopic,
+            kafkaService.sendMessageToMq(ingestionInteractionEventsDeadQueueMqId,
                     consumerRecord.key(), consumerRecord.value().toString());
         } finally {
             MDC.clear();

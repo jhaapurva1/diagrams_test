@@ -61,6 +61,9 @@ public class IngestionConfluentKafkaViewEventsListener implements ApplicationLis
     @Value(ConsumerConstants.IngestionViewEventsConsumer.DEAD_QUEUE_TOPIC)
     private String ingestionViewEventsDeadQueueTopic;
 
+    @Value(ConsumerConstants.IngestionViewEventsConsumer.DEAD_QUEUE_MQ_ID)
+    private Long ingestionViewEventsDeadQueueMqId;
+
     @KafkaListener(
             id = ConsumerConstants.IngestionViewEventsConsumer.CONFLUENT_CONSUMER_ID,
             containerFactory = ConsumerConstants.IngestionServiceConfluentKafka.BATCH_CONTAINER_FACTORY,
@@ -109,7 +112,7 @@ public class IngestionConfluentKafkaViewEventsListener implements ApplicationLis
                 log.warn("Invalid event {}", adViewEvent);
                 statsdMetricManager.incrementCounter(VIEW_EVENT_KEY, String.format(VIEW_EVENT_TAGS, NAN, NAN, NAN, INVALID,
                         NAN));
-                kafkaService.sendMessage(ingestionViewEventsDeadQueueTopic,
+                kafkaService.sendMessageToMq(ingestionViewEventsDeadQueueMqId,
                         consumerRecord.key(), consumerRecord.value().toString());
                 continue;
             }
@@ -124,8 +127,8 @@ public class IngestionConfluentKafkaViewEventsListener implements ApplicationLis
             log.error("Exception while processing ingestion view events {}", adViewEvents, e);
             for (AdViewEvent eachAdViewEvent : adViewEvents) {
                 try {
-                    kafkaService.sendMessage(
-                            ingestionViewEventsDeadQueueTopic,
+                    kafkaService.sendMessageToMq(
+                            ingestionViewEventsDeadQueueMqId,
                             String.valueOf(eachAdViewEvent.getProperties().getId()),
                             objectMapper.writeValueAsString(eachAdViewEvent)
                     );

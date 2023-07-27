@@ -70,6 +70,7 @@ public class ClickAttributionHelperTest {
     @Before
     public void setUp() throws JsonProcessingException {
         campaignBudgetExhaustedMqID = 119L;
+        weeklyBudgetExhaustedMqID = 123L;
 //        Mockito.doNothing().when(prismService).publishEvent(any(), any());
 //        Mockito.doReturn(null).when(kafkaService).sendMessage("weeklyBudgetExhaustedTopic", String.valueOf(1L), "");
 //        Mockito.doReturn("").when(objectMapper).writeValueAsString(any());

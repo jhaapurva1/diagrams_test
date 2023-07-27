@@ -3,7 +3,9 @@ package com.meesho.cps.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.meesho.ad.client.response.AdViewEventMetadataResponse;
+import com.meesho.ads.lib.constants.Constants;
 import com.meesho.ads.lib.utils.DateTimeUtils;
+import com.meesho.commons.enums.Country;
 import com.meesho.cps.config.ApplicationProperties;
 import com.meesho.cps.constants.AdInteractionInvalidReason;
 import com.meesho.cps.constants.ConsumerConstants;
@@ -51,8 +53,13 @@ public class WidgetViewEventService {
     @Value(ConsumerConstants.IngestionViewEventsConsumer.DEAD_QUEUE_TOPIC)
     private String ingestionViewEventsDeadQueueTopic;
 
+    @Value(ConsumerConstants.IngestionViewEventsConsumer.DEAD_QUEUE_MQ_ID)
+    private Long ingestionViewEventsDeadQueueMqId;
+
     public void handle(AdWidgetViewEvent adWidgetViewEvent) {
         log.info("Started porcessing of view event: {}", adWidgetViewEvent);
+        String countryCode = "IN";
+        org.slf4j.MDC.put(Constants.COUNTRY_CODE, Country.getValueDefaultCountryFromEnv(countryCode).getCountryCode());
         if (Boolean.FALSE.equals(AdWidgetValidationHelper.isValidWidgetRealEstate(adWidgetViewEvent.getProperties().getSourceScreens().get(0)))) {
             log.error("Not a valid event userId {} eventId {} for the real estate {}",
                     adWidgetViewEvent.getUserId(), adWidgetViewEvent.getEventId(), adWidgetViewEvent.getProperties().getSourceScreens().get(0));
@@ -70,8 +77,8 @@ public class WidgetViewEventService {
         } catch (Exception e) {
             log.error("Exception while processing ingestion view events {}", adWidgetViewEvent, e);
             try {
-                kafkaService.sendMessage(
-                        ingestionViewEventsDeadQueueTopic,
+                kafkaService.sendMessageToMq(
+                        ingestionViewEventsDeadQueueMqId,
                         String.valueOf(adWidgetViewEvent.getProperties().getCatalogIds()),
                         objectMapper.writeValueAsString(adWidgetViewEvent)
                 );
