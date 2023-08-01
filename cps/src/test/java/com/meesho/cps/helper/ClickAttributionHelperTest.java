@@ -66,13 +66,12 @@ public class ClickAttributionHelperTest {
     private Long campaignBudgetExhaustedMqID;
     private Long weeklyBudgetExhaustedMqID;
 
-    //ToDo : Make sure to un-comment the changes after mongo migration. @amit.poonia
 
     @Before
     public void setUp() throws JsonProcessingException {
         campaignBudgetExhaustedMqID = 119L;
         weeklyBudgetExhaustedMqID = 123L;
-//        Mockito.doNothing().when(prismService).publishEvent(any(), any());
+        Mockito.doNothing().when(prismService).publishEvent(any(), any());
         Mockito.doReturn("").when(objectMapper).writeValueAsString(any());
         Mockito.doReturn(BudgetUtilisedData.builder().campaignBudgetUtilised(BigDecimal.valueOf(100)).realEstateBudgetUtilisedMap(Collections.emptyMap()).build()).when(campaignDateWiseMetricsDao).incrementCampaignAndRealEstateBudgetUtilised(any(), any(), any(), any());
         Mockito.doReturn(BigDecimal.valueOf(50)).when(campaignCatalogDateMetricsDao).incrementBudgetUtilisedAndInteractionCount(any(), any(), any(), any(), any(), any());
@@ -120,7 +119,7 @@ public class ClickAttributionHelperTest {
     public void testPublishPrismEventSuccess() {
         AdInteractionPrismEvent adInteractionPrismEvent = getSampleAdInteractionPrismEvent();
         interactionEventAttributionHelper.publishPrismEvent(adInteractionPrismEvent);
-//        Mockito.verify(prismService, Mockito.times(1)).publishEvent(Constants.PrismEventNames.AD_INTERACTIONS, Collections.singletonList(adInteractionPrismEvent));
+        Mockito.verify(prismService, Mockito.times(1)).publishEvent(Constants.PrismEventNames.AD_INTERACTIONS, Collections.singletonList(adInteractionPrismEvent));
     }
 
     @Test

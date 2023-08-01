@@ -76,7 +76,7 @@ public class InteractionEventAttributionHelper {
     public void publishPrismEvent(AdInteractionPrismEvent adInteractionPrismEvent) {
         log.info("publishPrismEvent: {}", adInteractionPrismEvent);
         List<AdInteractionPrismEvent> prismEvents = new ArrayList<>(Arrays.asList(adInteractionPrismEvent));
-//        prismService.publishEvent(Constants.PrismEventNames.AD_INTERACTIONS, prismEvents);
+        prismService.publishEvent(Constants.PrismEventNames.AD_INTERACTIONS, prismEvents);
     }
 
     /**

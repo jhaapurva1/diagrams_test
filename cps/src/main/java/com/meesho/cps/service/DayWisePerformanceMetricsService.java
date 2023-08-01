@@ -43,10 +43,9 @@ public class DayWisePerformanceMetricsService {
         }
 
         if (!CollectionUtils.isEmpty(documentList)) {
-            //ToDo: remove this log and uncomment the lines before finalising the migration
             log.info("day perf events -- " + documentList);
-//            prismService.publishEvent(Constants.PrismEventNames.DAY_WISE_PERF_EVENTS,
-//                    PrismEventTransformer.getDayWisePerformancePrismEvent(documentList));
+            prismService.publishEvent(Constants.PrismEventNames.DAY_WISE_PERF_EVENTS,
+                    PrismEventTransformer.getDayWisePerformancePrismEvent(documentList));
         }
     }
 
