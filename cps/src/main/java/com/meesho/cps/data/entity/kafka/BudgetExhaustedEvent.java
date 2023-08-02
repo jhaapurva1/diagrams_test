@@ -2,6 +2,7 @@ package com.meesho.cps.data.entity.kafka;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import com.meesho.cps.constants.BudgetExhaustedReason;
 import lombok.Builder;
 import lombok.Data;
 
@@ -12,6 +13,9 @@ import lombok.Data;
 @Data
 @Builder
 public class BudgetExhaustedEvent {
+
+    @JsonProperty("reason")
+    BudgetExhaustedReason reason;
 
     @JsonProperty("campaign_id")
     private Long campaignId;

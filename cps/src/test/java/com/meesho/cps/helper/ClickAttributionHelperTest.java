@@ -215,4 +215,17 @@ public class ClickAttributionHelperTest {
         Mockito.verify(kafkaService, Mockito.times(1)).sendMessageToMq(campaignBudgetExhaustedMqID, String.valueOf(1L), "");
         Assert.assertTrue(isBudgetExhausted);
     }
+
+    @Test
+    public void testSendBudgetPacedEventSuccess() {
+        interactionEventAttributionHelper.sendBudgetPacedEvent(1L, 1L);
+        Mockito.verify(kafkaService, Mockito.times(1)).sendMessageToMq(campaignBudgetExhaustedMqID, String.valueOf(1L), "");
+    }
+
+    @Test(expected = Exception.class)
+    public void testSendBudgetPacedEventException() {
+        Mockito.doThrow(Exception.class).when(kafkaService).sendMessage(any(), any(), any());
+        interactionEventAttributionHelper.sendBudgetPacedEvent(1L, 1L);
+        Mockito.verify(kafkaService, Mockito.times(1)).sendMessageToMq(campaignBudgetExhaustedMqID, String.valueOf(1L), "");
+    }
 }
