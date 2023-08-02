@@ -102,12 +102,14 @@ public class AdService {
         return allCatalogCampaignCatalogMetadata;
     }
 
-    public SupplierCampaignCatalogMetaDataResponse getSupplierCampaignCatalogMetadata(Long catalogId, Long campaignId, String userId, String feedType) throws ExternalRequestFailedException {
+    public SupplierCampaignCatalogMetaDataResponse getSupplierCampaignCatalogMetadata(Long catalogId, Long campaignId, String userId,
+                                                                                      String feedType, Long interactionTime) throws ExternalRequestFailedException {
         SupplierCampaignCatalogMetaDataRequest request = SupplierCampaignCatalogMetaDataRequest.builder()
                 .campaignId(campaignId)
                 .catalogId(catalogId)
                 .feedType(feedType)
                 .userId(userId)
+                .interactionTime(interactionTime)
                 .build();
 
         ServiceResponse<SupplierCampaignCatalogMetaDataResponse> response = null;

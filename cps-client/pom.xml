@@ -28,7 +28,7 @@
         <dependency>
             <groupId>com.meesho</groupId>
             <artifactId>ad-client</artifactId>
-            <version>4.0.6-RELEASE</version>
+            <version>4.0.12-RELEASE</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.springframework.cloud</groupId>

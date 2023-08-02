@@ -91,7 +91,7 @@ public class CatalogInteractionEventService {
             feedType = OriginScreenREMapper.getFeedType(origin, screen);
         }
 
-        SupplierCampaignCatalogMetaDataResponse response = adService.getSupplierCampaignCatalogMetadata(catalogId, campaignId, userId, feedType);
+        SupplierCampaignCatalogMetaDataResponse response = adService.getSupplierCampaignCatalogMetadata(catalogId, campaignId, userId, feedType, interactionTime);
         SupplierCampaignCatalogMetaDataResponse.CatalogMetadata catalogMetadata = response.getCatalogMetadata();
         SupplierCampaignCatalogMetaDataResponse.SupplierMetadata supplierMetadata = response.getSupplierMetadata();
 
@@ -114,6 +114,7 @@ public class CatalogInteractionEventService {
                 adInteractionEvent.getProperties().getOrigin(), "CatalogInteractionEventService", realEstate.getValue());
         CampaignDetails campaignDetails = catalogMetadata.getCampaignDetails();
         BigDecimal catalogBudgetUtilisationLimit = catalogMetadata.getCatalogBudget();
+        BigDecimal campaignBudgetUtilisedBenchmark = campaignDetails.getCampaignBudgetUtilisedBenchmark();
         Set<FeedType> alreadyInactiveRealEstates = Objects.nonNull(campaignDetails.getInactiveRealEstates()) ?
                 campaignDetails.getInactiveRealEstates() : Collections.emptySet();
 
@@ -217,6 +218,15 @@ public class CatalogInteractionEventService {
             if (!CollectionUtils.isEmpty(newInactiveRealEstates)) {
                 interactionEventAttributionHelper.sendCampaignRealEstateBudgetExhaustedEvent(campaignId,
                         newInactiveRealEstates);
+            }
+        }
+
+        // Compare the expected budget utilised with benchmark with current budget utilised
+        if (Objects.nonNull(campaignBudgetUtilisedBenchmark)) {
+            BigDecimal expectedBudgetUtilised = interactionEventAttributionHelper.getExpectedCampaignBudgetUtilised(totalBudget, campaignBudgetUtilisedBenchmark);
+            if ((CampaignType.DAILY_BUDGET.equals(campaignType) || CampaignType.SMART_CAMPAIGN.equals(campaignType))
+                    && budgetUtilised.getCampaignBudgetUtilised().compareTo(expectedBudgetUtilised) > 0) {
+                interactionEventAttributionHelper.sendBudgetPacedEvent(campaignId, catalogId);
             }
         }
 

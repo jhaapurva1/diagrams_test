@@ -4,11 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.meesho.ad.client.constants.FeedType;
 import com.meesho.ad.client.response.CampaignDetails;
 import com.meesho.cps.config.ApplicationProperties;
-import com.meesho.cps.constants.CampaignType;
-import com.meesho.cps.constants.Constants;
+import com.meesho.cps.constants.*;
 import com.meesho.cps.constants.Constants.CpcData;
-import com.meesho.cps.constants.ConsumerConstants;
-import com.meesho.cps.constants.UserInteractionType;
 import com.meesho.cps.data.entity.internal.BudgetUtilisedData;
 import com.meesho.cps.data.entity.kafka.*;
 import com.meesho.cps.data.entity.mongodb.collection.CampaignDateWiseMetrics;
@@ -222,7 +219,8 @@ public class InteractionEventAttributionHelper {
     }
 
     public void sendBudgetExhaustedEvent(Long campaignId, Long catalogId) {
-        BudgetExhaustedEvent budgetExhaustedEvent = BudgetExhaustedEvent.builder().catalogId(catalogId).campaignId(campaignId).build();
+        BudgetExhaustedEvent budgetExhaustedEvent = BudgetExhaustedEvent.builder()
+                .reason(BudgetExhaustedReason.LIMIT_EXHAUSTED).catalogId(catalogId).campaignId(campaignId).build();
         try {
             kafkaService.sendMessageToMq(budgetExhaustedMqID, String.valueOf(campaignId),
                     objectMapper.writeValueAsString(budgetExhaustedEvent));
@@ -310,6 +308,17 @@ public class InteractionEventAttributionHelper {
         multipliedCpcData.put(CpcData.MULTIPLIED_CPC, multipliedCpc);
         multipliedCpcData.put(CpcData.MULTIPLIER, multiplier);
         return multipliedCpcData;
+    }
+
+    public void sendBudgetPacedEvent(Long campaignId, Long catalogId) {
+        BudgetExhaustedEvent budgetExhaustedEvent = BudgetExhaustedEvent.builder()
+                .reason(BudgetExhaustedReason.BUDGET_OVERSPENT_IN_TIME_SLOT).catalogId(catalogId).campaignId(campaignId).build();
+        try {
+            kafkaService.sendMessageToMq(budgetExhaustedMqID, String.valueOf(campaignId),
+                    objectMapper.writeValueAsString(budgetExhaustedEvent));
+        } catch (Exception e) {
+            log.error("Exception while sending budgetExhausted event {}", budgetExhaustedEvent, e);
+        }
     }
 
     public List<FeedType> findInactiveRealEstates(BudgetUtilisedData budgetUtilisedData,
@@ -429,5 +438,10 @@ public class InteractionEventAttributionHelper {
         return inactiveRealEstates.stream()
                 .filter(realEstate -> !alreadyInactiveRealEstates.contains(realEstate))
                 .collect(Collectors.toList());
+    }
+
+    // For budget pacing
+    public BigDecimal getExpectedCampaignBudgetUtilised(BigDecimal totalBudget, BigDecimal percentage) {
+        return totalBudget.multiply(percentage.divide(BigDecimal.valueOf(100)));
     }
 }
