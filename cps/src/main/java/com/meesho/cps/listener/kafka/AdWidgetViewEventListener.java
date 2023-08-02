@@ -59,6 +59,8 @@ public class AdWidgetViewEventListener extends BaseManualAcknowledgeKafkaListene
             log.warn("Invalid event {}", adWidgetViewEvent);
             telegrafMetricsHelper.increment(WIDGET_VIEW_EVENT_KEY, WIDGET_VIEW_EVENT_TAGS, adWidgetViewEvent.getEventName(), NAN, NAN, NAN,
                     AdInteractionStatus.INVALID.name(), NAN);
+            telegrafMetricsHelper.increment("campaignPerformanceWidgetViewEvent", WIDGET_VIEW_EVENT_TAGS, adWidgetViewEvent.getEventName(), NAN, NAN, NAN,
+                    AdInteractionStatus.INVALID.name(), NAN);
             return;
         }
         try {
