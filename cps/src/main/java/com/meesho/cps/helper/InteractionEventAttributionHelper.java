@@ -314,6 +314,7 @@ public class InteractionEventAttributionHelper {
         BudgetExhaustedEvent budgetExhaustedEvent = BudgetExhaustedEvent.builder()
                 .reason(BudgetExhaustedReason.BUDGET_OVERSPENT_IN_TIME_SLOT).catalogId(catalogId).campaignId(campaignId).build();
         try {
+            log.info("Sending budgetExhaustedEvent for budget pacing {}", budgetExhaustedEvent);
             kafkaService.sendMessageToMq(budgetExhaustedMqID, String.valueOf(campaignId),
                     objectMapper.writeValueAsString(budgetExhaustedEvent));
         } catch (Exception e) {
