@@ -29,6 +29,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Executor;
 
@@ -93,10 +94,16 @@ public class AppConfig {
 
     public ThreadPoolTaskScheduler getThreadPoolTaskScheduler() {
         ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadPoolTaskScheduler();
-        threadPoolTaskScheduler.setPoolSize((!IN_MEMORY_SCHEDULERS.isEmpty() ? IN_MEMORY_SCHEDULERS.size() : 1) * Country.values().length);
+        threadPoolTaskScheduler.setPoolSize((!getInMemoryScheduler().isEmpty() ? getInMemoryScheduler().size() : 1) * Country.values().length);
         threadPoolTaskScheduler.setThreadNamePrefix("async-scheduler-");
         threadPoolTaskScheduler.initialize();
         return threadPoolTaskScheduler;
+    }
+
+    private Set<SchedulerType> getInMemoryScheduler() {
+        Set<SchedulerType> inMemoryScheduler = IN_MEMORY_SCHEDULERS;
+        inMemoryScheduler.addAll(applicationProperties.getSchedulersToBeRunInMemory());
+        return inMemoryScheduler;
     }
 
     @EventListener(ApplicationReadyEvent.class)
@@ -104,7 +111,7 @@ public class AppConfig {
         MDC.put(Constants.GUID, UUID.randomUUID().toString());
         TaskScheduler taskScheduler = getThreadPoolTaskScheduler();
 
-        for (SchedulerType schedulerType : IN_MEMORY_SCHEDULERS) {
+        for (SchedulerType schedulerType : getInMemoryScheduler()) {
             log.info("Initializing scheduler {}", schedulerType);
             AbstractScheduler scheduler = SchedulerFactory.getByType(schedulerType.name());
             if (Objects.nonNull(scheduler)) {

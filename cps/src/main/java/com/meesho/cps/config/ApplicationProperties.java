@@ -13,6 +13,7 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author shubham.aggarwal
@@ -128,6 +129,9 @@ public class ApplicationProperties {
 
     @Value("${spring.data.mongodb.uri}")
     private String mongoDBUri;
+
+    @Value("${schedulers_in_memory}")
+    private Set<SchedulerType> schedulersToBeRunInMemory;
 
     @PostConstruct
     public void init() {
