@@ -12,6 +12,7 @@ import com.meesho.cps.db.mongodb.repository.CampaignCatalogDateMetricsRepository
 import com.meesho.cps.helper.ValidationHelper;
 import com.meesho.cps.utils.DateTimeHelper;
 import com.mongodb.ReadPreference;
+import com.mongodb.WriteConcern;
 import com.mongodb.bulk.BulkWriteError;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
@@ -46,6 +47,12 @@ public class CampaignCatalogDateMetricsDao {
     private MongoTemplate mongoTemplate;
 
     @Autowired
+    private MongoTemplate mongoTemplateForFastWrite;
+
+    @Autowired
+    private MongoTemplate mongoTemplateForSecondaryRead;
+
+    @Autowired
     private TelegrafMetricsHelper telegrafMetricsHelper;
 
     @Autowired
@@ -53,7 +60,8 @@ public class CampaignCatalogDateMetricsDao {
 
     @PostConstruct
     public void init() {
-        mongoTemplate.setReadPreference(ReadPreference.secondaryPreferred());
+        mongoTemplateForSecondaryRead.setReadPreference(ReadPreference.secondaryPreferred());
+        mongoTemplateForFastWrite.setWriteConcern(WriteConcern.W1);
     }
 
     public void save(List<CampaignCatalogDateMetrics> documentList) {
@@ -63,7 +71,7 @@ public class CampaignCatalogDateMetricsDao {
     public CampaignCatalogDateMetrics find(Long campaignId, Long catalogId, String date) {
         Query query = new Query().addCriteria(Criteria.where(CAMPAIGN_ID).is(campaignId).and(CATALOG_ID).is(catalogId)
                 .and(DATE).is(date));
-        return mongoTemplate.findOne(query, CampaignCatalogDateMetrics.class);
+        return mongoTemplateForSecondaryRead.findOne(query, CampaignCatalogDateMetrics.class);
     }
 
     public List<CampaignCatalogDateMetrics> findAllByCampaignId(Long campaignId) {
@@ -92,7 +100,7 @@ public class CampaignCatalogDateMetricsDao {
         Aggregation aggregation = Aggregation.newAggregation(campaignIdAndDateFilter, group);
 
 
-        return mongoTemplate.aggregate(aggregation, CampaignCatalogDateMetrics.class,
+        return mongoTemplateForSecondaryRead.aggregate(aggregation, CampaignCatalogDateMetrics.class,
                 DateLevelMetrics.class).getMappedResults();
     }
 
@@ -110,7 +118,7 @@ public class CampaignCatalogDateMetricsDao {
         Aggregation aggregation = Aggregation.newAggregation(campaignIdAndDateFilter, group);
 
 
-        return mongoTemplate.aggregate(aggregation, CampaignCatalogDateMetrics.class,
+        return mongoTemplateForSecondaryRead.aggregate(aggregation, CampaignCatalogDateMetrics.class,
                 CampaignLevelMetrics.class).getMappedResults();
 
     }
@@ -127,7 +135,7 @@ public class CampaignCatalogDateMetricsDao {
 
         Aggregation aggregation = Aggregation.newAggregation(filter, group);
 
-        return mongoTemplate.aggregate(aggregation, CampaignCatalogDateMetrics.class,
+        return mongoTemplateForSecondaryRead.aggregate(aggregation, CampaignCatalogDateMetrics.class,
                 CampaignCatalogLevelMetrics.class).getMappedResults();
 
     }
@@ -144,7 +152,7 @@ public class CampaignCatalogDateMetricsDao {
 
         Aggregation aggregation = Aggregation.newAggregation(supplierIdFilter, group);
 
-        return mongoTemplate.aggregate(aggregation, CampaignCatalogDateMetrics.class,
+        return mongoTemplateForSecondaryRead.aggregate(aggregation, CampaignCatalogDateMetrics.class,
                 SupplierLevelMetrics.class).getMappedResults();
 
     }
@@ -166,7 +174,7 @@ public class CampaignCatalogDateMetricsDao {
     }
 
     public void bulkIncrementViewCounts(List<CampaignCatalogViewCount> campaignCatalogViewCountList) {
-        BulkOperations bulkOperations = mongoTemplate.bulkOps(BulkOperations.BulkMode.UNORDERED, CampaignCatalogDateMetrics.class);
+        BulkOperations bulkOperations = mongoTemplateForFastWrite.bulkOps(BulkOperations.BulkMode.UNORDERED, CampaignCatalogDateMetrics.class);
 
         List<CampaignCatalogViewCount> validDocs = filterValidDocsAndGenerateBulkOperation(campaignCatalogViewCountList, bulkOperations);
 
