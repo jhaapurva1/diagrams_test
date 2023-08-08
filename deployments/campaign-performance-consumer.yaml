@@ -78,17 +78,17 @@ environment:
       - -XX:GCLogFileSize=9000k
   prd:
     as_enabled: true
-    as_min: 2
+    as_min: 18
     as_max: 18
     as_trigger_metric: cpu
     as_trigger_type: Utilization
     as_trigger_value: 75
     cpu_limit: 6
-    cpu_request: 2
+    cpu_request: 1
     memory_limit: 8G
     memory_request: 8G
     deploymentStrategy: rollingUpdate
-    maxSurge: 10
+    maxSurge: 50
     appMetrics: true
     deployment_args:
       - -Dspring.profiles.active=prd
