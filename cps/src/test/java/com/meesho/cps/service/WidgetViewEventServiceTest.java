@@ -1,6 +1,7 @@
 package com.meesho.cps.service;
 
 import static com.meesho.cps.constants.TelegrafConstants.*;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.times;
 
@@ -44,6 +45,9 @@ public class WidgetViewEventServiceTest {
 
     @InjectMocks
     WidgetViewEventService widgetViewEventService;
+
+    @Mock
+    KafkaService kafkaService;
 
     @BeforeEach
     public void setUp() throws ExternalRequestFailedException {
@@ -182,10 +186,10 @@ public class WidgetViewEventServiceTest {
     public void testHandleCampaignCatalogMetadataResponseThrowsException(String realEstate)
         throws ExternalRequestFailedException {
         AdWidgetViewEvent adWidgetViewEvent = getAdWidgetViewEvent(realEstate);
+        Mockito.doNothing().when(kafkaService).sendMessageToMq(any(), anyString(), anyString());
         Mockito.doThrow(RuntimeException.class).when(catalogViewEventService)
             .getCampaignCatalogMetadataFromCatalogIds(any());
-        Assertions.assertThrows(RuntimeException.class, () -> {
-            widgetViewEventService.handle(adWidgetViewEvent);
-        });
+        widgetViewEventService.handle(adWidgetViewEvent);
+
     }
 }
