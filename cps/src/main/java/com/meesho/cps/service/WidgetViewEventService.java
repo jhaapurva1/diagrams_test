@@ -85,7 +85,7 @@ public class WidgetViewEventService {
                         String.valueOf(adWidgetViewEvent.getProperties().getCatalogIds()),
                         objectMapper.writeValueAsString(adWidgetViewEvent)
                 );
-            } catch (JsonProcessingException e1) {
+            } catch (Exception e1) {
                 log.error("Failed to push to dead queue event {}", adWidgetViewEvent);
             }
             return;

@@ -114,8 +114,14 @@ public class IngestionConfluentKafkaViewEventsListener implements ApplicationLis
                         NAN));
                 statsdMetricManager.incrementCounter("campaignPerformanceViewEvent", String.format(VIEW_EVENT_TAGS, NAN, NAN, NAN, INVALID,
                         NAN));
-                kafkaService.sendMessageToMq(ingestionViewEventsDeadQueueMqId,
-                        consumerRecord.key(), consumerRecord.value().toString());
+                try {
+                    kafkaService.sendMessageToMq(ingestionViewEventsDeadQueueMqId,
+                            consumerRecord.key(), consumerRecord.value().toString());
+                } catch (Exception e) {
+                    // TODO silent failure needs to be handled
+                    log.error("Failed to push to dead queue event {}", consumerRecord);
+                }
+
                 continue;
             }
 
@@ -134,7 +140,7 @@ public class IngestionConfluentKafkaViewEventsListener implements ApplicationLis
                             String.valueOf(eachAdViewEvent.getProperties().getId()),
                             objectMapper.writeValueAsString(eachAdViewEvent)
                     );
-                } catch (JsonProcessingException e1) {
+                } catch (Exception e1) {
                     // TODO silent failure needs to be handled
                     log.error("Failed to push to dead queue event {}", eachAdViewEvent);
                 }
