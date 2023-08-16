@@ -112,8 +112,6 @@ public class IngestionConfluentKafkaViewEventsListener implements ApplicationLis
                 log.warn("Invalid event {}", adViewEvent);
                 statsdMetricManager.incrementCounter(VIEW_EVENT_KEY, String.format(VIEW_EVENT_TAGS, NAN, NAN, NAN, INVALID,
                         NAN));
-                statsdMetricManager.incrementCounter("campaignPerformanceViewEvent", String.format(VIEW_EVENT_TAGS, NAN, NAN, NAN, INVALID,
-                        NAN));
                 try {
                     kafkaService.sendMessageToMq(ingestionViewEventsDeadQueueMqId,
                             consumerRecord.key(), consumerRecord.value().toString());
@@ -147,16 +145,12 @@ public class IngestionConfluentKafkaViewEventsListener implements ApplicationLis
             }
             statsdMetricManager.incrementCounter(VIEW_EVENT_KEY, adViewEvents.size(), String.format(VIEW_EVENT_TAGS, NAN, NAN, NAN, INVALID,
                     NAN));
-            statsdMetricManager.incrementCounter("campaignPerformanceViewEvent", adViewEvents.size(), String.format(VIEW_EVENT_TAGS, NAN, NAN, NAN, INVALID,
-                    NAN));
             return;
         }
 
         if (CollectionUtils.isEmpty(catalogMetadataMap)) {
             // No active campaign found for catalogs
             statsdMetricManager.incrementCounter(VIEW_EVENT_KEY, adViewEvents.size(), String.format(VIEW_EVENT_TAGS, NAN, NAN, NAN, INVALID,
-                    AdInteractionInvalidReason.CAMPAIGN_INACTIVE));
-            statsdMetricManager.incrementCounter("campaignPerformanceViewEvent", adViewEvents.size(), String.format(VIEW_EVENT_TAGS, NAN, NAN, NAN, INVALID,
                     AdInteractionInvalidReason.CAMPAIGN_INACTIVE));
             return;
         }
@@ -194,9 +188,6 @@ public class IngestionConfluentKafkaViewEventsListener implements ApplicationLis
                 statsdMetricManager.incrementCounter(VIEW_EVENT_KEY, String.format(VIEW_EVENT_TAGS,
                         adViewEvent.getEventName(), adViewEvent.getProperties().getScreen(), adViewEvent.getProperties().getOrigin(), INVALID,
                         AdInteractionInvalidReason.CAMPAIGN_INACTIVE));
-                statsdMetricManager.incrementCounter("campaignPerformanceViewEvent", String.format(VIEW_EVENT_TAGS,
-                        adViewEvent.getEventName(), adViewEvent.getProperties().getScreen(), adViewEvent.getProperties().getOrigin(), INVALID,
-                        AdInteractionInvalidReason.CAMPAIGN_INACTIVE));
                 continue;
             }
             Long campaignId = catalogMetadata.getCampaignId();
@@ -205,8 +196,6 @@ public class IngestionConfluentKafkaViewEventsListener implements ApplicationLis
                     adViewEvent.getEventId(), adViewEvent.getProperties().getId(), campaignId, adViewEvent.getUserId(),
                     adViewEvent.getProperties().getAppVersionCode());
             statsdMetricManager.incrementCounter(VIEW_EVENT_KEY, String.format(VIEW_EVENT_TAGS,
-                    adViewEvent.getEventName(), adViewEvent.getProperties().getScreen(), adViewEvent.getProperties().getOrigin(), VALID, NAN));
-            statsdMetricManager.incrementCounter("campaignPerformanceViewEvent", String.format(VIEW_EVENT_TAGS,
                     adViewEvent.getEventName(), adViewEvent.getProperties().getScreen(), adViewEvent.getProperties().getOrigin(), VALID, NAN));
 
             String campaignCatalogViewCountKey = getCampaignCatalogKey(campaignId, catalogId, eventDate);
