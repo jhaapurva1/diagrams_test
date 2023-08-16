@@ -114,7 +114,7 @@ public class WidgetViewEventServiceTest {
         Mockito.doReturn(Collections.EMPTY_MAP).when(catalogViewEventService).getCampaignCatalogMetadataFromCatalogIds(any());
         AdWidgetViewEvent adWidgetViewEvent = getAdWidgetViewEvent(realEstate);
         widgetViewEventService.handle(adWidgetViewEvent);
-        Mockito.verify(statsdMetricManager, times(2)).incrementCounter(any(), any());
+        Mockito.verify(statsdMetricManager, times(1)).incrementCounter(any(), any());
     }
 
     @ParameterizedTest
