@@ -2,7 +2,7 @@ database = container "Document Database" "Database"{
     technology "MongoDB"
     tags "Database"
 }
-apiapp = container "API application"{
+apiapp = container "API-application"{
     technology "Java SpringBoot"
     !include apiComponent.dsl
 }

@@ -1,4 +1,4 @@
-workspace  {
+workspace  "Ads - Campaign Performance Service(CPS)" "Tracks campaign related metrics"{
         !docs docs
         model {
                 cms = softwareSystem "Campaign Management Service"
@@ -17,8 +17,6 @@ workspace  {
                         developer -> apiapp "Uses"
                         scheduler -> databaseComponent "Stores scheduler offsets in"
                         listener -> cacheComponent "Updates campaign catalog date key to"
-                        developer -> debugController "Sets certain values on DB on dev env for testing using"
-                        developer -> manualSchedulerController "Triggers schedulers manually in case of failuers using"
                         cms -> campaignPerformanceController "Gets campaign level data like budget utilised using"
                     }
                 }

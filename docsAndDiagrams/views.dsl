@@ -7,10 +7,10 @@ theme default
 container cps "CPS-Containers" {
     include *
 }
-component apiapp {
+component apiapp "API-Application" {
     include *
 }
-component scheduler {
+component scheduler "Schedulers" {
     include *
 }
 styles {
