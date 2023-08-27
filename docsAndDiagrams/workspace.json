@@ -2,7 +2,8 @@
   "id" : 1,
   "name" : "Ads - Campaign Performance Service(CPS)",
   "description" : "Tracks campaign related metrics",
-  "lastModifiedDate" : "2023-08-24T12:33:11Z",
+  "lastModifiedDate" : "2023-08-27T01:48:13Z",
+  "lastModifiedAgent" : "structurizr-javascript",
   "properties" : {
     "structurizr.dsl" : "d29ya3NwYWNlIGV4dGVuZHMgc3lzdGVtQ29udGV4dC5kc2wK"
   },
@@ -17,124 +18,57 @@
       "name" : "Developer",
       "description" : "Uses the system for manual intervention for things like triggering a scheduler",
       "relationships" : [ {
-        "id" : "20",
+        "id" : "51",
         "tags" : "Relationship",
         "properties" : {
-          "structurizr.dsl.identifier" : "fb371a50-f6e4-41f0-8c16-4914e192dcee"
-        },
-        "sourceId" : "4",
-        "destinationId" : "15",
-        "description" : "Gets staging data from"
-      }, {
-        "id" : "21",
-        "sourceId" : "4",
-        "destinationId" : "11",
-        "description" : "Gets staging data from",
-        "linkedRelationshipId" : "20"
-      }, {
-        "id" : "22",
-        "sourceId" : "4",
-        "destinationId" : "6",
-        "description" : "Gets staging data from",
-        "linkedRelationshipId" : "20"
-      }, {
-        "id" : "23",
-        "tags" : "Relationship",
-        "properties" : {
-          "structurizr.dsl.identifier" : "5fe5443c-22ed-4983-b9e4-28baa07f36f7"
+          "structurizr.dsl.identifier" : "b656d2d7-7d94-4901-9522-832df8547313"
         },
         "sourceId" : "4",
         "destinationId" : "16",
         "description" : "Triggers schedulers manually using"
       }, {
-        "id" : "24",
+        "id" : "53",
         "tags" : "Relationship",
         "properties" : {
-          "structurizr.dsl.identifier" : "b2a06c03-c379-4b81-942f-774c91111d7a"
-        },
-        "sourceId" : "4",
-        "destinationId" : "12",
-        "description" : "Triggers backfilling of missed campaign data using"
-      }, {
-        "id" : "25",
-        "tags" : "Relationship",
-        "properties" : {
-          "structurizr.dsl.identifier" : "56b23d4f-3a11-46fe-91fc-ac33a3d1a9ad"
+          "structurizr.dsl.identifier" : "2bfd560a-fc2d-4f48-9988-0a674276f58e"
         },
         "sourceId" : "4",
         "destinationId" : "13",
         "description" : "Triggers backfilling of missed events using"
       }, {
-        "id" : "59",
+        "id" : "48",
         "tags" : "Relationship",
         "properties" : {
-          "structurizr.dsl.identifier" : "d5fb4710-f799-48a2-84bb-be7683f1b2a2"
+          "structurizr.dsl.identifier" : "1b413f5e-1e74-46b5-8a4d-9e476b587c9b"
         },
         "sourceId" : "4",
+        "destinationId" : "15",
+        "description" : "Gets staging data from"
+      }, {
+        "id" : "52",
+        "tags" : "Relationship",
+        "properties" : {
+          "structurizr.dsl.identifier" : "c02359ef-0447-4db8-a66f-fa06dec15fd1"
+        },
+        "sourceId" : "4",
+        "destinationId" : "12",
+        "description" : "Triggers backfilling of missed campaign data using"
+      }, {
+        "id" : "49",
+        "sourceId" : "4",
         "destinationId" : "11",
-        "description" : "Uses"
+        "description" : "Gets staging data from",
+        "linkedRelationshipId" : "48"
+      }, {
+        "id" : "50",
+        "sourceId" : "4",
+        "destinationId" : "6",
+        "description" : "Gets staging data from",
+        "linkedRelationshipId" : "48"
       } ],
       "location" : "Unspecified"
     } ],
     "softwareSystems" : [ {
-      "id" : "1",
-      "tags" : "Element,Software System",
-      "properties" : {
-        "structurizr.dsl.identifier" : "cms"
-      },
-      "name" : "Campaign Management Service",
-      "relationships" : [ {
-        "id" : "26",
-        "tags" : "Relationship",
-        "properties" : {
-          "structurizr.dsl.identifier" : "3c1fbbe6-72ab-426c-9b3c-35136aeae748"
-        },
-        "sourceId" : "1",
-        "destinationId" : "14",
-        "description" : "Gets campaign performance data from"
-      }, {
-        "id" : "27",
-        "sourceId" : "1",
-        "destinationId" : "11",
-        "description" : "Gets campaign performance data from",
-        "linkedRelationshipId" : "26"
-      }, {
-        "id" : "28",
-        "sourceId" : "1",
-        "destinationId" : "6",
-        "description" : "Gets campaign performance data from",
-        "linkedRelationshipId" : "26"
-      }, {
-        "id" : "55",
-        "tags" : "Relationship",
-        "properties" : {
-          "structurizr.dsl.identifier" : "453252a7-7e64-4e9d-a59d-5a00936b3274"
-        },
-        "sourceId" : "1",
-        "destinationId" : "11",
-        "description" : "Gets campaign performance like budget utilisation, ROI, etc. data from"
-      }, {
-        "id" : "62",
-        "tags" : "Relationship",
-        "properties" : {
-          "structurizr.dsl.identifier" : "a39de910-436e-4108-ac46-efb7f950f673"
-        },
-        "sourceId" : "1",
-        "destinationId" : "14",
-        "description" : "Gets campaign level data like budget utilised using"
-      } ],
-      "location" : "Unspecified",
-      "documentation" : { }
-    }, {
-      "id" : "2",
-      "tags" : "Element,Software System",
-      "properties" : {
-        "structurizr.dsl.identifier" : "ingestionkafka"
-      },
-      "name" : "Ingestion Kafka",
-      "location" : "Unspecified",
-      "documentation" : { }
-    }, {
       "id" : "3",
       "tags" : "Element,Software System",
       "properties" : {
@@ -142,82 +76,359 @@
       },
       "name" : "Ads Payment Service",
       "relationships" : [ {
-        "id" : "17",
+        "id" : "46",
+        "sourceId" : "3",
+        "destinationId" : "11",
+        "description" : "Gets budget data from",
+        "linkedRelationshipId" : "45"
+      }, {
+        "id" : "45",
         "tags" : "Relationship",
         "properties" : {
-          "structurizr.dsl.identifier" : "debb9367-7b6c-42fe-b3a5-feed33fb990b"
+          "structurizr.dsl.identifier" : "429f2a75-40f5-4c61-926f-f1ceb70373d5"
         },
         "sourceId" : "3",
         "destinationId" : "14",
         "description" : "Gets budget data from"
       }, {
-        "id" : "18",
-        "sourceId" : "3",
-        "destinationId" : "11",
-        "description" : "Gets budget data from",
-        "linkedRelationshipId" : "17"
-      }, {
-        "id" : "19",
+        "id" : "47",
         "sourceId" : "3",
         "destinationId" : "6",
         "description" : "Gets budget data from",
-        "linkedRelationshipId" : "17"
+        "linkedRelationshipId" : "45"
       } ],
       "location" : "Unspecified",
       "documentation" : { }
     }, {
-      "id" : "5",
+      "id" : "1",
       "tags" : "Element,Software System",
       "properties" : {
-        "structurizr.dsl.identifier" : "presto"
+        "structurizr.dsl.identifier" : "cms"
       },
-      "name" : "Presto",
+      "name" : "Campaign Management Service",
       "relationships" : [ {
-        "id" : "57",
+        "id" : "55",
+        "sourceId" : "1",
+        "destinationId" : "11",
+        "description" : "Gets campaign performance data from",
+        "linkedRelationshipId" : "54"
+      }, {
+        "id" : "54",
         "tags" : "Relationship",
         "properties" : {
-          "structurizr.dsl.identifier" : "aab22cdc-debf-44c4-8a76-ebf2fb24e136"
+          "structurizr.dsl.identifier" : "3110505c-8b43-4db7-b875-153577f8f00e"
         },
-        "sourceId" : "5",
-        "destinationId" : "29",
-        "description" : "Gets order, revenues, cpc-discount data from"
+        "sourceId" : "1",
+        "destinationId" : "14",
+        "description" : "Gets campaign performance data from"
       }, {
-        "id" : "58",
-        "sourceId" : "5",
+        "id" : "56",
+        "sourceId" : "1",
         "destinationId" : "6",
-        "description" : "Gets order, revenues, cpc-discount data from",
-        "linkedRelationshipId" : "57"
+        "description" : "Gets campaign performance data from",
+        "linkedRelationshipId" : "54"
       } ],
       "location" : "Unspecified",
       "documentation" : { }
     }, {
       "id" : "6",
-      "tags" : "Element,Software System",
+      "tags" : "Element,Software System,System-Under-Consideration",
       "properties" : {
         "structurizr.dsl.identifier" : "cps"
       },
       "name" : "Campaign Performance Service(CPS)",
+      "description" : "Tracks campaign related metrics",
       "relationships" : [ {
-        "id" : "35",
-        "sourceId" : "6",
-        "destinationId" : "5",
-        "description" : "fetches orders/revenue data from",
-        "linkedRelationshipId" : "33"
-      }, {
-        "id" : "38",
+        "id" : "33",
         "sourceId" : "6",
         "destinationId" : "1",
         "description" : "fetches supplier-id for a particular campaign-catalog from",
-        "linkedRelationshipId" : "36"
+        "linkedRelationshipId" : "31"
       }, {
-        "id" : "54",
+        "id" : "29",
         "sourceId" : "6",
-        "destinationId" : "2",
-        "description" : "Gets ad interaction events data from",
-        "linkedRelationshipId" : "53"
+        "destinationId" : "5",
+        "description" : "fetches orders/revenue/catalog level cpc data from",
+        "linkedRelationshipId" : "28"
       } ],
       "location" : "Unspecified",
       "containers" : [ {
+        "id" : "17",
+        "tags" : "Element,Container",
+        "properties" : {
+          "structurizr.dsl.identifier" : "scheduler"
+        },
+        "name" : "Schedulers",
+        "relationships" : [ {
+          "id" : "42",
+          "sourceId" : "17",
+          "destinationId" : "9",
+          "description" : "Publishes campaign-catalog-date keys to",
+          "linkedRelationshipId" : "41"
+        }, {
+          "id" : "28",
+          "tags" : "Relationship,Scheduled-Run",
+          "properties" : {
+            "structurizr.dsl.identifier" : "55cb019a-0863-4d03-b850-85a451b931db"
+          },
+          "sourceId" : "17",
+          "destinationId" : "5",
+          "description" : "fetches orders/revenue/catalog level cpc data from"
+        }, {
+          "id" : "35",
+          "sourceId" : "17",
+          "destinationId" : "10",
+          "description" : "Writes campaign-catalog-date-metrics-collection to",
+          "linkedRelationshipId" : "34"
+        }, {
+          "id" : "32",
+          "sourceId" : "17",
+          "destinationId" : "1",
+          "description" : "fetches supplier-id for a particular campaign-catalog from",
+          "linkedRelationshipId" : "31"
+        }, {
+          "id" : "37",
+          "sourceId" : "17",
+          "destinationId" : "7",
+          "description" : "Writes campaign-catalog-date keys to",
+          "linkedRelationshipId" : "36"
+        } ],
+        "components" : [ {
+          "id" : "20",
+          "tags" : "Element,Component",
+          "properties" : {
+            "structurizr.dsl.identifier" : "daywiseperformanceeventsscheduler"
+          },
+          "name" : "Daywise Performance Events Scheduler",
+          "relationships" : [ {
+            "id" : "41",
+            "tags" : "Relationship",
+            "properties" : {
+              "structurizr.dsl.identifier" : "3eb7f1e7-8c41-4465-b4d8-80287f0398cf"
+            },
+            "sourceId" : "20",
+            "destinationId" : "9",
+            "description" : "Publishes campaign-catalog-date keys to"
+          }, {
+            "id" : "40",
+            "tags" : "Relationship",
+            "properties" : {
+              "structurizr.dsl.identifier" : "307df1d5-683c-430f-8a6b-ac5cbebbc66f"
+            },
+            "sourceId" : "20",
+            "destinationId" : "7",
+            "description" : "fetches campaign-catalog-date keys from"
+          } ],
+          "documentation" : { }
+        }, {
+          "id" : "19",
+          "tags" : "Element,Component",
+          "properties" : {
+            "structurizr.dsl.identifier" : "catalogcpcdiscountscheduler"
+          },
+          "name" : "Catalog CPC Discount Scheduler",
+          "relationships" : [ {
+            "id" : "39",
+            "tags" : "Relationship",
+            "properties" : {
+              "structurizr.dsl.identifier" : "da69c3c0-56b8-47e5-837a-2bfc1c72396a"
+            },
+            "sourceId" : "19",
+            "destinationId" : "10",
+            "description" : "Writes catalog-cpc-discount-collection to"
+          }, {
+            "id" : "38",
+            "tags" : "Relationship",
+            "properties" : {
+              "structurizr.dsl.identifier" : "6a77dc36-ff78-4072-8353-e6cdb13a0240"
+            },
+            "sourceId" : "19",
+            "destinationId" : "5",
+            "description" : "Fetches catalog level cpc discount data from"
+          } ],
+          "documentation" : { }
+        }, {
+          "id" : "18",
+          "tags" : "Element,Component",
+          "properties" : {
+            "structurizr.dsl.identifier" : "campaignperformancescheduler"
+          },
+          "name" : "Campaign Performance Scheduler",
+          "relationships" : [ {
+            "id" : "34",
+            "tags" : "Relationship",
+            "properties" : {
+              "structurizr.dsl.identifier" : "f6060b00-06fa-49c7-968f-55f5d842b70c"
+            },
+            "sourceId" : "18",
+            "destinationId" : "10",
+            "description" : "Writes campaign-catalog-date-metrics-collection to"
+          }, {
+            "id" : "30",
+            "tags" : "Relationship",
+            "properties" : {
+              "structurizr.dsl.identifier" : "2e1e5c72-04b5-4f70-9d8d-003c6caf186d"
+            },
+            "sourceId" : "18",
+            "destinationId" : "5",
+            "description" : "fetches orders/revenue data from"
+          }, {
+            "id" : "36",
+            "tags" : "Relationship",
+            "properties" : {
+              "structurizr.dsl.identifier" : "35da476d-83bb-4a32-ae7a-0decccc43cb0"
+            },
+            "sourceId" : "18",
+            "destinationId" : "7",
+            "description" : "Writes campaign-catalog-date keys to"
+          }, {
+            "id" : "31",
+            "tags" : "Relationship",
+            "properties" : {
+              "structurizr.dsl.identifier" : "8cd3fab5-b543-4293-b3ff-92fd83517416"
+            },
+            "sourceId" : "18",
+            "destinationId" : "1",
+            "description" : "fetches supplier-id for a particular campaign-catalog from"
+          } ],
+          "documentation" : { }
+        } ],
+        "documentation" : { }
+      }, {
+        "id" : "11",
+        "tags" : "Element,Container",
+        "properties" : {
+          "structurizr.dsl.identifier" : "apiapp"
+        },
+        "name" : "API-application",
+        "technology" : "Java SpringBoot",
+        "components" : [ {
+          "id" : "12",
+          "tags" : "Element,Component",
+          "properties" : {
+            "structurizr.dsl.identifier" : "backfillcampaigndatacontroller"
+          },
+          "name" : "Backfill Campaign Data Controller",
+          "documentation" : { }
+        }, {
+          "id" : "13",
+          "tags" : "Element,Component",
+          "properties" : {
+            "structurizr.dsl.identifier" : "backfillmissedeventscontroller"
+          },
+          "name" : "Backfill Missed Events Controller",
+          "documentation" : { }
+        }, {
+          "id" : "16",
+          "tags" : "Element,Component",
+          "properties" : {
+            "structurizr.dsl.identifier" : "manualschedulercontroller"
+          },
+          "name" : "Manual Scheduler Controller",
+          "documentation" : { }
+        }, {
+          "id" : "14",
+          "tags" : "Element,Component",
+          "properties" : {
+            "structurizr.dsl.identifier" : "campaignperformancecontroller"
+          },
+          "name" : "Campaign Performance Controller",
+          "documentation" : { }
+        }, {
+          "id" : "15",
+          "tags" : "Element,Component",
+          "properties" : {
+            "structurizr.dsl.identifier" : "debugcontroller"
+          },
+          "name" : "Debug Controller",
+          "documentation" : { }
+        } ],
+        "documentation" : { }
+      }, {
+        "id" : "21",
+        "tags" : "Element,Container",
+        "properties" : {
+          "structurizr.dsl.identifier" : "listener"
+        },
+        "name" : "Listener",
+        "relationships" : [ {
+          "id" : "44",
+          "sourceId" : "21",
+          "destinationId" : "9",
+          "description" : "Consumes scheduler run messages from",
+          "linkedRelationshipId" : "43"
+        } ],
+        "components" : [ {
+          "id" : "27",
+          "tags" : "Element,Component",
+          "properties" : {
+            "structurizr.dsl.identifier" : "unpartitionedingestionconfluentkafkainteractioneventlistener"
+          },
+          "name" : "UnPartitioned Ingestion Confluent Kafka Interaction Event Listener",
+          "documentation" : { }
+        }, {
+          "id" : "24",
+          "tags" : "Element,Component",
+          "properties" : {
+            "structurizr.dsl.identifier" : "daywiseperformancemetricslistener"
+          },
+          "name" : "Day Wise Performance Metrics Listener",
+          "documentation" : { }
+        }, {
+          "id" : "26",
+          "tags" : "Element,Component",
+          "properties" : {
+            "structurizr.dsl.identifier" : "adinteractioneventlistener"
+          },
+          "name" : "Ad Interaction Event Listener",
+          "documentation" : { }
+        }, {
+          "id" : "25",
+          "tags" : "Element,Component",
+          "properties" : {
+            "structurizr.dsl.identifier" : "ingestionconfluentkafkavieweventslistener"
+          },
+          "name" : "Ingestion Confluent Kafka View Events Listener",
+          "documentation" : { }
+        }, {
+          "id" : "22",
+          "tags" : "Element,Component",
+          "properties" : {
+            "structurizr.dsl.identifier" : "prestoschedulereventlistener"
+          },
+          "name" : "Presto Scheduler Event Listener",
+          "relationships" : [ {
+            "id" : "43",
+            "tags" : "Relationship",
+            "properties" : {
+              "structurizr.dsl.identifier" : "12923d7d-6af9-4076-b682-9f388d99a05d"
+            },
+            "sourceId" : "22",
+            "destinationId" : "9",
+            "description" : "Consumes scheduler run messages from"
+          } ],
+          "documentation" : { }
+        }, {
+          "id" : "23",
+          "tags" : "Element,Component",
+          "properties" : {
+            "structurizr.dsl.identifier" : "adviewcampaigncatalogcacheupdateeventlistener"
+          },
+          "name" : "Ad View Campaign Catalog Cache Update Event Listener",
+          "documentation" : { }
+        } ],
+        "documentation" : { }
+      }, {
+        "id" : "9",
+        "tags" : "Element,Container",
+        "properties" : {
+          "structurizr.dsl.identifier" : "adskafka"
+        },
+        "name" : "Ads Kafka",
+        "group" : "Shared across all ads",
+        "technology" : "Kafka",
+        "documentation" : { }
+      }, {
         "id" : "10",
         "tags" : "Element,Container,Database",
         "properties" : {
@@ -226,228 +437,6 @@
         "name" : "Document Database",
         "description" : "Database",
         "technology" : "MongoDB",
-        "documentation" : { }
-      }, {
-        "id" : "29",
-        "tags" : "Element,Container",
-        "properties" : {
-          "structurizr.dsl.identifier" : "scheduler"
-        },
-        "name" : "Schedulers",
-        "relationships" : [ {
-          "id" : "34",
-          "sourceId" : "29",
-          "destinationId" : "5",
-          "description" : "fetches orders/revenue data from",
-          "linkedRelationshipId" : "33"
-        }, {
-          "id" : "37",
-          "sourceId" : "29",
-          "destinationId" : "1",
-          "description" : "fetches supplier-id for a particular campaign-catalog from",
-          "linkedRelationshipId" : "36"
-        }, {
-          "id" : "40",
-          "sourceId" : "29",
-          "destinationId" : "10",
-          "description" : "Writes campaign-catalog-date-metrics-collection to",
-          "linkedRelationshipId" : "39"
-        }, {
-          "id" : "42",
-          "sourceId" : "29",
-          "destinationId" : "7",
-          "description" : "Writes campaign-catalog-date keys to",
-          "linkedRelationshipId" : "41"
-        }, {
-          "id" : "47",
-          "sourceId" : "29",
-          "destinationId" : "9",
-          "description" : "Publishes campaign-catalog-date keys to",
-          "linkedRelationshipId" : "46"
-        }, {
-          "id" : "50",
-          "tags" : "Relationship",
-          "properties" : {
-            "structurizr.dsl.identifier" : "ec8d0703-9cd3-4591-915d-8cdfbd9f7fb5"
-          },
-          "sourceId" : "29",
-          "destinationId" : "10",
-          "description" : "Writes order, revenue, cpc-discount data to"
-        }, {
-          "id" : "51",
-          "tags" : "Relationship",
-          "properties" : {
-            "structurizr.dsl.identifier" : "4ff69799-378f-4eb0-9c04-a1a3a948e7f7"
-          },
-          "sourceId" : "29",
-          "destinationId" : "10",
-          "description" : "Reads daywise performance data from"
-        }, {
-          "id" : "56",
-          "tags" : "Relationship",
-          "properties" : {
-            "structurizr.dsl.identifier" : "1b2e3e9f-bdc0-40d8-b6b5-b8351fb5f123"
-          },
-          "sourceId" : "29",
-          "destinationId" : "5",
-          "description" : "Pushes daywise performance data vis Prism SDK to"
-        }, {
-          "id" : "60",
-          "tags" : "Relationship",
-          "properties" : {
-            "structurizr.dsl.identifier" : "101083cb-2d52-4033-bff0-805a9003b5cd"
-          },
-          "sourceId" : "29",
-          "destinationId" : "8",
-          "description" : "Stores scheduler offsets in"
-        } ],
-        "components" : [ {
-          "id" : "30",
-          "tags" : "Element,Component",
-          "properties" : {
-            "structurizr.dsl.identifier" : "campaignperformancescheduler"
-          },
-          "name" : "Campaign Performance Scheduler",
-          "relationships" : [ {
-            "id" : "33",
-            "tags" : "Relationship",
-            "properties" : {
-              "structurizr.dsl.identifier" : "9b059bad-6252-4720-b87b-68def738b25d"
-            },
-            "sourceId" : "30",
-            "destinationId" : "5",
-            "description" : "fetches orders/revenue data from"
-          }, {
-            "id" : "36",
-            "tags" : "Relationship",
-            "properties" : {
-              "structurizr.dsl.identifier" : "401fdfc6-1cf2-42d5-9c97-ee3b77cf126a"
-            },
-            "sourceId" : "30",
-            "destinationId" : "1",
-            "description" : "fetches supplier-id for a particular campaign-catalog from"
-          }, {
-            "id" : "39",
-            "tags" : "Relationship",
-            "properties" : {
-              "structurizr.dsl.identifier" : "df43774b-bfed-4cf8-ab3e-993ae5e8866b"
-            },
-            "sourceId" : "30",
-            "destinationId" : "10",
-            "description" : "Writes campaign-catalog-date-metrics-collection to"
-          }, {
-            "id" : "41",
-            "tags" : "Relationship",
-            "properties" : {
-              "structurizr.dsl.identifier" : "72a2901f-347a-4724-930d-77c58ee6baf1"
-            },
-            "sourceId" : "30",
-            "destinationId" : "7",
-            "description" : "Writes campaign-catalog-date keys to"
-          } ],
-          "documentation" : { }
-        }, {
-          "id" : "31",
-          "tags" : "Element,Component",
-          "properties" : {
-            "structurizr.dsl.identifier" : "catalogcpcdiscountscheduler"
-          },
-          "name" : "Catalog CPC Discount Scheduler",
-          "relationships" : [ {
-            "id" : "43",
-            "tags" : "Relationship",
-            "properties" : {
-              "structurizr.dsl.identifier" : "8fd234ce-3f94-406e-8f7e-488a33f15c68"
-            },
-            "sourceId" : "31",
-            "destinationId" : "5",
-            "description" : "Fetches catalog level cpc discount data from"
-          }, {
-            "id" : "44",
-            "tags" : "Relationship",
-            "properties" : {
-              "structurizr.dsl.identifier" : "09e5eb2a-9fdc-4c54-bd03-c3b4fe0958a5"
-            },
-            "sourceId" : "31",
-            "destinationId" : "10",
-            "description" : "Writes catalog-cpc-discount-collection to"
-          } ],
-          "documentation" : { }
-        }, {
-          "id" : "32",
-          "tags" : "Element,Component",
-          "properties" : {
-            "structurizr.dsl.identifier" : "daywiseperformanceeventsscheduler"
-          },
-          "name" : "Daywise Performance Events Scheduler",
-          "relationships" : [ {
-            "id" : "45",
-            "tags" : "Relationship",
-            "properties" : {
-              "structurizr.dsl.identifier" : "2a1452b8-2341-46c7-8d75-84b385f37490"
-            },
-            "sourceId" : "32",
-            "destinationId" : "7",
-            "description" : "fetches campaign-catalog-date keys from"
-          }, {
-            "id" : "46",
-            "tags" : "Relationship",
-            "properties" : {
-              "structurizr.dsl.identifier" : "ba673c4f-41d8-44f5-886e-dc689d8a4afd"
-            },
-            "sourceId" : "32",
-            "destinationId" : "9",
-            "description" : "Publishes campaign-catalog-date keys to"
-          } ],
-          "documentation" : { }
-        } ],
-        "documentation" : { }
-      }, {
-        "id" : "48",
-        "tags" : "Element,Container",
-        "properties" : {
-          "structurizr.dsl.identifier" : "listener"
-        },
-        "name" : "Listener",
-        "relationships" : [ {
-          "id" : "52",
-          "tags" : "Relationship",
-          "properties" : {
-            "structurizr.dsl.identifier" : "9a0aeddd-7106-41a1-83bf-b19e285554f9"
-          },
-          "sourceId" : "48",
-          "destinationId" : "10",
-          "description" : "Writes ad clicks, views, other interaction data to"
-        }, {
-          "id" : "53",
-          "tags" : "Relationship",
-          "properties" : {
-            "structurizr.dsl.identifier" : "8195b4c2-566c-4566-b5de-66fcb72cd1fa"
-          },
-          "sourceId" : "48",
-          "destinationId" : "2",
-          "description" : "Gets ad interaction events data from"
-        }, {
-          "id" : "61",
-          "tags" : "Relationship",
-          "properties" : {
-            "structurizr.dsl.identifier" : "fa9bc95e-ded0-4dfe-98d0-b121257340d1"
-          },
-          "sourceId" : "48",
-          "destinationId" : "7",
-          "description" : "Updates campaign catalog date key to"
-        } ],
-        "documentation" : { }
-      }, {
-        "id" : "7",
-        "tags" : "Element,Container,Database",
-        "properties" : {
-          "structurizr.dsl.identifier" : "cachecomponent"
-        },
-        "name" : "Cache",
-        "description" : "In context of CPS, it stores User Interaction data and Campaign Catalog date keys",
-        "group" : "Shared across all ads",
-        "technology" : "Redis",
         "documentation" : { }
       }, {
         "id" : "8",
@@ -461,76 +450,35 @@
         "technology" : "MySQL",
         "documentation" : { }
       }, {
-        "id" : "9",
-        "tags" : "Element,Container",
+        "id" : "7",
+        "tags" : "Element,Container,Database",
         "properties" : {
-          "structurizr.dsl.identifier" : "adskafka"
+          "structurizr.dsl.identifier" : "cachecomponent"
         },
-        "name" : "Ads Kafka",
+        "name" : "Cache",
+        "description" : "In context of CPS, it stores User Interaction data and Campaign Catalog date keys",
         "group" : "Shared across all ads",
-        "technology" : "Kafka",
-        "documentation" : { }
-      }, {
-        "id" : "11",
-        "tags" : "Element,Container",
-        "properties" : {
-          "structurizr.dsl.identifier" : "apiapp"
-        },
-        "name" : "API-application",
-        "relationships" : [ {
-          "id" : "49",
-          "tags" : "Relationship",
-          "properties" : {
-            "structurizr.dsl.identifier" : "f9c23107-2ed9-4cf6-8f3e-a78bfe37734d"
-          },
-          "sourceId" : "11",
-          "destinationId" : "10",
-          "description" : "Reads from"
-        } ],
-        "technology" : "Java SpringBoot",
-        "components" : [ {
-          "id" : "14",
-          "tags" : "Element,Component",
-          "properties" : {
-            "structurizr.dsl.identifier" : "campaignperformancecontroller"
-          },
-          "name" : "Campaign Performance Controller",
-          "documentation" : { }
-        }, {
-          "id" : "16",
-          "tags" : "Element,Component",
-          "properties" : {
-            "structurizr.dsl.identifier" : "manualschedulercontroller"
-          },
-          "name" : "Manual Scheduler Controller",
-          "documentation" : { }
-        }, {
-          "id" : "15",
-          "tags" : "Element,Component",
-          "properties" : {
-            "structurizr.dsl.identifier" : "debugcontroller"
-          },
-          "name" : "Debug Controller",
-          "documentation" : { }
-        }, {
-          "id" : "13",
-          "tags" : "Element,Component",
-          "properties" : {
-            "structurizr.dsl.identifier" : "backfillmissedeventscontroller"
-          },
-          "name" : "Backfill Missed Events Controller",
-          "documentation" : { }
-        }, {
-          "id" : "12",
-          "tags" : "Element,Component",
-          "properties" : {
-            "structurizr.dsl.identifier" : "backfillcampaigndatacontroller"
-          },
-          "name" : "Backfill Campaign Data Controller",
-          "documentation" : { }
-        } ],
+        "technology" : "Redis",
         "documentation" : { }
       } ],
+      "documentation" : { }
+    }, {
+      "id" : "2",
+      "tags" : "Element,Software System",
+      "properties" : {
+        "structurizr.dsl.identifier" : "ingestionkafka"
+      },
+      "name" : "Ingestion Kafka",
+      "location" : "Unspecified",
+      "documentation" : { }
+    }, {
+      "id" : "5",
+      "tags" : "Element,Software System",
+      "properties" : {
+        "structurizr.dsl.identifier" : "presto"
+      },
+      "name" : "Presto",
+      "location" : "Unspecified",
       "documentation" : { }
     } ]
   },
@@ -557,212 +505,146 @@
         "width" : 2300,
         "height" : 2000
       },
+      "automaticLayout" : {
+        "implementation" : "Graphviz",
+        "rankDirection" : "TopBottom",
+        "rankSeparation" : 300,
+        "nodeSeparation" : 300,
+        "edgeSeparation" : 0,
+        "vertices" : false
+      },
       "enterpriseBoundaryVisible" : true,
       "elements" : [ {
         "id" : "1",
         "x" : 200,
-        "y" : 250
-      }, {
-        "id" : "2",
-        "x" : 1325,
-        "y" : 1500
+        "y" : 249
       }, {
         "id" : "3",
         "x" : 950,
-        "y" : 250
+        "y" : 249
       }, {
         "id" : "4",
         "x" : 1700,
-        "y" : 200
+        "y" : 199
       }, {
         "id" : "5",
         "x" : 575,
-        "y" : 1500
+        "y" : 1499
       }, {
         "id" : "6",
         "x" : 575,
-        "y" : 900
+        "y" : 899
       } ],
       "relationships" : [ {
-        "id" : "28"
+        "id" : "29"
       }, {
-        "id" : "35",
-        "vertices" : [ {
-          "x" : 650,
-          "y" : 1350
-        } ]
+        "id" : "50"
       }, {
-        "id" : "22"
-      }, {
-        "id" : "54"
-      }, {
-        "id" : "58",
-        "vertices" : [ {
-          "x" : 950,
-          "y" : 1350
-        } ]
-      }, {
-        "id" : "38",
+        "id" : "33",
         "vertices" : [ {
           "x" : 742,
-          "y" : 650
+          "y" : 649
         } ]
       }, {
-        "id" : "19"
+        "id" : "56",
+        "vertices" : [ {
+          "x" : 482,
+          "y" : 798
+        } ]
+      }, {
+        "id" : "47"
       } ]
     } ],
     "containerViews" : [ {
       "key" : "CPS-Containers",
       "order" : 2,
       "softwareSystemId" : "6",
+      "paperSize" : "A3_Landscape",
       "dimensions" : {
-        "width" : 4640,
-        "height" : 2165
+        "width" : 4108,
+        "height" : 2225
+      },
+      "automaticLayout" : {
+        "implementation" : "Graphviz",
+        "rankDirection" : "TopBottom",
+        "rankSeparation" : 300,
+        "nodeSeparation" : 300,
+        "edgeSeparation" : 0,
+        "vertices" : false
       },
       "externalSoftwareSystemBoundariesVisible" : true,
       "elements" : [ {
         "id" : "11",
-        "x" : 2490,
-        "y" : 899
-      }, {
-        "id" : "48",
-        "x" : 1740,
-        "y" : 899
-      }, {
-        "id" : "29",
-        "x" : 990,
-        "y" : 899
+        "x" : 2683,
+        "y" : 908
       }, {
         "id" : "1",
-        "x" : 1002,
-        "y" : 249
-      }, {
-        "id" : "2",
-        "x" : 3990,
-        "y" : 1499
+        "x" : 1933,
+        "y" : 258
       }, {
         "id" : "3",
-        "x" : 1765,
-        "y" : 249
+        "x" : 2683,
+        "y" : 258
       }, {
         "id" : "4",
-        "x" : 2515,
-        "y" : 199
+        "x" : 3433,
+        "y" : 208
       }, {
         "id" : "5",
-        "x" : 3240,
-        "y" : 1499
+        "x" : 3433,
+        "y" : 1508
+      }, {
+        "id" : "17",
+        "x" : 1933,
+        "y" : 908
       }, {
         "id" : "7",
-        "x" : 1740,
-        "y" : 1499
+        "x" : 1933,
+        "y" : 1508
       }, {
         "id" : "8",
-        "x" : 990,
-        "y" : 1499
+        "x" : 1183,
+        "y" : 1508
       }, {
         "id" : "9",
-        "x" : 240,
-        "y" : 1499
+        "x" : 433,
+        "y" : 1508
       }, {
         "id" : "10",
-        "x" : 2490,
-        "y" : 1499
-      } ],
-      "relationships" : [ {
-        "id" : "61"
-      }, {
-        "id" : "50",
-        "vertices" : [ {
-          "x" : 1590,
-          "y" : 1199
-        }, {
-          "x" : 2369,
-          "y" : 1395
-        } ]
-      }, {
-        "id" : "60"
-      }, {
-        "id" : "40",
-        "vertices" : [ {
-          "x" : 2069,
-          "y" : 1395
-        } ]
-      }, {
-        "id" : "51",
-        "vertices" : [ {
-          "x" : 1890,
-          "y" : 1199
-        }, {
-          "x" : 2669,
-          "y" : 1395
-        } ]
-      }, {
-        "id" : "52"
-      }, {
-        "id" : "53",
-        "vertices" : [ {
-          "x" : 2340,
-          "y" : 1199
-        }, {
-          "x" : 3840,
-          "y" : 1395
-        } ]
-      }, {
-        "id" : "42"
+        "x" : 2683,
+        "y" : 1508
       }, {
         "id" : "21",
+        "x" : 433,
+        "y" : 908
+      } ],
+      "relationships" : [ {
+        "id" : "28",
         "vertices" : [ {
-          "x" : 2565,
-          "y" : 724
+          "x" : 2533,
+          "y" : 1208
+        }, {
+          "x" : 3312,
+          "y" : 1404
         } ]
-      }, {
-        "id" : "18"
-      }, {
-        "id" : "27"
       }, {
         "id" : "37"
       }, {
-        "id" : "34",
+        "id" : "35"
+      }, {
+        "id" : "42",
         "vertices" : [ {
-          "x" : 2819,
-          "y" : 1395
+          "x" : 1033,
+          "y" : 1404
         } ]
       }, {
-        "id" : "55",
-        "vertices" : [ {
-          "x" : 1615,
-          "y" : 599
-        }, {
-          "x" : 2340,
-          "y" : 795
-        } ]
+        "id" : "32"
       }, {
-        "id" : "56",
-        "vertices" : [ {
-          "x" : 1590,
-          "y" : 1199
-        }, {
-          "x" : 3119,
-          "y" : 1395
-        } ]
+        "id" : "55"
       }, {
-        "id" : "57",
-        "vertices" : [ {
-          "x" : 3419,
-          "y" : 1395
-        }, {
-          "x" : 1890,
-          "y" : 1199
-        } ]
+        "id" : "44"
       }, {
-        "id" : "47"
-      }, {
-        "id" : "59",
-        "vertices" : [ {
-          "x" : 2865,
-          "y" : 724
-        } ]
+        "id" : "46"
       }, {
         "id" : "49"
       } ]
@@ -770,125 +652,191 @@
     "componentViews" : [ {
       "key" : "Schedulers",
       "order" : 4,
+      "paperSize" : "A3_Landscape",
       "dimensions" : {
-        "width" : 4850,
-        "height" : 2320
+        "width" : 3866,
+        "height" : 1454
       },
-      "containerId" : "29",
+      "containerId" : "17",
       "externalContainerBoundariesVisible" : true,
       "elements" : [ {
         "id" : "1",
-        "x" : 2200,
-        "y" : 1320
+        "x" : 1708,
+        "y" : 929
       }, {
         "id" : "5",
-        "x" : 700,
-        "y" : 1320
+        "x" : 208,
+        "y" : 929
       }, {
         "id" : "7",
-        "x" : 2950,
-        "y" : 1320
+        "x" : 2458,
+        "y" : 929
+      }, {
+        "id" : "18",
+        "x" : 1708,
+        "y" : 329
+      }, {
+        "id" : "19",
+        "x" : 958,
+        "y" : 329
       }, {
         "id" : "9",
-        "x" : 3700,
-        "y" : 1320
+        "x" : 3208,
+        "y" : 929
       }, {
-        "id" : "30",
-        "x" : 2055,
-        "y" : 325
-      }, {
-        "id" : "31",
-        "x" : 595,
-        "y" : 330
+        "id" : "20",
+        "x" : 2458,
+        "y" : 329
       }, {
         "id" : "10",
-        "x" : 1450,
-        "y" : 1320
-      }, {
-        "id" : "32",
-        "x" : 3575,
-        "y" : 310
+        "x" : 958,
+        "y" : 929
       } ],
       "relationships" : [ {
+        "id" : "40"
+      }, {
         "id" : "36"
       }, {
         "id" : "41"
       }, {
-        "id" : "33",
+        "id" : "34"
+      }, {
+        "id" : "31"
+      }, {
+        "id" : "30",
         "vertices" : [ {
-          "x" : 1565,
-          "y" : 910
+          "x" : 1558,
+          "y" : 733
         }, {
-          "x" : 1300,
-          "y" : 1320
+          "x" : 808,
+          "y" : 929
         } ]
       }, {
-        "id" : "43"
-      }, {
-        "id" : "44"
-      }, {
-        "id" : "45"
-      }, {
-        "id" : "46"
+        "id" : "38"
       }, {
         "id" : "39"
       } ]
     }, {
       "key" : "API-Application",
       "order" : 3,
+      "paperSize" : "A3_Landscape",
       "dimensions" : {
-        "width" : 4237,
-        "height" : 1491
+        "width" : 4345,
+        "height" : 1520
+      },
+      "automaticLayout" : {
+        "implementation" : "Graphviz",
+        "rankDirection" : "TopBottom",
+        "rankSeparation" : 300,
+        "nodeSeparation" : 300,
+        "edgeSeparation" : 0,
+        "vertices" : false
       },
       "containerId" : "11",
       "externalContainerBoundariesVisible" : true,
       "elements" : [ {
         "id" : "1",
-        "x" : 199,
-        "y" : 250
+        "x" : 208,
+        "y" : 258
       }, {
         "id" : "12",
-        "x" : 3566,
-        "y" : 900
+        "x" : 2833,
+        "y" : 908
       }, {
         "id" : "13",
-        "x" : 2816,
-        "y" : 900
+        "x" : 2083,
+        "y" : 908
       }, {
         "id" : "14",
-        "x" : 566,
-        "y" : 900
+        "x" : 583,
+        "y" : 908
       }, {
         "id" : "3",
-        "x" : 949,
-        "y" : 250
-      }, {
-        "id" : "4",
-        "x" : 1712,
-        "y" : 200
+        "x" : 958,
+        "y" : 258
       }, {
         "id" : "15",
-        "x" : 1316,
-        "y" : 900
+        "x" : 1333,
+        "y" : 908
+      }, {
+        "id" : "4",
+        "x" : 2483,
+        "y" : 208
       }, {
         "id" : "16",
-        "x" : 2066,
-        "y" : 900
+        "x" : 3583,
+        "y" : 908
       } ],
       "relationships" : [ {
-        "id" : "17"
+        "id" : "51",
+        "vertices" : [ {
+          "x" : 3433,
+          "y" : 804
+        } ]
       }, {
-        "id" : "26"
+        "id" : "52"
       }, {
-        "id" : "25"
+        "id" : "53"
       }, {
-        "id" : "62"
+        "id" : "54"
       }, {
-        "id" : "24"
+        "id" : "45"
       }, {
-        "id" : "23"
+        "id" : "48",
+        "vertices" : [ {
+          "x" : 1933,
+          "y" : 804
+        } ]
+      } ]
+    }, {
+      "key" : "Listener",
+      "order" : 5,
+      "paperSize" : "A3_Landscape",
+      "dimensions" : {
+        "width" : 4858,
+        "height" : 1454
+      },
+      "automaticLayout" : {
+        "implementation" : "Graphviz",
+        "rankDirection" : "TopBottom",
+        "rankSeparation" : 300,
+        "nodeSeparation" : 300,
+        "edgeSeparation" : 0,
+        "vertices" : false
+      },
+      "containerId" : "21",
+      "externalContainerBoundariesVisible" : true,
+      "elements" : [ {
+        "id" : "22",
+        "x" : 4079,
+        "y" : 329
       }, {
-        "id" : "20"
+        "id" : "23",
+        "x" : 3329,
+        "y" : 329
+      }, {
+        "id" : "24",
+        "x" : 2579,
+        "y" : 329
+      }, {
+        "id" : "25",
+        "x" : 1829,
+        "y" : 329
+      }, {
+        "id" : "26",
+        "x" : 1079,
+        "y" : 329
+      }, {
+        "id" : "27",
+        "x" : 329,
+        "y" : 329
+      }, {
+        "id" : "9",
+        "x" : 4079,
+        "y" : 929
+      } ],
+      "relationships" : [ {
+        "id" : "43"
       } ]
     } ],
     "configuration" : {
@@ -897,11 +845,19 @@
         "elements" : [ {
           "tag" : "Database",
           "shape" : "Cylinder"
+        }, {
+          "tag" : "System-Under-Consideration",
+          "background" : "#2e8b57"
+        } ],
+        "relationships" : [ {
+          "tag" : "Scheduled-Run",
+          "color" : "#0000ff"
         } ]
       },
       "themes" : [ "https://static.structurizr.com/themes/default/theme.json" ],
       "terminology" : { },
-      "lastSavedView" : "Schedulers"
+      "metadataSymbols" : "SquareBrackets",
+      "lastSavedView" : "CPS-SystemContext"
     }
   }
 }

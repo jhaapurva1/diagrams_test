@@ -9,17 +9,17 @@ workspace  "Ads - Campaign Performance Service(CPS)" "Tracks campaign related me
                 }
                 presto  = softwareSystem "Presto"
                 cps = softwareSystem "Campaign Performance Service(CPS)"{
+                                tags "System-Under-Consideration"
+                                description "Tracks campaign related metrics"
                                 group "Shared across all ads"{
                                     !include sharedContainers.dsl
                                 }
                                 !include container.dsl
-
-                        developer -> apiapp "Uses"
-                        scheduler -> databaseComponent "Stores scheduler offsets in"
-                        listener -> cacheComponent "Updates campaign catalog date key to"
-                        cms -> campaignPerformanceController "Gets campaign level data like budget utilised using"
+                                !include relationships.dsl
                     }
                 }
+
+
 
 
                 views {
