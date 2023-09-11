@@ -34,13 +34,86 @@ Each of the services are explained below:
 
 ## Components
 
-### API component
-![](embed:API-Application)
-
-### Listener component
-
 ### Scheduler component
 ![](embed:Schedulers)
+>
+> **Campaign-performance-scheduler**
+> 1. Fetches orders/revenue data from presto
+> 2. Fetches supplier-id from ads-admin for a particular campaign-catalog
+> 3. Writes to mongo-db (campaign-catalog-date-metrics-collection)
+> 4. Writes campaign-catalog-date keys to cache
+>
+> **Catalog-cpc-discount scheduler**
+> 1. Fetches catalog level cpc discount data from presto
+> 2. Writes to mongo-db (catalog-cpc-discount-collection)
+>
+> **Day-wise-perf scheduler**
+> 1. fetches campaign-catalog-date keys from cache (keys of documents that got updated in mongodb)
+> 2. Publishes these keys to kafka
+> 3. Then the listener of this kafka fetches data for these keys from mongodb (reads from campaign-catalog-date-metrics-collection)
+> 4. The listener produces a prism event of this data
+
+### Listener component
+>> ![](embed:Listener)
+> 
+> **UnPartitionedIngestionConfluentKafkaInteractionEventListener**
+> 1. Consumes from ingestion kafka topic (rt_ad_click,rt_ad_shared,rt_ad_wishlisted,rt_anonymous_ad_click,rt_anonymous_ad_shared,rt_anonymous_ad_wishlisted)
+> 2. Publishes to internal kafka topic (ad_service.interactions) with catalogId as a key
+> 3. Publishes to dead-queue (cps_new.adinteraction.dead.queue) topic in case of any exceptions
+>
+> **AdInteractionEventListener**
+> 1. Consumes from ad_service.interactions topic
+> 2. Calls ads-admin to get SupplierCampaignCatalogMetaDataResponse using API (api/v1/campaign/supplier_campaign_catalog_metadata)
+> 3. Fetch campaign’s, supplier’s and real-estate’s budgetUtilised data from MongoDb(campaign-date-wise-metrics-collection, campaign-metrics-collection, supplier-week-wise-metrics-collection), And publish budget-exhaust events if budget is already exhausted. Also discards the click if budget utilised has overshot the allowed overshoot limit.
+> 4. Perform window de-duplication
+> 5. Increment click count and budget-utilised in all mongodb collections
+> 6. Publish budget exhausted events if budget gets exhausted after taking the current click into account
+> 7. Add campaign-catalog-date key to redis set (redis key prefix - new_ucc) ---- to keep track of updated records
+> 8. Publishes telegraf metrics and Prism events for every status of click processing (Success, failure, duplicate, invalid etc.)
+>
+> **IngestionConfluentKafkaViewEventsListener**
+> 1. Consumes from ingestion kafka topics (rt_ad_view,rt_anonymous_ad_view)
+> 2. Publishes to dead-queue (cps_new.ingestion-events.view.dead.queue) in case of any exception in processing
+> 3. Calls ads-admin to fetch AdViewEventMetadataResponse using API (/api/v1/campaign/get_ad_view_catalog_campaign_metadata)
+> 4. Batch up view counts at a campaign-catalog-date level in JVM and writes to mongodb (campaign-catalog-date-metrics-collection) every 5 minutes
+> 5. Publishes telegraf metrics at every stage of processing
+>
+> **DayWisePerformanceMetricsListener**
+> 1. Consumed from topic (cps_new.dayWisePerf) -----
+> 2. Deletes consumed keys from UpdatedCampaignCatalogCache in redis
+> 3. Fetch document for the given key from mongo-db (campaign-catalog-date-metrics-collection)
+> 4. Publish a prism event (DayWisePerformancePrismEvent) to write to presto table
+>
+> **AdViewCampaignCatalogCacheUpdateEventListener**
+> 1. Consumed from topic (cps.ad_view_campaign_catalog_cache_update)
+> 2. Published a RedisPubSub event to update local caffine cache (adViewCampaignCatalogCache) in all machines
+> 3. Publishes to dead-queue topic (cps_new.ad_view_campaign_catalog_cache_update.dead.queue) in case of any exception
+>
+> **PrestoSchedulerEventListener**
+> 1. Consumes from topic (cps.rt_presto_scheduler_run)
+> 2. Triggers the corresponding scheduler
+> 3. Publishes to dead-queue topic in case of scheduler failure or any other exception
+
+### API component
+![](embed:API-Application)
+> **CampaignPerformanceController**
+> 
+> 1. api/v1/supplier/performance (called by ads-admin for supplier-panel)
+> -> For a given supplier-id and date-range, Fetch aggregated data on supplier-id level from mongoDb (collection - campaign-catalog-date-metrics-collection)
+> 2. api/v1//campaign/performance(called by ads-admin for supplier-panel)
+> -> For a given list of campaign-ids and date range, Aggregated data on campaing-id level from mongoDb (collection - campaign-catalog-date-metrics-collection)
+> 3. api/v1//campaign-catalog/performance(called by ads-admin for supplier-panel)
+> -> For a given campaign-id and a list of catalog-ids with date-range, Aggregated data on catalog-id level from mongoDb (collection - campaign-catalog-date-metrics-collection)
+> 4. api /v1//campaign/budget-utilised (called by ads-admin for verification checks on campaign CRUD ops)
+> -> For a given list campaign-ids and a list of supplier-ids, We provide budget-utilised data (current-date’s budget utilised for daily-budget-campaign-ids, total budget data for   total-budget-campaign-ids and currrent week’s budget utilised for supplier-ids). Collection used ---- campaign-date-wise-metrics-collection, campaign-metrics-collection, supplier-weekwise-metrics-collection
+> 5. api/v1/campaign-catalog-date/budget-utilised (called by ads-payment)
+> -> For a given list of campaign-catalog-dates, we fetch budget-utilised from mongodb(collection - campaign-catalog-date-metrics-collection)
+> 6. api/v1/get-active-campaigns (called by ads-payment)
+> -> For a given date, we scroll mongodb (campaign-catalog-date-metrics-collection) in batches (using a cursor on object-id) and fetch campaignId-catalogId whose budget-utilisation is non-zero
+> 7. api/v1//campaign-catalog/performance_date_wise (called by ads-admin for supplier-panel)
+> ->for a given campaign and date-range, we fetch date level performance metrics from mongodb(collection - campaign-catalog-date-metrics-collection)
+
+
 
 
 ## Databases

@@ -1,4 +1,4 @@
-database = container "Document Database" "Database"{
+database = container "MongoDB" "Database"{
     technology "MongoDB"
     tags "Database"
 }

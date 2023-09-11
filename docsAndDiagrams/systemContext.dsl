@@ -1,5 +1,7 @@
 workspace  "Ads - Campaign Performance Service(CPS)" "Tracks campaign related metrics"{
         !docs docs
+        !adrs adrs
+
         model {
                 cms = softwareSystem "Campaign Management Service"
                 ingestionKafka = softwareSystem "Ingestion Kafka"
@@ -16,6 +18,7 @@ workspace  "Ads - Campaign Performance Service(CPS)" "Tracks campaign related me
                                 }
                                 !include container.dsl
                                 !include relationships.dsl
+
                     }
                 }
 

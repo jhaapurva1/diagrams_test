@@ -7,7 +7,6 @@ theme default
 
 container cps "CPS-Containers" {
     include *
-    autoLayout
 }
 component apiapp "API-Application" {
     include *
@@ -18,16 +17,18 @@ component scheduler "Schedulers" {
 }
 component listener "Listener" {
     include *
-    autoLayout
 }
 styles {
     element "Database"{
         shape cylinder
     }
     element "System-Under-Consideration"{
-        background seagreen
+        background #3b444b
+    }
+    relationship "Relationship"{
+        dashed false
     }
     relationship "Scheduled-Run"{
-        color blue
+        dashed true
     }
 }
